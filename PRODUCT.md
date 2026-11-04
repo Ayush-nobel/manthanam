@@ -58,7 +58,7 @@ Its themes are geopolitics, security, and statecraft. "Civilisational wisdom" an
 ## Evidence on Hand
 
 - **Formal status:** registered as a non-governmental organisation (NGO). The legal form (society, trust, or Section 8 company) and registration number were not provided — do not state them.
-- **Team:** three confirmed members, with their own bios, photos, and links in `lib/team.ts` — Harsh Dev Garg (Founder and Chief Executive Officer), Ayush Shukla (Secretary General), and Mohammad Yusuf (Secretary General). Photo caveats: `CEO.png` has a circular crop baked in; `YUSUF.png` is a small full-length shot (354×472); better originals are still wanted.
+- **Team:** four confirmed members, with their own bios, photos, and links in `lib/team.ts` — Harsh Dev Garg (Founder and Chief Executive Officer), Ayush Shukla, Mohammad Yusuf, and Kishnav Kandhari (all Secretary General). Photo caveats: `CEO.png` has a circular crop baked in; `YUSUF.png` is a small full-length shot (354×472); better originals are still wanted; no photo yet for Kishnav Kandhari.
 - **Published work:** none yet. `content/insights/sample-insight.md` is a clearly marked placeholder.
 - **Absences future work must not fabricate:** research, publications, events, press coverage, partners, affiliations, testimonials, member counts, statistics, or funders. There are currently no partners.
 

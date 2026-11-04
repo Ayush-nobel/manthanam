@@ -54,4 +54,16 @@ export const team: TeamMember[] = [
     linkedin: "https://www.linkedin.com/in/mohammad-yusuf-413748269",
     email: "yusuf@manthanam.in",
   },
+  {
+    name: "Kishnav Kandhari",
+    role: "Secretary General",
+    bio: "I thrive on bold ideas, unconventional thinking, and the thrill of turning possibilities into reality. Passionate about business, finance, technology and ideas that challenge the ordinary, I enjoy building things from scratch, connecting dots across disciplines and turning ambitious thoughts into action.",
+    // Photo not supplied yet — initials show until public/team/Kishnav.png exists.
+    photo: "/team/Kishnav.png",
+    // Share-tracking parameters (utm_*) removed; same profile.
+    linkedin: "https://www.linkedin.com/in/kishnavkandhari",
+    // Given as the handle "@kishnav_".
+    instagram: "https://www.instagram.com/kishnav_/",
+    email: "kishnav.kandhari@manthanam.in",
+  },
 ];

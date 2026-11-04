@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, type ReactNode } from "react";
+import Image, { type StaticImageData } from "next/image";
+import Link from "next/link";
 import { ArrowRight, ArrowUpRight, Menu, X } from "lucide-react";
 
 interface NavLink {
@@ -15,10 +17,14 @@ interface Partner {
 }
 
 interface ResponsiveHeroBannerProps {
-    /** Text wordmark shown when no logoUrl is given. */
+    /** Accessible name for the logo; also the text wordmark shown when no logo is given. */
     brandName?: string;
-    logoUrl?: string;
+    /** Logo image (static import keeps width/height so there is no layout shift). */
+    logo?: StaticImageData;
+    /** Optional photo behind the hero (none by default — the hero is plain ink). */
     backgroundImageUrl?: string;
+    /** Decorative layer rendered between the background wash and the content. */
+    background?: ReactNode;
     navLinks?: NavLink[];
     ctaButtonText?: string;
     ctaButtonHref?: string;
@@ -26,7 +32,8 @@ interface ResponsiveHeroBannerProps {
     /** Optional pill before the badge text; a saffron dot is shown when omitted. */
     badgeLabel?: string;
     title?: string;
-    titleLine2?: string;
+    /** Second headline line; pass JSX to colour individual words. */
+    titleLine2?: ReactNode;
     description?: string;
     primaryButtonText?: string;
     primaryButtonHref?: string;
@@ -39,8 +46,9 @@ interface ResponsiveHeroBannerProps {
 
 const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
     brandName = "Manthanam",
-    logoUrl,
-    backgroundImageUrl = "https://images.unsplash.com/photo-1550684376-efcbd6e3f031?auto=format&fit=crop&w=2400&q=80",
+    logo,
+    background,
+    backgroundImageUrl,
     navLinks = [],
     ctaButtonText = "Join the Mission",
     ctaButtonHref = "#join",
@@ -50,9 +58,9 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
     titleLine2,
     description,
     primaryButtonText,
-    primaryButtonHref = "#",
+    primaryButtonHref,
     secondaryButtonText,
-    secondaryButtonHref = "#",
+    secondaryButtonHref,
     partnersTitle,
     partners = [],
 }) => {
@@ -60,43 +68,51 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
 
     return (
         <section className="w-full isolate min-h-svh overflow-hidden relative flex flex-col bg-ink">
-            {/* eslint-disable-next-line @next/next/no-img-element -- remote, consumer-supplied URL */}
-            <img
-                src={backgroundImageUrl}
-                alt=""
-                className="w-full h-full object-cover absolute top-0 right-0 bottom-0 left-0 opacity-70"
-            />
-            {/* Ink wash + a faint saffron glow so text stays legible on any image */}
-            <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_45%_at_50%_38%,rgb(255_153_51/0.10),transparent_70%),linear-gradient(to_bottom,rgb(11_12_16/0.55),rgb(11_12_16/0.75)_60%,var(--ink))]"
-            />
+            {backgroundImageUrl && (
+                <>
+                    {/* eslint-disable-next-line @next/next/no-img-element -- remote, consumer-supplied URL */}
+                    <img
+                        src={backgroundImageUrl}
+                        alt=""
+                        className="w-full h-full object-cover absolute top-0 right-0 bottom-0 left-0 opacity-70"
+                    />
+                    {/* Ink wash so text stays legible on any photo */}
+                    <div
+                        aria-hidden="true"
+                        className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,rgb(11_12_16/0.55),rgb(11_12_16/0.75)_60%,var(--ink))]"
+                    />
+                </>
+            )}
+            {background}
             <div className="pointer-events-none absolute inset-0 ring-1 ring-black/30" />
 
             <header className="z-10 xl:top-4 relative">
                 <div className="mx-6">
                     <div className="flex items-center justify-between pt-4">
-                        {logoUrl ? (
-                            <a
-                                href="#"
-                                aria-label={brandName}
-                                className="inline-flex items-center justify-center bg-center w-[100px] h-[40px] bg-cover rounded"
-                                style={{ backgroundImage: `url(${logoUrl})` }}
-                            />
+                        {logo ? (
+                            <Link href="/" className="inline-flex items-center rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-saffron">
+                                <Image
+                                    src={logo}
+                                    alt={brandName}
+                                    loading="eager"
+                                    sizes="160px"
+                                    className="h-7 w-auto sm:h-8"
+                                />
+                            </Link>
                         ) : (
-                            <a
-                                href="#"
+                            <Link
+                                href="/"
                                 className="inline-flex items-center gap-2 font-serif text-2xl tracking-tight text-paper"
                             >
                                 <span aria-hidden="true" className="h-2 w-2 rounded-full bg-saffron" />
                                 {brandName}
-                            </a>
+                            </Link>
                         )}
 
                         <nav aria-label="Primary" className="hidden lg:flex items-center gap-2">
                             <div className="flex items-center gap-1 rounded-full bg-white/5 px-1 py-1 ring-1 ring-white/10 backdrop-blur">
                                 {navLinks.map((link, index) => (
-                                    <a
+                                    <Link
                                         key={index}
                                         href={link.href}
                                         aria-current={link.isActive ? "page" : undefined}
@@ -104,15 +120,15 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
                                             }`}
                                     >
                                         {link.label}
-                                    </a>
+                                    </Link>
                                 ))}
-                                <a
+                                <Link
                                     href={ctaButtonHref}
                                     className="ml-1 inline-flex items-center gap-2 rounded-full bg-saffron px-3.5 py-2 text-sm font-medium text-ink hover:bg-saffron-deep font-sans transition-colors"
                                 >
                                     {ctaButtonText}
                                     <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
-                                </a>
+                                </Link>
                             </div>
                         </nav>
 
@@ -139,7 +155,7 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
                             className="lg:hidden mt-3 flex flex-col gap-1 rounded-2xl bg-ink/80 p-2 ring-1 ring-white/10 backdrop-blur"
                         >
                             {navLinks.map((link, index) => (
-                                <a
+                                <Link
                                     key={index}
                                     href={link.href}
                                     aria-current={link.isActive ? "page" : undefined}
@@ -148,16 +164,16 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
                                         }`}
                                 >
                                     {link.label}
-                                </a>
+                                </Link>
                             ))}
-                            <a
+                            <Link
                                 href={ctaButtonHref}
                                 onClick={() => setMobileMenuOpen(false)}
                                 className="mt-1 inline-flex items-center justify-center gap-2 rounded-xl bg-saffron px-4 py-3 text-sm font-medium text-ink hover:bg-saffron-deep font-sans transition-colors"
                             >
                                 {ctaButtonText}
                                 <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
-                            </a>
+                            </Link>
                         </nav>
                     )}
                 </div>
@@ -165,7 +181,7 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
 
             <div className="z-10 relative flex flex-1 items-center">
                 <div className="w-full sm:pt-24 md:pt-28 max-w-7xl mx-auto pt-20 px-6 pb-24">
-                    <div className="mx-auto max-w-3xl text-center">
+                    <div data-hero-copy className="mx-auto max-w-3xl text-center">
                         {badgeText && (
                             <div className="mb-6 inline-flex items-center gap-3 rounded-full bg-white/10 px-2.5 py-2 ring-1 ring-white/15 backdrop-blur animate-fade-slide-in-1">
                                 {badgeLabel ? (
@@ -175,18 +191,17 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
                                 ) : (
                                     <span aria-hidden="true" className="ml-1 h-1.5 w-1.5 rounded-full bg-saffron" />
                                 )}
-                                <span className="pr-1 text-sm font-medium tracking-wide text-paper/90 font-sans">
+                                <span className="pr-1.5 text-xs font-medium uppercase tracking-[0.2em] text-paper/90 font-sans">
                                     {badgeText}
                                 </span>
                             </div>
                         )}
 
-                        <h1 className="sm:text-5xl md:text-6xl lg:text-7xl leading-[1.05] text-[2.6rem] text-paper tracking-tight font-serif font-normal text-balance animate-fade-slide-in-2">
+                        <h1 className="font-serif font-normal text-[clamp(1.625rem,6.9vw,4rem)] leading-[1.05] text-paper text-balance animate-fade-slide-in-2">
                             {title}
                             {titleLine2 && (
                                 <>
-                                    <br className="hidden sm:block" />{" "}
-                                    <em className="italic text-saffron">{titleLine2}</em>
+                                    <br className="hidden sm:block" /> {titleLine2}
                                 </>
                             )}
                         </h1>
@@ -197,9 +212,9 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
                             </p>
                         )}
 
-                        {(primaryButtonText || secondaryButtonText) && (
+                        {((primaryButtonText && primaryButtonHref) || (secondaryButtonText && secondaryButtonHref)) && (
                             <div className="flex flex-col sm:flex-row sm:gap-4 mt-10 gap-3 items-center justify-center animate-fade-slide-in-4">
-                                {primaryButtonText && (
+                                {primaryButtonText && primaryButtonHref && (
                                     <a
                                         href={primaryButtonHref}
                                         className="inline-flex min-h-11 items-center gap-2 bg-saffron hover:bg-saffron-deep text-sm font-medium text-ink rounded-full py-3 px-5 font-sans transition-colors"
@@ -208,7 +223,7 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
                                         <ArrowRight className="h-4 w-4" aria-hidden="true" />
                                     </a>
                                 )}
-                                {secondaryButtonText && (
+                                {secondaryButtonText && secondaryButtonHref && (
                                     <a
                                         href={secondaryButtonHref}
                                         className="inline-flex min-h-11 items-center gap-2 rounded-full bg-white/5 ring-1 ring-white/15 hover:bg-white/10 px-5 py-3 text-sm font-medium text-paper/90 hover:text-paper font-sans transition-colors"

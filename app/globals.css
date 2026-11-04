@@ -7,14 +7,24 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter), "Inter", system-ui, sans-serif;
-  --font-serif: var(--font-newsreader), "Newsreader", Georgia, serif;
+  /* Tailwind font utilities -> the three swappable font roles defined in :root below */
+  --font-sans: var(--font-body);
+  --font-serif: var(--font-heading);
+  --font-devanagari: var(--font-deva);
+  /* Type scale tuned for EB Garamond (small x-height): running text is 18px / 1.6 */
+  --text-xs: 0.875rem;
+  --text-xs--line-height: 1.5;
+  --text-sm: 1rem;
+  --text-sm--line-height: 1.55;
+  --text-base: 1.125rem;
+  --text-base--line-height: 1.6;
+  --text-lg: 1.25rem;
+  --text-lg--line-height: 1.6;
   --animate-fade-slide-in-1: fadeSlideIn 0.8s ease-out 0.1s both;
   --animate-fade-slide-in-2: fadeSlideIn 0.8s ease-out 0.2s both;
   --animate-fade-slide-in-3: fadeSlideIn 0.8s ease-out 0.3s both;
   --animate-fade-slide-in-4: fadeSlideIn 0.8s ease-out 0.4s both;
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-serif);
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -63,17 +73,25 @@
 }
 
 /* Manthanam — ink + saffron editorial theme.
-   Contrast on --ink: paper 16.9:1, muted-ink 7.6:1, faint 5.3:1, saffron 9.2:1, ink-on-saffron 9.2:1. */
+   --paper is the logo's own white (#FDFCFC, measured from public/logo.png). The logo is
+   monochrome, so the saffron accent is a brand choice, not something taken from it.
+   Contrast on --ink: paper 19.1:1, muted-ink 7.6:1, faint 5.3:1, saffron 9.2:1, ink-on-saffron 9.2:1. */
 :root {
+  /* Font roles — change a font here (and its loader in app/layout.tsx).
+     Heading and body stacks end in --font-deva so Devanagari glyphs always use Noto. */
+  --font-deva: var(--font-noto-deva), "Noto Serif Devanagari", serif;
+  --font-heading: var(--font-bodoni), "Bodoni Moda", var(--font-deva), Didot, serif;
+  --font-body: var(--font-garamond), "EB Garamond", var(--font-deva), Garamond, Georgia, serif;
+
   --ink: #0b0c10;
   --ink-2: #14161c;
   --ink-3: #1c1f27;
-  --paper: #f3eee4;
+  --paper: #fdfcfc;
   --muted-ink: #a8a196;
   --faint: #8a847a;
   --saffron: #ff9933;
   --saffron-deep: #e8821c;
-  --line: rgb(243 238 228 / 0.1);
+  --line: rgb(253 252 252 / 0.1);
 
   --background: var(--ink);
   --foreground: var(--paper);
@@ -91,10 +109,10 @@
   --accent-foreground: var(--paper);
   --destructive: #f26d5b;
   --border: var(--line);
-  --input: rgb(243 238 228 / 0.16);
+  --input: rgb(253 252 252 / 0.16);
   --ring: var(--saffron);
   --chart-1: #ff9933;
-  --chart-2: #f3eee4;
+  --chart-2: #fdfcfc;
   --chart-3: #a8a196;
   --chart-4: #8a847a;
   --chart-5: #1c1f27;
@@ -149,6 +167,14 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-size: var(--text-base); /* 18px */
+    line-height: 1.6;
+  }
+  /* Hindi / Sanskrit / Marathi runs: Noto first, body font for any Latin inside */
+  :lang(hi),
+  :lang(sa),
+  :lang(mr) {
+    font-family: var(--font-deva), var(--font-body);
   }
   html {
     @apply font-sans;

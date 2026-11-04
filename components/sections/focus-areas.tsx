@@ -41,9 +41,7 @@ export default function FocusAreas() {
                             eyebrow="Focus Areas"
                             id="focus-title"
                             title={
-                                <>
-                                    Five lenses on <em className="italic text-saffron">India&rsquo;s future.</em>
-                                </>
+"Five lenses on India’s future."
                             }
                         />
                     </Reveal>
@@ -64,7 +62,7 @@ export default function FocusAreas() {
                                     delay={i * 0.06}
                                     className="grid gap-4 py-8 sm:grid-cols-12 sm:items-baseline sm:gap-6"
                                 >
-                                    <span className="font-mono text-xs text-faint sm:col-span-1">0{i + 1}</span>
+                                    <span className="text-sm tabular-nums text-faint sm:col-span-1">0{i + 1}</span>
                                     <h3 className="flex items-center gap-3 font-serif text-2xl text-paper sm:col-span-5 sm:text-3xl">
                                         <Icon className="h-5 w-5 shrink-0 text-saffron" aria-hidden="true" strokeWidth={1.5} />
                                         {area.title}

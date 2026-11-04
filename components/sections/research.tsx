@@ -1,48 +1,41 @@
-import { ArrowUpRight } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+import InsightCard from "@/components/insight-card";
 import Reveal from "@/components/reveal";
 import SectionHeading from "@/components/section-heading";
-import { latestResearch } from "@/lib/research";
+import { getInsights } from "@/lib/insights";
 
-export default function Research() {
+export default async function Research() {
+    const latest = (await getInsights()).slice(0, 3);
+
     return (
         <section id="research" aria-labelledby="research-title" className="border-t border-line">
             <div className="mx-auto max-w-7xl px-6 py-24 sm:py-32">
-                <Reveal>
-                    <SectionHeading
-                        index="03"
-                        eyebrow="Latest Research"
-                        id="research-title"
-                        title={
-                            <>
-                                From the <em className="italic text-saffron">desk.</em>
-                            </>
-                        }
-                    />
-                </Reveal>
-
-                <div className="mt-16 grid gap-6 md:grid-cols-3">
-                    {latestResearch.map((item, i) => (
-                        <Reveal key={item.title} delay={i * 0.08} className="h-full">
-                            <article className="group relative flex h-full flex-col rounded-2xl border border-line bg-ink-2 p-7 transition-colors duration-200 hover:border-saffron/50 focus-within:border-saffron/50">
-                                <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium uppercase tracking-[0.16em]">
-                                    <span className="whitespace-nowrap text-saffron">{item.type}</span>
-                                    <span aria-hidden="true" className="text-faint">·</span>
-                                    <span className="whitespace-nowrap text-faint">{item.area}</span>
-                                </p>
-                                <h3 className="mt-5 font-serif text-2xl leading-snug text-paper text-balance">
-                                    <a href={item.href} className="outline-none after:absolute after:inset-0 after:rounded-2xl focus-visible:after:ring-2 focus-visible:after:ring-saffron">
-                                        {item.title}
-                                    </a>
-                                </h3>
-                                <p className="mt-4 flex-1 text-sm leading-relaxed text-muted-ink">{item.summary}</p>
-                                <span className="mt-8 inline-flex items-center gap-1.5 text-sm font-medium text-paper/90 transition-colors group-hover:text-saffron">
-                                    Read
-                                    <ArrowUpRight className="h-4 w-4 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden="true" />
-                                </span>
-                            </article>
-                        </Reveal>
-                    ))}
+                <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+                    <Reveal>
+                        <SectionHeading index="03" eyebrow="Latest Research" id="research-title" title="From the desk." />
+                    </Reveal>
+                    <Reveal delay={0.1}>
+                        <Link href="/insights" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-white/5 px-5 py-3 text-sm font-medium text-paper/90 ring-1 ring-white/15 transition-colors hover:bg-white/10 hover:text-paper">
+                            All insights
+                            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                        </Link>
+                    </Reveal>
                 </div>
+
+                {latest.length > 0 ? (
+                    <ul className="mt-16 grid gap-6 md:grid-cols-3">
+                        {latest.map((insight, i) => (
+                            <li key={insight.slug}>
+                                <Reveal delay={i * 0.08} className="h-full">
+                                    <InsightCard insight={insight} />
+                                </Reveal>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p className="mt-16 text-muted-ink">The first pieces are on their way.</p>
+                )}
             </div>
         </section>
     );

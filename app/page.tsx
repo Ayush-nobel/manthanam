@@ -5,6 +5,7 @@ import FocusAreas from "@/components/sections/focus-areas";
 import Hero from "@/components/sections/hero";
 import Join from "@/components/sections/join";
 import Research from "@/components/sections/research";
+import Team from "@/components/sections/team";
 
 export default function Home() {
   return (
@@ -14,6 +15,7 @@ export default function Home() {
         <About />
         <FocusAreas />
         <Research />
+        <Team />
         <Join />
         <Contact />
       </main>

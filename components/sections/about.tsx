@@ -25,18 +25,14 @@ export default function About() {
                         index="01"
                         eyebrow="Our Philosophy"
                         id="about-title"
-                        title={
-                            <>
-                                Truth emerges from <em className="italic text-saffron">the churning.</em>
-                            </>
-                        }
+                        title="Truth emerges from the churning."
                     />
                 </Reveal>
 
                 <div className="lg:col-span-7">
                     <Reveal delay={0.1}>
                         <p className="font-serif text-2xl leading-snug text-paper/90 text-pretty sm:text-[1.75rem]">
-                            <span lang="sa">Manthanam</span> (<span lang="sa">मन्थनम्</span>) means <em className="italic">churning</em>.
+                            Manthanam (<span lang="sa">मन्थनम्</span>) means <em className="italic">churning</em>.
                         </p>
                         <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted-ink sm:text-lg">
                             In the Samudra Manthan, the cosmic ocean was churned with Mount Mandara as the rod and the
@@ -50,9 +46,9 @@ export default function About() {
                         {principles.map((p, i) => (
                             <li key={p.name} className="bg-ink">
                                 <Reveal delay={0.15 + i * 0.08} className="h-full bg-ink-2/60 p-6">
-                                    <span className="font-mono text-xs text-saffron">0{i + 1}</span>
+                                    <span className="text-sm tabular-nums text-saffron">0{i + 1}</span>
                                     <h3 className="mt-3 font-serif text-2xl text-paper">{p.name}</h3>
-                                    <p className="mt-3 text-sm leading-relaxed text-muted-ink">{p.body}</p>
+                                    <p className="mt-3 text-base text-muted-ink">{p.body}</p>
                                 </Reveal>
                             </li>
                         ))}

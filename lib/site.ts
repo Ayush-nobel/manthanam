@@ -7,12 +7,12 @@ export const site = {
   // (The form's endpoint comes from NEXT_PUBLIC_FORMSPREE_URL — see .env.example.)
   email: "contact@manthanam.in",
   nav: [
-    { label: "About", href: "#about" },
-    { label: "Research", href: "#research" },
-    // No sections exist yet for these three — point them at real pages/sections once built.
-    { label: "Insights", href: "#" },
-    { label: "Discussions", href: "#" },
-    { label: "Team", href: "#" },
-    { label: "Contact", href: "#contact" },
+    { label: "About", href: "/#about" },
+    { label: "Research", href: "/#research" },
+    { label: "Insights", href: "/insights" },
+    // Discussions = the "Discussion" category of Insights (roundtable notes, debates).
+    { label: "Discussions", href: "/insights/category/discussion" },
+    { label: "Team", href: "/#team" },
+    { label: "Contact", href: "/#contact" },
   ],
 } as const;

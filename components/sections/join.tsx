@@ -32,13 +32,11 @@ export default function Join() {
                     <div className="relative grid gap-12 lg:grid-cols-12 lg:gap-16">
                         <Reveal className="lg:col-span-6">
                             <SectionHeading
-                                index="04"
+                                index="05"
                                 eyebrow="Join the Mission"
                                 id="join-title"
                                 title={
-                                    <>
-                                        Bring your mind <em className="italic text-saffron">to the churning.</em>
-                                    </>
+"Bring your mind to the churning."
                                 }
                             />
                             <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-ink sm:text-lg">
@@ -66,7 +64,7 @@ export default function Join() {
                                             </span>
                                             <div>
                                                 <h3 className="font-serif text-2xl text-paper">{path.title}</h3>
-                                                <p className="mt-2 text-sm leading-relaxed text-muted-ink">{path.body}</p>
+                                                <p className="mt-2 text-base text-muted-ink">{path.body}</p>
                                             </div>
                                         </Reveal>
                                     </li>

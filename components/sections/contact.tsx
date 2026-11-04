@@ -10,13 +10,11 @@ export default function Contact() {
             <div className="mx-auto grid max-w-7xl gap-12 px-6 py-24 sm:py-32 lg:grid-cols-12 lg:gap-16">
                 <Reveal className="lg:col-span-5">
                     <SectionHeading
-                        index="05"
+                        index="06"
                         eyebrow="Contact"
                         id="contact-title"
                         title={
-                            <>
-                                Begin a <em className="italic text-saffron">conversation.</em>
-                            </>
+"Begin a conversation."
                         }
                     />
                     <p className="mt-6 max-w-md text-base leading-relaxed text-muted-ink sm:text-lg">

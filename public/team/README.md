@@ -1,2 +1,3 @@
-Put team photos here (square JPG/PNG/WebP, at least 400×400), then set `photo`
-in lib/team.ts to "/team/<file-name>". Members without a photo show their initials.
+Team photos. Square images (at least 600×600, JPG/PNG/WebP) with the face centred.
+Set `photo` in lib/team.ts to "/team/<file-name>" — the name is case-sensitive on most hosts.
+Members without a photo (or whose file is missing) show their initials.

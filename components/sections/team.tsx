@@ -31,7 +31,15 @@ function Avatar({ member, sizes }: { member: TeamMember; sizes: string }) {
                     alt={`Portrait of ${member.name}`}
                     fill
                     sizes={sizes}
-                    className="object-cover object-center"
+                    className="object-cover"
+                    // object-position aligns the focal point of the image with the same point in the
+                    // frame, so scaling from that origin zooms straight into the face.
+                    style={{
+                        objectPosition: member.photoFocus ?? "50% 50%",
+                        ...(member.photoZoom && member.photoZoom !== 1
+                            ? { transform: `scale(${member.photoZoom})`, transformOrigin: member.photoFocus ?? "50% 50%" }
+                            : {}),
+                    }}
                 />
             </div>
         );
@@ -76,8 +84,6 @@ function SocialLinks({ member }: { member: TeamMember }) {
 }
 
 export default function Team() {
-    const single = team.length === 1;
-
     return (
         <section id="team" aria-labelledby="team-title" className="border-t border-line bg-ink-2/40">
             <div className="mx-auto max-w-7xl px-6 py-24 sm:py-32">
@@ -93,18 +99,20 @@ export default function Team() {
                     </Reveal>
                 </div>
 
-                <ul className={`mt-16 grid gap-6 ${single ? "max-w-4xl" : "sm:grid-cols-2 lg:grid-cols-4"}`}>
+                <ul className="mt-16 grid max-w-5xl gap-6">
                     {team.map((member, i) => (
                         <li key={member.name}>
                             <Reveal delay={i * 0.06} className="h-full">
-                                <article
-                                    className={`h-full rounded-2xl border border-line bg-ink-2 p-4 ${single ? "grid gap-6 sm:grid-cols-[minmax(0,17rem)_1fr] sm:items-center sm:p-5" : "flex flex-col"}`}
-                                >
-                                    <Avatar member={member} sizes={single ? "(min-width: 640px) 272px, 100vw" : "(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"} />
-                                    <div className={`flex flex-col px-2 pb-2 ${single ? "sm:py-2 sm:pr-4" : "flex-1 pt-5"}`}>
+                                <article className="grid h-full gap-6 rounded-2xl border border-line bg-ink-2 p-4 sm:grid-cols-[minmax(0,15rem)_1fr] sm:items-start sm:p-5 lg:grid-cols-[minmax(0,17rem)_1fr]">
+                                    <Avatar member={member} sizes="(min-width: 1024px) 272px, (min-width: 640px) 240px, 100vw" />
+                                    <div className="flex flex-col px-2 pb-2 sm:py-2 sm:pr-4">
                                         <h3 className="font-serif text-2xl text-paper sm:text-3xl">{member.name}</h3>
                                         <p className="mt-1 text-sm font-medium uppercase tracking-[0.16em] text-saffron">{member.role}</p>
-                                        <p className="mt-4 text-base text-muted-ink">{member.bio}</p>
+                                        <div className="mt-4 max-w-[42rem] space-y-4 text-base text-muted-ink">
+                                            {member.bio.split(/\n\s*\n/).map((para, j) => (
+                                                <p key={j}>{para}</p>
+                                            ))}
+                                        </div>
                                         <SocialLinks member={member} />
                                     </div>
                                 </article>

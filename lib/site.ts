@@ -3,7 +3,8 @@ export const site = {
   tagline: "India's youth-driven strategic think tank",
   location: "New Delhi",
   founded: 2024,
-  // The contact form opens a mail draft to this address.
+  // Shown as a fallback if the contact form can't be submitted.
+  // (The form's endpoint comes from NEXT_PUBLIC_FORMSPREE_URL — see .env.example.)
   email: "contact@manthanam.in",
   nav: [
     { label: "About", href: "#about" },

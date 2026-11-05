@@ -5,7 +5,9 @@ import { CircleCheck, LoaderCircle, Send } from "lucide-react";
 import { site } from "@/lib/site";
 
 // Must be referenced literally so Next.js inlines it into the browser bundle at build time.
-const FORMSPREE_URL = process.env.NEXT_PUBLIC_FORMSPREE_URL;
+const RAW_FORMSPREE_URL = process.env.NEXT_PUBLIC_FORMSPREE_URL?.trim();
+// Submissions contain names, emails and messages: only ever send them over HTTPS.
+const FORMSPREE_URL = RAW_FORMSPREE_URL?.startsWith("https://") ? RAW_FORMSPREE_URL : undefined;
 
 const topics = ["General enquiry", "Joining Manthanam", "Research collaboration", "Media & speaking"] as const;
 
@@ -81,7 +83,11 @@ export default function ContactForm() {
         }
 
         if (!FORMSPREE_URL) {
-            console.error("NEXT_PUBLIC_FORMSPREE_URL is not set — add it to .env.local (see .env.example).");
+            console.error(
+                RAW_FORMSPREE_URL
+                    ? "NEXT_PUBLIC_FORMSPREE_URL must start with https:// — refusing to send the form over an insecure connection."
+                    : "NEXT_PUBLIC_FORMSPREE_URL is not set — add it to .env.local (see .env.example).",
+            );
             setFailure("The contact form isn’t connected yet.");
             setStatus("error");
             return;

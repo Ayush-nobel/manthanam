@@ -44,10 +44,7 @@ export const team: TeamMember[] = [
   {
     name: "Mohammad Yusuf",
     role: "Secretary General",
-    bio:
-      "Mohammad Yusuf is a young entrepreneur, strategic partnerships professional, and student leader with experience spanning business development, institutional collaborations, and organisational leadership. He is currently pursuing his Master's degree in English at the University of Delhi, having completed his Bachelor's degree in English Honours from Hindu College, University of Delhi.\n\n" +
-      "Yusuf has worked in the Founder's Office at HELPSTiR, where he has been involved in building strategic partnerships, managing institutional relationships, facilitating NGO onboarding, and developing collaborations with corporates, foundations, and social impact organisations. He is also the founder of StratiFY!, a digital solutions venture focused on AI-powered websites, marketing, and automation.\n\n" +
-      "Having served in leadership positions at Hindu College, he brings a strong foundation in communication, strategic thinking, team management, and organisational development. His interests lie at the intersection of entrepreneurship, innovation, social impact, and institution-building.",
+    bio: "An entrepreneur, writer, and student leader with a background in English Literature and organisational leadership. A graduate of Hindu College, University of Delhi, he is currently pursuing his Master's in English at the University of Delhi. He is the Founder of StratiFY! and has professional experience in strategic partnerships, business development, and social impact through his work at HELPSTiR. An avid poetry enthusiast, he finds joy in literature, storytelling, and creative expression.",
     photo: "/team/YUSUF.png",
     photoFocus: "49% 37%",
     photoZoom: 1.9,

@@ -6,6 +6,20 @@ export const site = {
   // Shown as a fallback if the contact form can't be submitted.
   // (The form's endpoint comes from NEXT_PUBLIC_FORMSPREE_URL — see .env.example.)
   email: "contact@manthanam.in",
+  // Business details shown in the footer and the legal pages. Only confirmed facts:
+  // the legal form and registration number have not been provided, so they are not stated.
+  legal: {
+    name: "Manthanam Research Foundation",
+    status: "a registered non-governmental organisation",
+    address: "New Delhi, India",
+    country: "India",
+  },
+  policies: [
+    { label: "Privacy Policy", href: "/privacy" },
+    { label: "Terms of Use", href: "/terms" },
+    { label: "Cookie Policy", href: "/cookies" },
+    { label: "Refund Policy", href: "/refunds" },
+  ],
   nav: [
     { label: "About", href: "/#about" },
     { label: "Research", href: "/#research" },

@@ -5,17 +5,17 @@ import SectionHeading from "@/components/section-heading";
 const paths = [
     {
         title: "Write",
-        body: "Contribute research papers, policy briefs, and commentary — with editorial support from peers.",
+        body: "Contribute research papers, policy briefs, and commentary for publication on Manthanam’s Insights.",
         icon: PenLine,
     },
     {
         title: "Debate",
-        body: "Take part in roundtables and discussions where arguments are tested, not merely aired.",
+        body: "Help shape the discussions and roundtables Manthanam plans to host, where arguments are tested, not merely aired.",
         icon: Users,
     },
     {
         title: "Build",
-        body: "Help run events, outreach, and the institution itself as Manthanam grows across India.",
+        body: "Help run events, outreach, and the institution itself as Manthanam grows.",
         icon: Megaphone,
     },
 ];
@@ -40,7 +40,7 @@ export default function Join() {
                                 }
                             />
                             <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-ink sm:text-lg">
-                                Manthanam is built by students, young professionals, and scholars who want to think
+                                Manthanam is built by students and young professionals who want to think
                                 seriously about India. If you would rather shape the debate than follow it, there is a
                                 place for you here.
                             </p>

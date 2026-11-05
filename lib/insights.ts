@@ -63,6 +63,12 @@ function toMeta(i: Insight): InsightMeta {
   return { slug, title, author, date, category, categorySlug, summary, sample };
 }
 
+/**
+ * Pieces marked `sample: true` are placeholders: shown under `next dev` as a template, but never
+ * published in production builds.
+ */
+const SHOW_SAMPLES = process.env.NODE_ENV === "development";
+
 /** All insights, newest first (body omitted). */
 export async function getInsights(): Promise<InsightMeta[]> {
   "use cache";
@@ -74,6 +80,7 @@ export async function getInsights(): Promise<InsightMeta[]> {
   }
   const items = await Promise.all(files.map(async (f) => parse(f, await readFile(path.join(DIR, f), "utf8"))));
   return items
+    .filter((i) => SHOW_SAMPLES || !i.sample)
     .sort((a, b) => (a.date === b.date ? a.title.localeCompare(b.title) : b.date.localeCompare(a.date)))
     .map(toMeta);
 }
@@ -82,7 +89,8 @@ export async function getInsight(slug: string): Promise<Insight | null> {
   "use cache";
   if (!/^[a-z0-9-]+$/.test(slug)) return null; // also blocks path traversal
   try {
-    return parse(`${slug}.md`, await readFile(path.join(DIR, `${slug}.md`), "utf8"));
+    const insight = parse(`${slug}.md`, await readFile(path.join(DIR, `${slug}.md`), "utf8"));
+    return insight.sample && !SHOW_SAMPLES ? null : insight;
   } catch (e) {
     if ((e as NodeJS.ErrnoException).code === "ENOENT") return null;
     throw e;

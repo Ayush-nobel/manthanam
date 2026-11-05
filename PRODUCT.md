@@ -36,7 +36,7 @@ Its themes are geopolitics, security, and statecraft. "Civilisational wisdom" an
 - Writing is published as Markdown files in `content/insights/` (frontmatter: title, author, date, category, summary); categories are Commentary, Analysis, Policy Brief, Discussion (category list chosen during build — confirm or change).
 - Team members are maintained in `lib/team.ts` (name, role, bio, photo, optional LinkedIn / Instagram / email); photos live in `public/team/`.
 - Contact form submits to Formspree via the `NEXT_PUBLIC_FORMSPREE_URL` environment variable; `contact@manthanam.in` is the fallback address.
-- Hosting/deployment target: not yet decided.
+- Hosting: see Capabilities and Constraints.
 
 ## Capabilities and Constraints
 
@@ -45,7 +45,11 @@ Its themes are geopolitics, security, and statecraft. "Civilisational wisdom" an
 - Join is currently a call to action that leads to the contact form; there is no membership application system.
 - Team member email addresses must not appear as plain text in the HTML (scraping protection).
 - Nav items "Insights" and "Discussions" exist; "Discussions" currently maps to the Discussion category of Insights (assumption — confirm).
-- Open decisions: success metrics, deployment target, whether membership needs its own application flow, final Insights category list.
+- Legal pages (Markdown in `content/legal/`): Privacy Policy (`/privacy`, DPDP Act 2023 / DPDP Rules 2025), Terms of Use (`/terms`), Cookie Policy (`/cookies`), Refund Policy (`/refunds`). Business details and policy links are in the footer (`lib/site.ts`).
+- Data handling: the site sets no cookies and loads no third-party resources (verified 5 November 2026). The contact form is the only personal-data collection; it requires an unticked consent checkbox, asks whether an adult (18+) or a parent/guardian of someone under 18 is writing, and sends a consent record (wording, policy version, timestamp). Under-18s are asked to have a parent/guardian write; guardian messages must have the guardian's identity verified before acting on details about the child. Enquiries are kept no longer than 12 months after the last exchange (commitment stated in the Privacy Policy — must be followed in Formspree and the Zoho inbox).
+- Payments: none today. Planned: donations (non-refundable except duplicate/erroneous payments) and event/workshop fees (refundable before each event's stated cancellation deadline). Payment provider not chosen; the Refund Policy must be updated before any payment is accepted.
+- Hosting: www.manthanam.in is served via Amazon CloudFront and rebuilds from GitHub `main`; the apex manthanam.in is a GoDaddy forward (currently misconfigured as a redirect loop).
+- Open decisions: success metrics, whether membership needs its own application flow, final Insights category list.
 
 ## Brand Commitments
 
@@ -57,7 +61,7 @@ Its themes are geopolitics, security, and statecraft. "Civilisational wisdom" an
 
 ## Evidence on Hand
 
-- **Formal status:** registered as a non-governmental organisation (NGO). The legal form (society, trust, or Section 8 company) and registration number were not provided — do not state them.
+- **Legal name and status:** Manthanam Research Foundation, a registered non-governmental organisation (NGO), New Delhi, India; public contact contact@manthanam.in (no street address published). The legal form (society, trust, or Section 8 company) and registration number were not provided — do not state them.
 - **Team:** four confirmed members, with their own bios, photos, and links in `lib/team.ts` — Harsh Dev Garg (Founder and Chief Executive Officer), Ayush Shukla, Mohammad Yusuf, and Kishnav Kandhari (all Secretary General). Photo caveats: `CEO.png` has a circular crop baked in; `YUSUF.png` is a small full-length shot (354×472); better originals are still wanted.
 - **Messages of support:** seven messages (three retired ambassadors, Dr. Anand Ranganathan, and three ministers of the Government of India) in `lib/messages.ts`, with photos in `public/messages/`; marked verified by the organisation on 5 November 2026. Only `verified: true` entries are published. The messages refer to "Manthanam Research Foundation" — confirm whether that is the registered name.
 - **Published work:** none yet. `content/insights/sample-insight.md` is a clearly marked placeholder.

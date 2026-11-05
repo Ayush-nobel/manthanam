@@ -75,7 +75,7 @@
 /* Manthanam — ink + saffron editorial theme.
    --paper is the logo's own white (#FDFCFC, measured from public/logo.png). The logo is
    monochrome, so the saffron accent is a brand choice, not something taken from it.
-   Contrast on --ink: paper 19.1:1, muted-ink 7.6:1, faint 5.3:1, saffron 9.2:1, ink-on-saffron 9.2:1. */
+   Contrast on --ink: paper 19.1:1, muted-ink 7.6:1, faint 6.1:1 (≥4.8:1 on every surface, incl. the Join glow), saffron 9.2:1, ink-on-saffron 9.2:1. */
 :root {
   /* Font roles — change a font here (and its loader in app/layout.tsx).
      Heading and body stacks end in --font-deva so Devanagari glyphs always use Noto. */
@@ -88,7 +88,7 @@
   --ink-3: #1c1f27;
   --paper: #fdfcfc;
   --muted-ink: #a8a196;
-  --faint: #8a847a;
+  --faint: #968f84;
   --saffron: #ff9933;
   --saffron-deep: #e8821c;
   --line: rgb(253 252 252 / 0.1);
@@ -114,7 +114,7 @@
   --chart-1: #ff9933;
   --chart-2: #fdfcfc;
   --chart-3: #a8a196;
-  --chart-4: #8a847a;
+  --chart-4: #968f84;
   --chart-5: #1c1f27;
   --radius: 0.625rem;
   --sidebar: var(--ink-2);

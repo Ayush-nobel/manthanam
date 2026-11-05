@@ -93,7 +93,7 @@ export default function Team() {
                     </Reveal>
                     <Reveal delay={0.1} className="lg:col-span-5">
                         <p className="text-base leading-relaxed text-muted-ink sm:text-lg">
-                            Students, researchers, and young professionals building an institution for India&rsquo;s
+                            Students and young professionals building an institution for India&rsquo;s
                             strategic conversation.
                         </p>
                     </Reveal>

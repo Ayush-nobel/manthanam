@@ -9,7 +9,7 @@ colors:
   ink-lifted: "#1c1f27"
   logo-white: "#fdfcfc"
   muted-ink: "#a8a196"
-  faint-ink: "#8a847a"
+  faint-ink: "#968f84"
   hairline: "rgb(253 252 252 / 0.1)"
   field-edge: "rgb(253 252 252 / 0.16)"
   ember-error: "#f26d5b"
@@ -178,7 +178,7 @@ A night palette: three inks, one white, two warm greys, and a single saffron.
 - **Lifted Ink** (#1c1f27): The highest tonal step — initials avatars, photo frames, inline code. Use sparingly; it is the "spotlit" surface.
 - **Logo White** (#fdfcfc): All primary text and headings (19.1:1 on ink). Measured from the logo; its translucent forms (90%, 80%, 75%) carry secondary nav links and descriptions.
 - **Muted Ink** (#a8a196): Body copy that supports a heading — descriptions, summaries, bios (7.6:1).
-- **Faint Ink** (#8a847a): The quietest readable text — eyebrow labels, metadata, hints, footer tagline (5.3:1). Never go lighter-on-dark than this for text.
+- **Faint Ink** (#968f84): The quietest readable text — eyebrow labels, metadata, hints, footer tagline (6.1:1 on Midnight Ink, at least 4.8:1 on every surface including the Join glow). Never go darker than this for text.
 - **Hairline** (rgb(253 252 252 / 0.1)): Every border and divider. **Field Edge** (rgb(253 252 252 / 0.16)) is its slightly stronger sibling for input outlines.
 - **Ember Error** (#f26d5b): Validation errors and failure alerts only.
 

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type FormEvent } from "react";
+import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from "react";
+import Link from "next/link";
 import { CircleCheck, LoaderCircle, Send } from "lucide-react";
 import { site } from "@/lib/site";
 
@@ -11,10 +12,19 @@ const FORMSPREE_URL = RAW_FORMSPREE_URL?.startsWith("https://") ? RAW_FORMSPREE_
 
 const topics = ["General enquiry", "Joining Manthanam", "Research collaboration", "Media & speaking"] as const;
 
-type Field = "name" | "email" | "message";
+type Field = "name" | "email" | "message" | "sender" | "consent" | "guardianConsent";
 type Errors = Partial<Record<Field, string>>;
 type Status = "idle" | "submitting" | "success" | "error";
-const FIELDS: Field[] = ["name", "email", "message"];
+type Sender = "adult" | "guardian";
+/** Order used to move focus to the first problem. */
+const FIELDS: Field[] = ["name", "email", "message", "sender", "consent", "guardianConsent"];
+
+// Consent wording — sent with every submission as the consent record (DPDP Act s.6; Rules r.3).
+// If you change these texts, also bump PRIVACY_POLICY_VERSION to the Privacy Policy's "updated" date.
+const PRIVACY_POLICY_VERSION = "2026-11-05";
+const CONSENT_TEXT = `I agree that ${site.legal.name} may use my name, email address and message to reply to this enquiry, as described in the Privacy Policy. I can withdraw my consent at any time.`;
+const GUARDIAN_CONSENT_TEXT =
+    "I am the parent or legal guardian of the person under 18 I am writing about. I consent to Manthanam using any details about them that I include in this message to reply to me, and I understand Manthanam will verify my identity before acting on them.";
 
 /** Formspree's JSON error shape: { errors: [{ field?, code?, message }] } */
 interface FormspreeError {
@@ -25,6 +35,7 @@ interface FormspreeError {
 
 function validate(data: FormData): Errors {
     const errors: Errors = {};
+    const sender = data.get("sender");
     const name = String(data.get("name") ?? "").trim();
     const email = String(data.get("email") ?? "").trim();
     const message = String(data.get("message") ?? "").trim();
@@ -32,6 +43,10 @@ function validate(data: FormData): Errors {
     if (!email) errors.email = "Please enter your email address.";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = "Enter an email address like name@example.com.";
     if (message.length < 10) errors.message = "Please write a short message (at least 10 characters).";
+    if (sender !== "adult" && sender !== "guardian") errors.sender = "Please tell us who is writing.";
+    if (data.get("consent") !== "yes") errors.consent = "Please tick this box so we can use your details to reply.";
+    if (sender === "guardian" && data.get("guardianConsent") !== "yes")
+        errors.guardianConsent = "Please confirm you are the parent or legal guardian and give consent.";
     return errors;
 }
 
@@ -43,6 +58,7 @@ export default function ContactForm() {
     const [errors, setErrors] = useState<Errors>({});
     const [status, setStatus] = useState<Status>("idle");
     const [failure, setFailure] = useState("");
+    const [sender, setSender] = useState<Sender | null>(null);
     const formRef = useRef<HTMLFormElement>(null);
     const successRef = useRef<HTMLDivElement>(null);
 
@@ -94,12 +110,19 @@ export default function ContactForm() {
         }
 
         const topic = String(data.get("topic"));
+        const who = data.get("sender") === "guardian" ? "guardian" : "adult";
         const payload = {
             name: String(data.get("name")).trim(),
             email: String(data.get("email")).trim(), // Formspree uses this as the reply-to address
             topic,
             message: String(data.get("message")).trim(),
-            _subject: `[${topic}] New message via manthanam.in`,
+            sender: who === "guardian" ? "Parent or legal guardian writing for someone under 18" : "Adult (18 or older)",
+            // Consent record: exactly what was agreed, to which policy version, and when.
+            consent: CONSENT_TEXT,
+            ...(who === "guardian" ? { guardianConsent: GUARDIAN_CONSENT_TEXT } : {}),
+            privacyPolicyVersion: PRIVACY_POLICY_VERSION,
+            consentedAt: new Date().toISOString(),
+            _subject: `[${topic}]${who === "guardian" ? " [Guardian — verify identity]" : ""} New message via manthanam.in`,
         };
 
         setStatus("submitting");
@@ -111,6 +134,7 @@ export default function ContactForm() {
             });
             if (res.ok) {
                 formRef.current?.reset();
+                setSender(null);
                 setStatus("success");
                 return;
             }
@@ -152,6 +176,14 @@ export default function ContactForm() {
                 <h3 className="mt-5 font-serif text-3xl text-paper">Thank you — message received.</h3>
                 <p className="mt-3 max-w-md text-base leading-relaxed text-muted-ink">
                     We read every message and will reply to the email address you gave us.
+                </p>
+                <p className="mt-3 max-w-md text-sm text-faint">
+                    Want your message deleted later? Email{" "}
+                    <a href={`mailto:${site.email}?subject=Privacy%20request`} className="text-muted-ink underline underline-offset-4 hover:text-saffron">
+                        {site.email}
+                    </a>{" "}
+                    — see our{" "}
+                    <Link href="/privacy" className="text-muted-ink underline underline-offset-4 hover:text-saffron">Privacy Policy</Link>.
                 </p>
                 <button
                     type="button"
@@ -219,8 +251,71 @@ export default function ContactForm() {
                     onChange={() => clearError("message")}
                     className={`${inputBase} ${border("message")} resize-y`}
                 />
-                <p id={id("message-hint")} className="mt-2 text-sm text-faint">Tell us who you are and what you&rsquo;d like to discuss.</p>
+                <p id={id("message-hint")} className="mt-2 text-sm text-faint">
+                    Tell us who you are and what you&rsquo;d like to discuss. Please don&rsquo;t include sensitive personal
+                    information.
+                </p>
                 {errors.message && <p id={id("message-err")} className="mt-1 text-sm text-destructive">{errors.message}</p>}
+            </div>
+
+            <fieldset
+                className="sm:col-span-2"
+                aria-invalid={!!errors.sender}
+                aria-describedby={`${id("sender-hint")}${errors.sender ? ` ${id("sender-err")}` : ""}`}
+            >
+                <legend className="text-sm font-medium text-paper">Who is writing?</legend>
+                <div className="mt-3 grid gap-3">
+                    {(
+                        [
+                            ["adult", "I am 18 or older"],
+                            ["guardian", "I am a parent or legal guardian writing on behalf of someone under 18"],
+                        ] as const
+                    ).map(([value, label], i) => (
+                        <label key={value} className="flex min-h-11 cursor-pointer items-start gap-3 rounded-xl border border-line px-4 py-3 has-[:checked]:border-saffron/60 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-saffron/60">
+                            <input
+                                id={i === 0 ? id("sender") : undefined}
+                                type="radio"
+                                name="sender"
+                                value={value}
+                                disabled={submitting}
+                                checked={sender === value}
+                                onChange={() => {
+                                    setSender(value);
+                                    clearError("sender");
+                                    if (value === "adult") clearError("guardianConsent");
+                                }}
+                                className="mt-1 h-5 w-5 shrink-0 cursor-pointer accent-saffron focus:outline-none"
+                            />
+                            <span className="text-base text-paper/90">{label}</span>
+                        </label>
+                    ))}
+                </div>
+                <p id={id("sender-hint")} className="mt-2 text-sm text-faint">
+                    If you are under 18, please ask a parent or legal guardian to write to us for you.
+                </p>
+                {errors.sender && <p id={id("sender-err")} className="mt-1 text-sm text-destructive">{errors.sender}</p>}
+            </fieldset>
+
+            <div className="grid gap-4 sm:col-span-2">
+                <ConsentCheckbox id={id("consent")} name="consent" error={errors.consent} disabled={submitting} onChange={() => clearError("consent")}>
+                    I agree that {site.legal.name} may use my name, email address and message to reply to this enquiry, as
+                    described in the{" "}
+                    <Link href="/privacy" className="text-paper underline underline-offset-4 hover:text-saffron">
+                        Privacy Policy
+                    </Link>
+                    . I can withdraw my consent at any time.
+                </ConsentCheckbox>
+                {sender === "guardian" && (
+                    <ConsentCheckbox
+                        id={id("guardianConsent")}
+                        name="guardianConsent"
+                        error={errors.guardianConsent}
+                        disabled={submitting}
+                        onChange={() => clearError("guardianConsent")}
+                    >
+                        {GUARDIAN_CONSENT_TEXT}
+                    </ConsentCheckbox>
+                )}
             </div>
 
             {status === "error" && (
@@ -251,5 +346,49 @@ export default function ContactForm() {
                 </button>
             </div>
         </form>
+    );
+}
+
+/** One checkbox style for every consent/confirmation on the site's forms: native, keyboard-accessible, required, never pre-ticked. */
+function ConsentCheckbox({
+    id,
+    name,
+    error,
+    disabled,
+    onChange,
+    children,
+}: {
+    id: string;
+    name: string;
+    error?: string;
+    disabled?: boolean;
+    onChange?: () => void;
+    children: ReactNode;
+}) {
+    return (
+        <div>
+            <div className="flex items-start gap-3">
+                <input
+                    id={id}
+                    name={name}
+                    type="checkbox"
+                    value="yes"
+                    required
+                    disabled={disabled}
+                    onChange={onChange}
+                    aria-invalid={!!error}
+                    aria-describedby={error ? `${id}-err` : undefined}
+                    className="mt-1 h-5 w-5 shrink-0 cursor-pointer rounded accent-saffron focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-saffron"
+                />
+                <label htmlFor={id} className="cursor-pointer text-sm leading-relaxed text-muted-ink">
+                    {children}
+                </label>
+            </div>
+            {error && (
+                <p id={`${id}-err`} className="mt-1 pl-8 text-sm text-destructive">
+                    {error}
+                </p>
+            )}
+        </div>
     );
 }

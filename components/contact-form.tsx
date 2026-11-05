@@ -42,7 +42,10 @@ function validate(data: FormData): Errors {
     if (!name) errors.name = "Please enter your name.";
     if (!email) errors.email = "Please enter your email address.";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = "Enter an email address like name@example.com.";
+    if (name.length > 100) errors.name = "Please keep your name under 100 characters.";
+    if (email.length > 254) errors.email = "That email address is too long.";
     if (message.length < 10) errors.message = "Please write a short message (at least 10 characters).";
+    else if (message.length > 5000) errors.message = "Please keep your message under 5,000 characters.";
     if (sender !== "adult" && sender !== "guardian") errors.sender = "Please tell us who is writing.";
     if (data.get("consent") !== "yes") errors.consent = "Please tick this box so we can use your details to reply.";
     if (sender === "guardian" && data.get("guardianConsent") !== "yes")
@@ -213,7 +216,7 @@ export default function ContactForm() {
             <div>
                 <label htmlFor={id("name")} className="text-sm font-medium text-paper">Name</label>
                 <input
-                    id={id("name")} name="name" type="text" autoComplete="name" disabled={submitting}
+                    id={id("name")} name="name" type="text" autoComplete="name" maxLength={100} disabled={submitting}
                     aria-invalid={!!errors.name} aria-describedby={errors.name ? id("name-err") : undefined}
                     onChange={() => clearError("name")}
                     className={`${inputBase} ${border("name")}`}
@@ -224,7 +227,7 @@ export default function ContactForm() {
             <div>
                 <label htmlFor={id("email")} className="text-sm font-medium text-paper">Email</label>
                 <input
-                    id={id("email")} name="email" type="email" autoComplete="email" inputMode="email" disabled={submitting}
+                    id={id("email")} name="email" type="email" autoComplete="email" inputMode="email" maxLength={254} disabled={submitting}
                     aria-invalid={!!errors.email} aria-describedby={errors.email ? id("email-err") : undefined}
                     onChange={() => clearError("email")}
                     className={`${inputBase} ${border("email")}`}
@@ -245,7 +248,7 @@ export default function ContactForm() {
             <div className="sm:col-span-2">
                 <label htmlFor={id("message")} className="text-sm font-medium text-paper">Message</label>
                 <textarea
-                    id={id("message")} name="message" rows={5} disabled={submitting}
+                    id={id("message")} name="message" rows={5} maxLength={5000} disabled={submitting}
                     aria-invalid={!!errors.message}
                     aria-describedby={`${id("message-hint")}${errors.message ? ` ${id("message-err")}` : ""}`}
                     onChange={() => clearError("message")}

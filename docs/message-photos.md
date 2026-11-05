@@ -1,4 +1,4 @@
-Photos for the homepage "Messages" section (lib/messages.ts).
+Photos for the homepage "Messages" section (lib/messages.ts) go in public/messages/.
 
 Name each file after the message's slug, with any of these extensions:
 .jpg, .jpeg, .png, .webp, .avif (matched case-insensitively). Square images,

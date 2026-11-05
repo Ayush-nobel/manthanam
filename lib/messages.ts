@@ -20,6 +20,40 @@ export interface Message {
 }
 
 export const messages: Message[] = [
+  // Order shown on the site: ministers first in protocol order (Cabinet, then Minister of State),
+  // then the ambassadors and Dr. Ranganathan as originally listed.
+  {
+    slug: "chouhan",
+    photoFocus: "65% 18%",
+    photoZoom: 2.2,
+    lang: "hi",
+    name: "Shri Shivraj Singh Chouhan",
+    title: "Union Cabinet Minister of Agriculture & Farmers Welfare and Rural Development, Government of India",
+    quote:
+      "मंथनम रिसर्च फाउंडेशन की पूरी टीम को हार्दिक शुभकामनाएँ। युवाओं को राष्ट्र निर्माण, नेतृत्व और सकारात्मक विचारों से जोड़ने का आपका प्रयास सराहनीय है। मेरा विश्वास है कि युवा शक्ति विकसित भारत के संकल्प को साकार करने में महत्वपूर्ण भूमिका निभाएगी।",
+    verified: true,
+  },
+  {
+    slug: "paswan",
+    photoFocus: "49% 39%",
+    photoZoom: 1.5,
+    name: "Shri Chirag Paswan",
+    title: "Union Cabinet Minister of Food Processing Industries, Government of India",
+    quote:
+      "My sincere best wishes to Manthanam Research Foundation. Youth participation, innovation and entrepreneurship are essential pillars of a progressive and self-reliant India. I appreciate initiatives that encourage young minds to think constructively and contribute meaningfully to the nation's development. Wishing the entire team continued success.",
+    verified: true,
+  },
+  {
+    slug: "dubey",
+    photoFocus: "51% 27%",
+    photoZoom: 2.2,
+    lang: "hi",
+    name: "Shri Satish Chandra Dubey",
+    title: "Minister of State for Coal and Mines, Government of India",
+    quote:
+      "मंथनम रिसर्च फाउंडेशन के इस सराहनीय प्रयास के लिए पूरी टीम को मेरी शुभकामनाएँ। युवाओं में शोध, चिंतन और राष्ट्रीय विषयों के प्रति जागरूकता विकसित करना अत्यंत आवश्यक है। आशा है कि आपका संस्थान राष्ट्रहित में निरंतर सार्थक योगदान देगा।",
+    verified: true,
+  },
   {
     slug: "khatua",
     photoFocus: "45% 34%",
@@ -56,38 +90,6 @@ export const messages: Message[] = [
     name: "Ambassador Anil Trigunayat, IFS (Retd.)",
     quote:
       "I appreciate the vision and initiative of Manthanam Research Foundation in promoting strategic awareness, international engagement and youth participation. My best wishes to the entire team for their dedication and continued efforts towards building an informed and globally conscious generation.",
-    verified: true,
-  },
-  {
-    slug: "chouhan",
-    photoFocus: "65% 18%",
-    photoZoom: 2.2,
-    lang: "hi",
-    name: "Shri Shivraj Singh Chouhan",
-    title: "Union Cabinet Minister of Agriculture & Farmers Welfare and Rural Development, Government of India",
-    quote:
-      "मंथनम रिसर्च फाउंडेशन की पूरी टीम को हार्दिक शुभकामनाएँ। युवाओं को राष्ट्र निर्माण, नेतृत्व और सकारात्मक विचारों से जोड़ने का आपका प्रयास सराहनीय है। मेरा विश्वास है कि युवा शक्ति विकसित भारत के संकल्प को साकार करने में महत्वपूर्ण भूमिका निभाएगी।",
-    verified: true,
-  },
-  {
-    slug: "dubey",
-    photoFocus: "51% 27%",
-    photoZoom: 2.2,
-    lang: "hi",
-    name: "Shri Satish Chandra Dubey",
-    title: "Minister of State for Coal and Mines, Government of India",
-    quote:
-      "मंथनम रिसर्च फाउंडेशन के इस सराहनीय प्रयास के लिए पूरी टीम को मेरी शुभकामनाएँ। युवाओं में शोध, चिंतन और राष्ट्रीय विषयों के प्रति जागरूकता विकसित करना अत्यंत आवश्यक है। आशा है कि आपका संस्थान राष्ट्रहित में निरंतर सार्थक योगदान देगा।",
-    verified: true,
-  },
-  {
-    slug: "paswan",
-    photoFocus: "49% 39%",
-    photoZoom: 1.5,
-    name: "Shri Chirag Paswan",
-    title: "Union Cabinet Minister of Food Processing Industries, Government of India",
-    quote:
-      "My sincere best wishes to Manthanam Research Foundation. Youth participation, innovation and entrepreneurship are essential pillars of a progressive and self-reliant India. I appreciate initiatives that encourage young minds to think constructively and contribute meaningfully to the nation's development. Wishing the entire team continued success.",
     verified: true,
   },
 ];

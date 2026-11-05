@@ -4,13 +4,13 @@ import Reveal from "@/components/reveal";
 import SectionHeading from "@/components/section-heading";
 import { site } from "@/lib/site";
 
-export default function Contact() {
+export default function Contact({ index = "06" }: { index?: string }) {
     return (
         <section id="contact" aria-labelledby="contact-title" className="border-t border-line bg-ink-2/40">
             <div className="mx-auto grid max-w-7xl gap-12 px-6 py-24 sm:py-32 lg:grid-cols-12 lg:gap-16">
                 <Reveal className="lg:col-span-5">
                     <SectionHeading
-                        index="06"
+                        index={index}
                         eyebrow="Contact"
                         id="contact-title"
                         title={

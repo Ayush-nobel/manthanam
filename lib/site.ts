@@ -23,7 +23,7 @@ export const site = {
   nav: [
     { label: "About", href: "/#about" },
     { label: "Research", href: "/#research" },
-    { label: "Insights", href: "/insights" },
+    { label: "Messages", href: "/#messages" },
     // Discussions = the "Discussion" category of Insights (roundtable notes, debates).
     { label: "Discussions", href: "/insights/category/discussion" },
     { label: "Team", href: "/#team" },

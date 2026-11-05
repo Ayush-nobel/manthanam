@@ -1,5 +1,7 @@
 export const site = {
   name: "Manthanam",
+  /** Canonical origin: every canonical tag, the sitemap and structured data use this host. */
+  url: "https://www.manthanam.in",
   tagline: "India's youth-driven strategic think tank",
   location: "New Delhi",
   founded: 2024,

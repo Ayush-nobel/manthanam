@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Breadcrumbs from "@/components/breadcrumbs";
 import Markdown from "@/components/markdown";
 import { formatDate } from "@/lib/insights";
 import { getLegalDoc, type LegalSlug } from "@/lib/legal";
@@ -8,7 +9,8 @@ export default async function LegalPage({ slug }: { slug: LegalSlug }) {
     const doc = await getLegalDoc(slug);
     return (
         <article className="mx-auto w-full max-w-3xl px-6 py-16 sm:py-24">
-            <header>
+            <Breadcrumbs items={[{ name: doc.title }]} />
+            <header className="mt-8">
                 <p className="text-xs font-medium uppercase tracking-[0.2em] text-faint">{site.legal.name}</p>
                 <h1 className="mt-5 font-serif text-[clamp(2rem,8vw,3.75rem)] leading-[1.1] text-paper">{doc.title}</h1>
                 <p className="mt-5 text-lg text-muted-ink">{doc.summary}</p>

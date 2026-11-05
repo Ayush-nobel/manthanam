@@ -4,7 +4,7 @@ import { getLegalDoc } from "@/lib/legal";
 
 export async function generateMetadata(): Promise<Metadata> {
     const doc = await getLegalDoc("terms");
-    return { title: "Terms of Use — Manthanam", description: doc.summary };
+    return { title: "Terms of Use — Manthanam", description: doc.summary, alternates: { canonical: "/terms" } };
 }
 
 export default function Page() {

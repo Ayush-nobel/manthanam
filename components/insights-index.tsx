@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Breadcrumbs from "@/components/breadcrumbs";
 import InsightCard from "@/components/insight-card";
 import { CATEGORIES, type InsightMeta } from "@/lib/insights";
 
@@ -18,7 +19,8 @@ export default function InsightsIndex({ insights, active }: Props) {
 
     return (
         <div className="mx-auto w-full max-w-7xl px-6 py-16 sm:py-24">
-            <p className="flex items-center gap-3 text-xs font-medium uppercase tracking-[0.2em] text-faint">
+            <Breadcrumbs items={activeName ? [{ name: "Insights", href: "/insights" }, { name: activeName }] : [{ name: "Insights" }]} />
+            <p className="mt-8 flex items-center gap-3 text-xs font-medium uppercase tracking-[0.2em] text-faint">
                 <span className="text-saffron">Insights</span>
                 {activeName && (
                     <>

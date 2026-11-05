@@ -11,7 +11,14 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps<"/insights/category/[category]">): Promise<Metadata> {
     const { category } = await params;
     const c = CATEGORIES.find((x) => x.slug === category);
-    return c ? { title: `${c.name} — Insights — Manthanam` } : {};
+    if (!c) return {};
+    const empty = !(await getInsights()).some((i) => i.categorySlug === c.slug);
+    return {
+        title: `${c.name} — Insights — Manthanam`,
+        description: `${c.name} from Manthanam, India's youth-driven strategic think tank, on geopolitics, security, and statecraft.`,
+        alternates: { canonical: `/insights/category/${c.slug}` },
+        ...(empty ? { robots: { index: false, follow: true } } : {}),
+    };
 }
 
 export default async function CategoryPage({ params }: PageProps<"/insights/category/[category]">) {

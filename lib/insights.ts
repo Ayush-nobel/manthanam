@@ -5,6 +5,7 @@ import matter from "gray-matter";
 /**
  * Insights are Markdown files in content/insights/<slug>.md with frontmatter:
  *   title, author, date (YYYY-MM-DD), category (one of CATEGORIES), summary
+ *   authorBio      — optional; one or two sentences shown under "About the author"
  *   sample: true   — optional; shows a "Sample" badge (use for placeholder pieces only)
  * The file name (without .md) is the URL slug: /insights/<slug>.
  */
@@ -26,6 +27,8 @@ export interface InsightMeta {
 }
 
 export interface Insight extends InsightMeta {
+  /** Optional short bio shown under "About the author". */
+  authorBio?: string;
   body: string;
 }
 
@@ -54,6 +57,7 @@ function parse(file: string, raw: string): Insight {
     categorySlug: category.slug,
     summary: String(data.summary),
     sample: data.sample === true,
+    ...(data.authorBio ? { authorBio: String(data.authorBio) } : {}),
     body: content.trim(),
   };
 }

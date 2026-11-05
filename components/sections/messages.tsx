@@ -46,6 +46,8 @@ export default function Messages({ index }: { index: string }) {
         title: m.title || undefined,
         lang: m.lang ?? "en",
         photo: photoFor(m.slug),
+        photoFocus: m.photoFocus,
+        photoZoom: m.photoZoom,
         initials: initials(m.name),
         unverified: !m.verified,
     }));

@@ -11,6 +11,8 @@ export interface MessageCard {
     title?: string;
     lang: "en" | "hi";
     photo?: string;
+    photoFocus?: string;
+    photoZoom?: number;
     initials: string;
     /** Only ever true in development previews. */
     unverified: boolean;
@@ -89,14 +91,23 @@ export default function MessagesCarousel({ cards }: { cards: MessageCard[] }) {
                             </blockquote>
                             <figcaption className="mt-6 flex items-center gap-4 border-t border-line pt-5">
                                 {c.photo ? (
-                                    <Image
-                                        src={c.photo}
-                                        alt={`Portrait of ${c.name}`}
-                                        width={56}
-                                        height={56}
-                                        sizes="56px"
-                                        className="h-14 w-14 shrink-0 rounded-[14px] object-cover ring-1 ring-line"
-                                    />
+                                    <span className="relative h-14 w-14 shrink-0 overflow-hidden rounded-[14px] bg-ink-3 ring-1 ring-line">
+                                        <Image
+                                            src={c.photo}
+                                            alt={`Portrait of ${c.name}`}
+                                            fill
+                                            sizes={`${Math.ceil(56 * (c.photoZoom ?? 1))}px`} // zoomed crops need proportionally more pixels
+                                            className="object-cover"
+                                            // object-position aligns the face with the same point in the frame;
+                                            // scaling from that origin zooms straight into it.
+                                            style={{
+                                                objectPosition: c.photoFocus ?? "50% 50%",
+                                                ...(c.photoZoom && c.photoZoom !== 1
+                                                    ? { transform: `scale(${c.photoZoom})`, transformOrigin: c.photoFocus ?? "50% 50%" }
+                                                    : {}),
+                                            }}
+                                        />
+                                    </span>
                                 ) : (
                                     <span
                                         role="img"

@@ -42,16 +42,6 @@ export const team: TeamMember[] = [
     email: "ayush.shukla@manthanam.in",
   },
   {
-    name: "Mohammad Yusuf",
-    role: "Secretary General",
-    bio: "An entrepreneur, writer, and student leader with a background in English Literature and organisational leadership. A graduate of Hindu College, University of Delhi, he is currently pursuing his Master's in English at the University of Delhi. He is the Founder of StratiFY! and has professional experience in strategic partnerships, business development, and social impact through his work at HELPSTiR. An avid poetry enthusiast, he finds joy in literature, storytelling, and creative expression.",
-    photo: "/team/YUSUF.png",
-    photoFocus: "49% 37%",
-    photoZoom: 1.9,
-    linkedin: "https://www.linkedin.com/in/mohammad-yusuf-413748269",
-    email: "yusuf@manthanam.in",
-  },
-  {
     name: "Kishnav Kandhari",
     role: "Secretary General",
     bio: "I thrive on bold ideas, unconventional thinking, and the thrill of turning possibilities into reality. Passionate about business, finance, technology and ideas that challenge the ordinary, I enjoy building things from scratch, connecting dots across disciplines and turning ambitious thoughts into action.",

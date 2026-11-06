@@ -1,7 +1,5 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import InsightCard from "@/components/insight-card";
-import Reveal from "@/components/reveal";
 import SectionHeading from "@/components/section-heading";
 import { getInsights } from "@/lib/insights";
 
@@ -9,32 +7,38 @@ export default async function Research() {
     const latest = (await getInsights()).slice(0, 3);
 
     return (
-        <section id="research" aria-labelledby="research-title" className="border-t border-line">
-            <div className="mx-auto max-w-7xl px-6 py-24 sm:py-32">
-                <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-                    <Reveal>
-                        <SectionHeading index="03" eyebrow="Latest Research" id="research-title" title="From the desk." />
-                    </Reveal>
-                    <Reveal delay={0.1}>
-                        <Link href="/insights" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-white/5 px-5 py-3 text-sm font-medium text-paper/90 ring-1 ring-white/15 transition-colors hover:bg-white/10 hover:text-paper">
-                            All insights
-                            <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                        </Link>
-                    </Reveal>
+        <section id="research" aria-labelledby="research-title">
+            <div className="mx-auto max-w-[84rem] px-6 py-24 sm:px-10 sm:py-32">
+                <div className="flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
+                    <SectionHeading id="research-title" title="From the desk." />
+                    <Link href="/insights" className="link-draw w-fit font-display text-base font-semibold text-ink [font-stretch:112%]">
+                        All insights
+                    </Link>
                 </div>
 
                 {latest.length > 0 ? (
-                    <ul className="mt-16 grid gap-6 md:grid-cols-3">
+                    <ul className="mt-16 grid gap-x-12 gap-y-14 sm:mt-20 lg:grid-cols-12">
                         {latest.map((insight, i) => (
-                            <li key={insight.slug}>
-                                <Reveal delay={i * 0.08} className="h-full">
-                                    <InsightCard insight={insight} />
-                                </Reveal>
+                            // The lead piece takes the wide column; the rest stack beside it.
+                            <li key={insight.slug} className={i === 0 ? "lg:col-span-7 lg:row-span-2" : "lg:col-span-5"}>
+                                <InsightCard insight={insight} />
                             </li>
                         ))}
                     </ul>
                 ) : (
-                    <p className="mt-16 text-muted-ink">The first pieces are on their way.</p>
+                    <div className="mt-12 grid gap-6 lg:grid-cols-12">
+                        <p className="text-[clamp(1.5rem,2.4vw,2rem)] italic leading-[1.35] text-ink lg:col-span-6">
+                            The first pieces are on their way.
+                        </p>
+                        <p className="max-w-[30rem] text-base text-muted-ink lg:col-span-5 lg:col-start-8">
+                            Commentary, analysis and policy writing on geopolitics, security and statecraft. Want to
+                            write for us?{" "}
+                            <a href="#join" className="link-draw text-ink">
+                                Here&rsquo;s how
+                            </a>
+                            .
+                        </p>
+                    </div>
                 )}
             </div>
         </section>

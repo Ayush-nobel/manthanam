@@ -1,10 +1,7 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
 import Image from "next/image";
-import { Mail } from "lucide-react";
-import { InstagramIcon, LinkedInIcon } from "@/components/brand-icons";
 import ObfuscatedEmailLink from "@/components/obfuscated-email-link";
-import Reveal from "@/components/reveal";
 import SectionHeading from "@/components/section-heading";
 import { encodeEmail } from "@/lib/obfuscate";
 import { team, type TeamMember } from "@/lib/team";
@@ -20,9 +17,9 @@ function initials(name: string): string {
     return ((words[0][0] ?? "") + (words.length > 1 ? words[words.length - 1][0] : "")).toUpperCase();
 }
 
-/** Square portrait, same crop and size for every member; initials when there's no photo. */
-function Avatar({ member, sizes }: { member: TeamMember; sizes: string }) {
-    const frame = "relative aspect-square w-full overflow-hidden rounded-xl bg-ink-3 ring-1 ring-line";
+/** Square portrait, same crop for every member; initials when there's no photo. */
+function Portrait({ member, sizes }: { member: TeamMember; sizes: string }) {
+    const frame = "relative aspect-square w-full overflow-hidden bg-paper-3";
     if (photoExists(member.photo)) {
         return (
             <div className={frame}>
@@ -45,37 +42,36 @@ function Avatar({ member, sizes }: { member: TeamMember; sizes: string }) {
         );
     }
     return (
-        <div role="img" aria-label={`${member.name} (photo to be added)`} className={`${frame} flex items-center justify-center bg-[radial-gradient(circle_at_30%_25%,rgb(255_153_51/0.18),transparent_60%)]`}>
-            <span aria-hidden="true" className="font-serif text-5xl text-paper/80">{initials(member.name)}</span>
+        <div role="img" aria-label={`${member.name} (photo to be added)`} className={`${frame} flex items-center justify-center`}>
+            <span aria-hidden="true" className="font-display text-7xl font-[300] text-ink/70 [font-stretch:125%]">{initials(member.name)}</span>
         </div>
     );
 }
 
-const iconLink =
-    "inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/5 text-paper/80 ring-1 ring-white/10 transition-colors hover:bg-saffron hover:text-ink hover:ring-saffron focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-saffron";
+const textLink = "link-draw inline-flex min-h-11 items-center font-display text-base font-semibold text-ink [font-stretch:112%]";
 
-function SocialLinks({ member }: { member: TeamMember }) {
+function MemberLinks({ member }: { member: TeamMember }) {
     if (!member.linkedin && !member.instagram && !member.email) return null;
     return (
-        <ul className="mt-6 flex gap-2" aria-label={`${member.name} — links`}>
+        <ul className="mt-6 flex flex-wrap gap-x-8" aria-label={`${member.name} — links`}>
             {member.linkedin && (
                 <li>
-                    <a href={member.linkedin} target="_blank" rel="noopener noreferrer" aria-label={`${member.name} on LinkedIn`} title={`${member.name} on LinkedIn`} className={iconLink}>
-                        <LinkedInIcon className="h-4 w-4" />
+                    <a href={member.linkedin} target="_blank" rel="noopener noreferrer" className={textLink}>
+                        LinkedIn<span className="sr-only"> profile of {member.name} (opens in a new tab)</span>
                     </a>
                 </li>
             )}
             {member.instagram && (
                 <li>
-                    <a href={member.instagram} target="_blank" rel="noopener noreferrer" aria-label={`${member.name} on Instagram`} title={`${member.name} on Instagram`} className={iconLink}>
-                        <InstagramIcon className="h-4 w-4" />
+                    <a href={member.instagram} target="_blank" rel="noopener noreferrer" className={textLink}>
+                        Instagram<span className="sr-only"> profile of {member.name} (opens in a new tab)</span>
                     </a>
                 </li>
             )}
             {member.email && (
                 <li>
-                    <ObfuscatedEmailLink encoded={encodeEmail(member.email)} label={`Email ${member.name}`} className={iconLink}>
-                        <Mail className="h-4 w-4" aria-hidden="true" />
+                    <ObfuscatedEmailLink encoded={encodeEmail(member.email)} label={`Email ${member.name}`} className={textLink}>
+                        Email
                     </ObfuscatedEmailLink>
                 </li>
             )}
@@ -83,40 +79,44 @@ function SocialLinks({ member }: { member: TeamMember }) {
     );
 }
 
+function Member({ member }: { member: TeamMember }) {
+    return (
+        <article className="grid gap-6 sm:grid-cols-[minmax(0,15rem)_1fr] sm:items-start sm:gap-10 lg:grid-cols-[minmax(0,17rem)_1fr]">
+            {/* Mounted like the hero's title cartouche: a double rule with a margin of paper. */}
+            <div className="border-[5px] border-double border-ink bg-paper p-1.5">
+                <Portrait member={member} sizes="(min-width: 1024px) 260px, (min-width: 640px) 228px, 100vw" />
+            </div>
+            <div className="flex flex-col">
+                <h3 className="font-display text-[clamp(1.75rem,2.6vw,2.25rem)] font-[620] leading-[1.05] tracking-[-0.01em] text-ink [font-stretch:115%]">
+                    {member.name}
+                </h3>
+                <p className="mt-2 text-base italic text-signal">{member.role}</p>
+                <div className="mt-5 max-w-[40rem] space-y-4 text-base text-muted-ink">
+                    {member.bio.split(/\n\s*\n/).map((para, j) => (
+                        <p key={j}>{para}</p>
+                    ))}
+                </div>
+                <MemberLinks member={member} />
+            </div>
+        </article>
+    );
+}
+
 export default function Team() {
     return (
-        <section id="team" aria-labelledby="team-title" className="border-t border-line bg-ink-2/40">
-            <div className="mx-auto max-w-7xl px-6 py-24 sm:py-32">
-                <div className="grid gap-8 lg:grid-cols-12 lg:items-end">
-                    <Reveal className="lg:col-span-7">
-                        <SectionHeading index="04" eyebrow="Team" id="team-title" title="The people doing the churning." />
-                    </Reveal>
-                    <Reveal delay={0.1} className="lg:col-span-5">
-                        <p className="text-base leading-relaxed text-muted-ink sm:text-lg">
-                            Students and young professionals building an institution for India&rsquo;s
-                            strategic conversation.
-                        </p>
-                    </Reveal>
+        <section id="team" aria-labelledby="team-title">
+            <div className="mx-auto max-w-[84rem] px-6 py-24 sm:px-10 sm:py-32">
+                <div className="grid gap-8 lg:grid-cols-12">
+                    <SectionHeading id="team-title" title="The people doing the churning." className="lg:col-span-5" />
+                    <p className="max-w-[34rem] text-lg text-muted-ink lg:col-span-6 lg:col-start-7">
+                        Students and young professionals building an institution for India&rsquo;s strategic conversation.
+                    </p>
                 </div>
 
-                <ul className="mt-16 grid max-w-5xl gap-6">
-                    {team.map((member, i) => (
+                <ul className="mt-16 grid max-w-5xl gap-14 lg:mt-20">
+                    {team.map((member) => (
                         <li key={member.name}>
-                            <Reveal delay={i * 0.06} className="h-full">
-                                <article className="grid h-full gap-6 rounded-2xl border border-line bg-ink-2 p-4 sm:grid-cols-[minmax(0,15rem)_1fr] sm:items-start sm:p-5 lg:grid-cols-[minmax(0,17rem)_1fr]">
-                                    <Avatar member={member} sizes="(min-width: 1024px) 272px, (min-width: 640px) 240px, 100vw" />
-                                    <div className="flex flex-col px-2 pb-2 sm:py-2 sm:pr-4">
-                                        <h3 className="font-serif text-2xl text-paper sm:text-3xl">{member.name}</h3>
-                                        <p className="mt-1 text-sm font-medium uppercase tracking-[0.16em] text-saffron">{member.role}</p>
-                                        <div className="mt-4 max-w-[42rem] space-y-4 text-base text-muted-ink">
-                                            {member.bio.split(/\n\s*\n/).map((para, j) => (
-                                                <p key={j}>{para}</p>
-                                            ))}
-                                        </div>
-                                        <SocialLinks member={member} />
-                                    </div>
-                                </article>
-                            </Reveal>
+                            <Member member={member} />
                         </li>
                     ))}
                 </ul>

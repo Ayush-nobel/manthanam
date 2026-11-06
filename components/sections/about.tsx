@@ -1,7 +1,8 @@
-import Reveal from "@/components/reveal";
 import SectionHeading from "@/components/section-heading";
 
-const principles = [
+// The method is a sequence, so it is numbered. Confront is the poison stage: it carries the
+// same magenta as the chart's danger line in the hero.
+const method = [
     {
         name: "Churn",
         body: "Every idea is tested against its strongest opposition — across disciplines, generations, and viewpoints. Nothing is exempt from scrutiny.",
@@ -9,6 +10,7 @@ const principles = [
     {
         name: "Confront",
         body: "The churning raised poison before it raised nectar. We name hard truths first, rather than offering comfortable conclusions.",
+        danger: true,
     },
     {
         name: "Distil",
@@ -18,42 +20,44 @@ const principles = [
 
 export default function About() {
     return (
-        <section id="about" aria-labelledby="about-title" className="border-t border-line">
-            <div className="mx-auto grid max-w-7xl gap-12 px-6 py-24 sm:py-32 lg:grid-cols-12 lg:gap-16">
-                <Reveal className="lg:col-span-5">
-                    <SectionHeading
-                        index="01"
-                        eyebrow="Our Philosophy"
-                        id="about-title"
-                        title="Truth emerges from the churning."
-                    />
-                </Reveal>
-
-                <div className="lg:col-span-7">
-                    <Reveal delay={0.1}>
-                        <p className="font-serif text-2xl leading-snug text-paper/90 text-pretty sm:text-[1.75rem]">
-                            Manthanam (<span lang="sa">मन्थनम्</span>) means <em className="italic">churning</em>.
+        <section id="about" aria-labelledby="about-title">
+            <div className="mx-auto max-w-[84rem] px-6 py-24 sm:px-10 sm:py-32">
+                <div className="grid gap-10 lg:grid-cols-12">
+                    <SectionHeading id="about-title" title="Truth emerges from the churning." className="lg:col-span-5" />
+                    <div className="max-w-[38rem] space-y-6 text-lg text-muted-ink lg:col-span-6 lg:col-start-7">
+                        <p className="text-ink">
+                            Manthanam (<span lang="sa">मन्थनम्</span>) means churning.
                         </p>
-                        <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted-ink sm:text-lg">
+                        <p>
                             In the Samudra Manthan, the cosmic ocean was churned with Mount Mandara as the rod and the
                             serpent Vasuki as the rope. It yielded poison before it yielded <em>amrita</em>. We take that
                             as our method: ideas must be churned against one another, hard truths faced first, and only
                             what survives carried forward.
                         </p>
-                    </Reveal>
-
-                    <ol className="mt-12 grid gap-px overflow-hidden rounded-2xl bg-line sm:grid-cols-3">
-                        {principles.map((p, i) => (
-                            <li key={p.name} className="bg-ink">
-                                <Reveal delay={0.15 + i * 0.08} className="h-full bg-ink-2/60 p-6">
-                                    <span className="text-sm tabular-nums text-saffron">0{i + 1}</span>
-                                    <h3 className="mt-3 font-serif text-2xl text-paper">{p.name}</h3>
-                                    <p className="mt-3 text-base text-muted-ink">{p.body}</p>
-                                </Reveal>
-                            </li>
-                        ))}
-                    </ol>
+                    </div>
                 </div>
+
+                <h3 className="sr-only">Our method</h3>
+                <ol className="mt-20 grid gap-12 md:grid-cols-3 md:gap-10">
+                    {method.map((step, i) => (
+                        <li key={step.name}>
+                            <div className="flex items-center gap-4">
+                                <span
+                                    aria-hidden="true"
+                                    className={`font-display text-6xl font-[300] leading-none tabular-nums [font-stretch:125%] ${step.danger ? "text-signal" : "text-ink"}`}
+                                >
+                                    {i + 1}
+                                </span>
+                                <span
+                                    aria-hidden="true"
+                                    className={`h-0 flex-1 border-t-2 ${step.danger ? "border-dashed border-signal" : "border-ink/30"}`}
+                                />
+                            </div>
+                            <h4 className="mt-6 font-display text-2xl font-[620] text-ink [font-stretch:115%]">{step.name}</h4>
+                            <p className="mt-3 max-w-[24rem] text-base text-muted-ink">{step.body}</p>
+                        </li>
+                    ))}
+                </ol>
             </div>
         </section>
     );

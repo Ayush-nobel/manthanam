@@ -9,16 +9,17 @@
   --color-foreground: var(--foreground);
   /* Tailwind font utilities -> the three swappable font roles defined in :root below */
   --font-sans: var(--font-body);
-  --font-serif: var(--font-heading);
+  --font-display: var(--font-heading);
   --font-devanagari: var(--font-deva);
-  /* Type scale tuned for EB Garamond (small x-height): running text is 18px / 1.6 */
-  --text-xs: 0.875rem;
-  --text-xs--line-height: 1.5;
-  --text-sm: 1rem;
-  --text-sm--line-height: 1.55;
+  /* Type scale for Source Serif 4 body text (perfect fourth, 1.333, from an 18px base).
+     Serif body gets a little more leading than a sans would: 18px / 1.7. */
+  --text-xs: 0.84375rem;
+  --text-xs--line-height: 1.55;
+  --text-sm: 0.9375rem;
+  --text-sm--line-height: 1.6;
   --text-base: 1.125rem;
-  --text-base--line-height: 1.6;
-  --text-lg: 1.25rem;
+  --text-base--line-height: 1.7;
+  --text-lg: 1.3125rem;
   --text-lg--line-height: 1.6;
   --animate-fade-slide-in-1: fadeSlideIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0s both;
   --animate-fade-slide-in-2: fadeSlideIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.05s both;
@@ -54,15 +55,19 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --color-ink: var(--ink);
-  --color-ink-2: var(--ink-2);
-  --color-ink-3: var(--ink-3);
   --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-paper-3: var(--paper-3);
+  --color-ink: var(--ink);
   --color-muted-ink: var(--muted-ink);
   --color-faint: var(--faint);
-  --color-saffron: var(--saffron);
-  --color-saffron-deep: var(--saffron-deep);
+  --color-signal: var(--signal);
+  --color-signal-deep: var(--signal-deep);
+  --color-signal-light: var(--signal-light);
+  --color-on-ink-muted: var(--on-ink-muted);
   --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-line-on-ink: var(--line-on-ink);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -72,59 +77,66 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* Manthanam — ink + saffron editorial theme.
-   --paper is the logo's own white (#FDFCFC, measured from public/logo.png). The logo is
-   monochrome, so the saffron accent is a brand choice, not something taken from it.
-   Contrast on --ink: paper 19.1:1, muted-ink 7.6:1, faint 6.1:1 (≥4.8:1 on every surface, incl. the Join glow), saffron 9.2:1, ink-on-saffron 9.2:1. */
+/* Manthanam — "The Admiralty Chart": the palette of a nautical chart of the Indian Ocean.
+   paper = chart white (deep water), paper-2/3 = shallow-water tints, ink = sounding navy,
+   signal = chart magenta, the colour charts reserve for cautions and lights.
+   Contrast on paper: ink 14.0:1, muted-ink 7.0:1, faint 5.5:1, signal 7.1:1.
+   On paper-2: faint 4.7:1, signal 6.1:1. Never set faint on paper-3.
+   On ink bands: paper 14.0:1, on-ink-muted 7.5:1, signal-light 7.3:1. */
 :root {
   /* Font roles — change a font here (and its loader in app/layout.tsx).
-     Heading and body stacks end in --font-deva so Devanagari glyphs always use Noto. */
+     Both stacks end in --font-deva so Devanagari glyphs always use Noto. */
   --font-deva: var(--font-noto-deva), "Noto Serif Devanagari", serif;
-  --font-heading: var(--font-bodoni), "Bodoni Moda", var(--font-deva), Didot, serif;
-  --font-body: var(--font-garamond), "EB Garamond", var(--font-deva), Garamond, Georgia, serif;
+  --font-heading: var(--font-archivo), "Archivo", var(--font-deva), ui-sans-serif, sans-serif;
+  --font-body: var(--font-source-serif), "Source Serif 4", var(--font-deva), Georgia, serif;
 
-  --ink: #0b0c10;
-  --ink-2: #14161c;
-  --ink-3: #1c1f27;
-  --paper: #fdfcfc;
-  --muted-ink: #a8a196;
-  --faint: #968f84;
-  --saffron: #ff9933;
-  --saffron-deep: #e8821c;
-  --line: rgb(253 252 252 / 0.1);
+  --paper: #f5f7f6;
+  --paper-2: #d9e8ec;
+  --paper-3: #c2dae2;
+  --ink: #10264a;
+  --muted-ink: #46566c;
+  --faint: #53627a;
+  --signal: #a0145c;
+  --signal-deep: #7e0f48;
+  --signal-light: #f39ac6;
+  --on-ink-muted: #a9b8cc;
+  --line: rgb(16 38 74 / 0.16);
+  --line-strong: rgb(16 38 74 / 0.8);
+  --line-on-ink: rgb(245 247 246 / 0.18);
 
-  --background: var(--ink);
-  --foreground: var(--paper);
-  --card: var(--ink-2);
-  --card-foreground: var(--paper);
-  --popover: var(--ink-2);
-  --popover-foreground: var(--paper);
-  --primary: var(--saffron);
-  --primary-foreground: var(--ink);
-  --secondary: var(--ink-3);
-  --secondary-foreground: var(--paper);
-  --muted: var(--ink-3);
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--paper-2);
+  --card-foreground: var(--ink);
+  --popover: var(--paper);
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: var(--paper);
+  --secondary: var(--paper-2);
+  --secondary-foreground: var(--ink);
+  --muted: var(--paper-2);
   --muted-foreground: var(--muted-ink);
-  --accent: var(--ink-3);
-  --accent-foreground: var(--paper);
-  --destructive: #f26d5b;
+  --accent: var(--paper-2);
+  --accent-foreground: var(--ink);
+  --destructive: #b3261e;
   --border: var(--line);
-  --input: rgb(253 252 252 / 0.16);
-  --ring: var(--saffron);
-  --chart-1: #ff9933;
-  --chart-2: #fdfcfc;
-  --chart-3: #a8a196;
-  --chart-4: #968f84;
-  --chart-5: #1c1f27;
-  --radius: 0.625rem;
-  --sidebar: var(--ink-2);
-  --sidebar-foreground: var(--paper);
-  --sidebar-primary: var(--saffron);
-  --sidebar-primary-foreground: var(--ink);
-  --sidebar-accent: var(--ink-3);
-  --sidebar-accent-foreground: var(--paper);
+  --input: rgb(16 38 74 / 0.4);
+  --ring: var(--signal);
+  --chart-1: #a0145c;
+  --chart-2: #10264a;
+  --chart-3: #46566c;
+  --chart-4: #8aa3b5;
+  --chart-5: #c2dae2;
+  /* Sharp corners: a chart is printed on cut paper. */
+  --radius: 0rem;
+  --sidebar: var(--paper-2);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--ink);
+  --sidebar-primary-foreground: var(--paper);
+  --sidebar-accent: var(--paper-2);
+  --sidebar-accent-foreground: var(--ink);
   --sidebar-border: var(--line);
-  --sidebar-ring: var(--saffron);
+  --sidebar-ring: var(--signal);
 }
 
 .dark {
@@ -168,7 +180,14 @@
   body {
     @apply bg-background text-foreground;
     font-size: var(--text-base); /* 18px */
-    line-height: 1.6;
+    line-height: 1.7;
+    font-optical-sizing: auto;
+  }
+  h1,
+  h2,
+  h3 {
+    font-optical-sizing: auto;
+    text-wrap: balance;
   }
   /* Hindi / Sanskrit / Marathi runs: Noto first, body font for any Latin inside */
   :lang(hi),
@@ -178,18 +197,64 @@
   }
   html {
     @apply font-sans;
-    color-scheme: dark;
+    color-scheme: light;
     scroll-behavior: smooth;
+    scrollbar-color: rgb(16 38 74 / 0.4) var(--paper);
   }
   section[id] {
     scroll-margin-top: 1.5rem;
   }
+  hr {
+    border: 0;
+    border-top: 1px solid var(--line);
+  }
+  input,
+  textarea,
+  select {
+    caret-color: var(--signal);
+  }
   ::selection {
-    background: var(--saffron);
-    color: var(--ink);
+    background: var(--signal);
+    color: var(--paper);
   }
 }
 
+/* Text-link call to action: a real underline (so it reads as a link to every tool and
+   assistive technology), a hairline at rest that thickens and turns magenta on hover/focus. */
+@utility link-draw {
+  text-decoration-line: underline;
+  text-decoration-color: var(--line-strong);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.3em;
+  transition: text-decoration-color 0.25s ease, text-decoration-thickness 0.25s ease, color 0.25s ease;
+  &:hover,
+  &:focus-visible {
+    color: var(--signal);
+    text-decoration-color: var(--signal);
+    text-decoration-thickness: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+/* Same treatment on the navy band. */
+@utility link-draw-on-ink {
+  text-decoration-line: underline;
+  text-decoration-color: var(--line-on-ink);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.3em;
+  transition: text-decoration-color 0.25s ease, text-decoration-thickness 0.25s ease, color 0.25s ease;
+  &:hover,
+  &:focus-visible {
+    color: var(--signal-light);
+    text-decoration-color: var(--signal-light);
+    text-decoration-thickness: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
 
 /* Hero entrance: text is visible from the first frame and only settles into place.
    (Starting at opacity 0 hid the hero text from paint metrics and delayed LCP by ~1s.) */

@@ -1,34 +1,35 @@
-import { MapPin } from "lucide-react";
 import ContactForm from "@/components/contact-form";
-import Reveal from "@/components/reveal";
 import SectionHeading from "@/components/section-heading";
 import { site } from "@/lib/site";
 
-export default function Contact({ index = "06" }: { index?: string }) {
+export default function Contact() {
     return (
-        <section id="contact" aria-labelledby="contact-title" className="border-t border-line bg-ink-2/40">
-            <div className="mx-auto grid max-w-7xl gap-12 px-6 py-24 sm:py-32 lg:grid-cols-12 lg:gap-16">
-                <Reveal className="lg:col-span-5">
-                    <SectionHeading
-                        index={index}
-                        eyebrow="Contact"
-                        id="contact-title"
-                        title={
-"Begin a conversation."
-                        }
-                    />
-                    <p className="mt-6 max-w-md text-base leading-relaxed text-muted-ink sm:text-lg">
-                        For collaborations, membership, media, or simply an argument worth having — write to us.
+        <section id="contact" aria-labelledby="contact-title">
+            <div className="mx-auto grid max-w-[84rem] gap-16 px-6 py-24 sm:px-10 sm:py-32 lg:grid-cols-12 lg:gap-10">
+                <div className="lg:col-span-4">
+                    <SectionHeading id="contact-title" title="Begin a conversation." />
+                    <p className="mt-8 max-w-[26rem] text-lg text-muted-ink">
+                        For collaborations, membership, media, or simply an argument worth having &mdash; write to us.
                     </p>
-                    <p className="mt-10 flex items-center gap-3 text-sm text-paper/90">
-                        <MapPin className="h-4 w-4 text-saffron" aria-hidden="true" />
-                        {site.location}, India
-                    </p>
-                </Reveal>
+                    <dl className="mt-12 grid gap-6 border-t border-line pt-6 text-base">
+                        <div>
+                            <dt className="text-sm text-faint">Email</dt>
+                            <dd className="mt-1">
+                                <a href={`mailto:${site.email}`} className="link-draw text-ink">
+                                    {site.email}
+                                </a>
+                            </dd>
+                        </div>
+                        <div>
+                            <dt className="text-sm text-faint">Based in</dt>
+                            <dd className="mt-1 text-ink">{site.location}, India</dd>
+                        </div>
+                    </dl>
+                </div>
 
-                <Reveal delay={0.1} className="lg:col-span-7">
+                <div className="lg:col-span-7 lg:col-start-6">
                     <ContactForm />
-                </Reveal>
+                </div>
             </div>
         </section>
     );

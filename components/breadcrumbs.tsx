@@ -25,7 +25,7 @@ export default function Breadcrumbs({ items }: { items: Crumb[] }) {
                                         {c.name}
                                     </span>
                                 ) : (
-                                    <Link href={c.href} className="rounded-sm underline-offset-4 transition-colors hover:text-saffron hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-saffron">
+                                    <Link href={c.href} className="underline-offset-4 transition-colors hover:text-signal hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">
                                         {c.name}
                                     </Link>
                                 )}

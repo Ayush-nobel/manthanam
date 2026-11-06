@@ -1,21 +1,23 @@
 import type { Metadata } from "next";
-import { Bodoni_Moda, EB_Garamond, Noto_Serif_Devanagari } from "next/font/google";
+import { Archivo, Noto_Serif_Devanagari, Source_Serif_4 } from "next/font/google";
 import "./globals.css";
 import { site } from "@/lib/site";
 
 // Font system — swap any of these in one place; globals.css maps them to
 // --font-heading / --font-body / --font-deva.
-const bodoni = Bodoni_Moda({
-  variable: "--font-bodoni",
+// Display: Archivo, set wide (its width axis runs to 125%) the way chart titles are lettered.
+const archivo = Archivo({
+  variable: "--font-archivo",
+  subsets: ["latin"],
+  axes: ["wdth"],
+});
+
+// Body: Source Serif 4, a sturdy reading serif with optical sizes.
+const sourceSerif = Source_Serif_4({
+  variable: "--font-source-serif",
   subsets: ["latin"],
   style: ["normal", "italic"],
   axes: ["opsz"],
-});
-
-const garamond = EB_Garamond({
-  variable: "--font-garamond",
-  subsets: ["latin"],
-  style: ["normal", "italic"],
 });
 
 // Devanagari subset only: Latin text keeps falling through to the heading/body fonts.
@@ -49,7 +51,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en-IN"
-      className={`${bodoni.variable} ${garamond.variable} ${notoDeva.variable} h-full antialiased`}
+      className={`${archivo.variable} ${sourceSerif.variable} ${notoDeva.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

@@ -25,6 +25,10 @@ export const team: TeamMember[] = [
     role: "Founder and Chief Executive Officer",
     bio: "An emerging young leader with a keen interest in International Relations, Political Science, Geopolitics and Strategic Affairs. Passionate about diplomacy, global governance, policy discourse and India's role in an evolving multipolar world.",
     photo: "/team/CEO.png",
+    // The supplied photo is cropped to a circle on black: zoom until the black corners leave the 4:5 frame.
+    // Replace with an uncropped photo and remove these two lines.
+    photoFocus: "50% 45%",
+    photoZoom: 1.55,
     linkedin: "https://www.linkedin.com/in/harsh-dev-garg-0a07632b9/",
     instagram: "https://www.instagram.com/ha4shh.pvt",
     email: "ceo@manthanam.in",

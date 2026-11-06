@@ -13,31 +13,22 @@ export default function InsightsIndex({ insights, active }: Props) {
     const activeName = CATEGORIES.find((c) => c.slug === active)?.name;
     const shown = active ? insights.filter((i) => i.categorySlug === active) : insights;
     const chip = (isActive: boolean) =>
-        `inline-flex min-h-11 items-center rounded-full px-4 text-sm font-medium transition-colors ${
-            isActive ? "bg-saffron text-ink" : "bg-white/5 text-paper/80 ring-1 ring-white/10 hover:bg-white/10 hover:text-paper"
+        `inline-flex min-h-11 items-center border-b-2 text-base transition-colors ${
+            isActive ? "border-signal font-medium text-ink" : "border-transparent text-muted-ink hover:border-ink hover:text-ink"
         }`;
 
     return (
-        <div className="mx-auto w-full max-w-7xl px-6 py-16 sm:py-24">
+        <div className="mx-auto w-full max-w-[84rem] px-6 py-16 sm:px-10 sm:py-24">
             <Breadcrumbs items={activeName ? [{ name: "Insights", href: "/insights" }, { name: activeName }] : [{ name: "Insights" }]} />
-            <p className="mt-8 flex items-center gap-3 text-xs font-medium uppercase tracking-[0.2em] text-faint">
-                <span className="text-saffron">Insights</span>
-                {activeName && (
-                    <>
-                        <span aria-hidden="true" className="h-px w-8 bg-line" />
-                        {activeName}
-                    </>
-                )}
-            </p>
-            <h1 className="mt-5 font-serif text-[clamp(2rem,8vw,3.75rem)] leading-[1.1] text-paper">
+            <h1 className="mt-10 font-display text-[clamp(2.5rem,7vw,4.5rem)] font-[650] leading-[1] tracking-[-0.02em] text-ink [font-stretch:122%]">
                 {activeName ?? "Insights"}
             </h1>
-            <p className="mt-5 max-w-2xl text-base leading-relaxed text-muted-ink sm:text-lg">
+            <p className="mt-6 max-w-2xl text-lg text-muted-ink">
                 Commentary, analysis, and policy writing from Manthanam on geopolitics, security, and statecraft.
             </p>
 
             <nav aria-label="Filter by category" className="mt-10">
-                <ul className="flex flex-wrap gap-2">
+                <ul className="flex flex-wrap gap-x-8 gap-y-1 border-b border-line">
                     <li>
                         <Link href="/insights" aria-current={!active ? "page" : undefined} className={chip(!active)}>All</Link>
                     </li>
@@ -52,7 +43,7 @@ export default function InsightsIndex({ insights, active }: Props) {
             </nav>
 
             {shown.length > 0 ? (
-                <ul className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <ul className="mt-12 grid gap-x-10 gap-y-14 md:grid-cols-2">
                     {shown.map((i) => (
                         <li key={i.slug}>
                             <InsightCard insight={i} headingLevel="h2" />
@@ -60,11 +51,11 @@ export default function InsightsIndex({ insights, active }: Props) {
                     ))}
                 </ul>
             ) : (
-                <div className="mt-12 rounded-2xl border border-dashed border-line p-10 text-center">
-                    <p className="font-serif text-2xl text-paper">Nothing here yet.</p>
+                <div className="mt-16 border-t border-ink pt-8">
+                    <p className="text-2xl italic text-ink">Nothing here yet.</p>
                     <p className="mt-2 text-muted-ink">
                         {activeName ? `No ${activeName.toLowerCase()} pieces have been published yet.` : "No insights have been published yet."}{" "}
-                        <Link href="/insights" className="text-saffron underline underline-offset-2">See all insights</Link>
+                        <Link href="/insights" className="link-draw text-ink">See all insights</Link>
                     </p>
                 </div>
             )}

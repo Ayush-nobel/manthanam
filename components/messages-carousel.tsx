@@ -22,7 +22,7 @@ const INTERVAL_MS = 8000;
 const SWIPE_PX = 40;
 
 const control =
-    "inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/5 text-paper/80 ring-1 ring-white/10 transition-colors hover:bg-white/10 hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-saffron";
+    "inline-flex h-11 w-11 items-center justify-center text-ink transition-colors hover:text-signal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal";
 
 /**
  * One message at a time. Slides are stacked in a single grid cell, so the panel is always
@@ -126,7 +126,7 @@ export default function MessagesCarousel({ cards }: { cards: MessageCard[] }) {
             // Keyboard focus pauses; a mouse click on a control does not.
             onFocus={(e) => setFocused((e.target as HTMLElement).matches(":focus-visible"))}
             onBlur={(e) => !e.currentTarget.contains(e.relatedTarget as Node | null) && setFocused(false)}
-            className="mt-12 max-w-5xl md:mt-16"
+            className="mt-14 md:mt-20"
         >
             {/* Slides: polite announcements only when the user is driving it */}
             <div
@@ -142,38 +142,41 @@ export default function MessagesCarousel({ cards }: { cards: MessageCard[] }) {
                     return (
                         <figure
                             key={c.slug}
-                            role="group"
                             aria-roledescription="slide"
                             aria-label={`${i + 1} of ${count}: ${c.name}`}
                             aria-hidden={!active}
                             inert={!active}
-                            className={`[grid-area:1/1] grid gap-6 rounded-2xl border bg-ink-2 p-6 sm:p-8 md:grid-cols-[10rem_1fr] md:gap-10 md:p-10 ${
-                                c.unverified ? "border-dashed border-saffron/50" : "border-line"
+                            className={`[grid-area:1/1] grid gap-8 md:grid-cols-[auto_1fr] md:gap-12 ${
+                                c.unverified ? "outline-1 outline-offset-8 outline-dashed outline-signal/50" : ""
                             } ${motionClass} ${active ? "opacity-100" : `pointer-events-none opacity-0 ${reduceMotion ? "" : offset}`}`}
                         >
                             {/* Portrait: 88px beside the name on phones, 160px column on desktop */}
                             <div className="hidden md:block">
-                                <Portrait c={c} size={160} />
+                                <span className="block w-fit border-[5px] border-double border-ink bg-paper p-1.5">
+                                    <Portrait c={c} size={160} />
+                                </span>
                             </div>
 
                             <div className="flex min-w-0 flex-col">
                                 {c.unverified && (
-                                    <p className="mb-4 w-fit rounded-full bg-saffron/10 px-2.5 py-1 text-xs font-medium text-saffron">
+                                    <p className="mb-4 w-fit border border-signal/50 px-2.5 py-1 text-xs font-medium text-signal">
                                         Unverified · local preview only
                                     </p>
                                 )}
                                 <blockquote
                                     lang={c.lang}
-                                    className={`text-paper/90 ${c.lang === "hi" ? "font-devanagari text-lg leading-[1.85] sm:text-xl" : "text-lg sm:text-xl md:leading-[1.65]"}`}
+                                    className={`text-ink ${c.lang === "hi" ? "font-devanagari text-xl leading-[1.85] sm:text-2xl" : "text-[1.3125rem] leading-[1.55] sm:text-[1.5rem] sm:leading-[1.55]"}`}
                                 >
                                     <p>{c.quote}</p>
                                 </blockquote>
-                                <figcaption className="mt-6 flex items-center gap-4 border-t border-line pt-5 md:mt-8">
+                                <figcaption className="mt-8 flex items-center gap-4 md:mt-10">
                                     <span className="md:hidden">
-                                        <Portrait c={c} size={88} />
+                                        <span className="block w-fit border-[3px] border-double border-ink bg-paper p-1">
+                                            <Portrait c={c} size={88} />
+                                        </span>
                                     </span>
                                     <span className="min-w-0">
-                                        <span className="block font-serif text-xl leading-snug text-paper sm:text-2xl">{c.name}</span>
+                                        <span className="block font-display text-lg font-semibold leading-snug text-ink [font-stretch:112%]">{c.name}</span>
                                         {c.title && <span className="mt-1 block text-sm text-muted-ink sm:text-base">{c.title}</span>}
                                     </span>
                                 </figcaption>
@@ -184,7 +187,7 @@ export default function MessagesCarousel({ cards }: { cards: MessageCard[] }) {
             </div>
 
             {count > 1 && (
-                <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+                <div className="mt-10 flex flex-wrap items-center justify-between gap-4">
                     <div className="flex items-center gap-1" role="group" aria-label="Choose a message">
                         {cards.map((c, i) => (
                             <button
@@ -193,11 +196,11 @@ export default function MessagesCarousel({ cards }: { cards: MessageCard[] }) {
                                 onClick={() => go(i, i >= index ? 1 : -1)}
                                 aria-label={`Show message ${i + 1}: ${c.name}`}
                                 aria-current={i === index ? "true" : undefined}
-                                className="group inline-flex h-11 w-7 items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-saffron rounded-full"
+                                className="group inline-flex h-11 w-9 items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal"
                             >
                                 <span
                                     aria-hidden="true"
-                                    className={`block h-1.5 rounded-full transition-all duration-300 ${i === index ? "w-6 bg-saffron" : "w-1.5 bg-paper/30 group-hover:bg-paper/60"}`}
+                                    className={`block w-7 transition-all duration-300 ${i === index ? "h-[3px] bg-signal" : "h-px bg-ink/40 group-hover:bg-ink"}`}
                                 />
                             </button>
                         ))}
@@ -236,14 +239,14 @@ function Portrait({ c, size }: { c: MessageCard; size: number }) {
                 role="img"
                 aria-label={`Portrait of ${c.name}`}
                 style={box}
-                className="flex shrink-0 items-center justify-center rounded-[18px] bg-ink-3 font-serif text-3xl text-paper/80 ring-1 ring-line"
+                className="flex shrink-0 items-center justify-center bg-paper-3 font-display text-3xl text-ink/80 [font-stretch:125%]"
             >
                 <span aria-hidden="true">{c.initials}</span>
             </span>
         );
     }
     return (
-        <span style={box} className="relative block shrink-0 overflow-hidden rounded-[18px] bg-ink-3 ring-1 ring-line">
+        <span style={box} className="relative block shrink-0 overflow-hidden bg-paper-3">
             <Image
                 src={c.photo}
                 alt={`Portrait of ${c.name}`}

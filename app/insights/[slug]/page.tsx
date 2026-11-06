@@ -41,33 +41,34 @@ export default async function InsightPage({ params }: PageProps<"/insights/[slug
                     { name: insight.title },
                 ]}
             />
-            <Link href="/insights" className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-muted-ink transition-colors hover:text-saffron">
+            <Link href="/insights" className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-muted-ink transition-colors hover:text-signal">
                 <ArrowLeft className="h-4 w-4" aria-hidden="true" />
                 All insights
             </Link>
 
             <header className="mt-8">
-                <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium uppercase tracking-[0.16em]">
-                    <Link href={`/insights/category/${insight.categorySlug}`} className="text-saffron hover:underline">{insight.category}</Link>
-                    <span aria-hidden="true" className="text-faint">·</span>
+                <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+                    <Link href={`/insights/category/${insight.categorySlug}`} className="link-draw font-medium text-signal">{insight.category}</Link>
                     <time dateTime={insight.date} className="text-faint">{formatDate(insight.date)}</time>
                     {insight.sample && (
-                        <span className="ml-1 rounded-full border border-saffron/40 px-2 py-0.5 normal-case tracking-normal text-saffron">Sample</span>
+                        <span className="border border-signal/50 px-2 text-xs text-signal">Sample</span>
                     )}
                 </p>
-                <h1 className="mt-5 font-serif text-4xl leading-[1.15] text-paper text-balance sm:text-5xl">{insight.title}</h1>
+                <h1 className="mt-5 font-display text-[clamp(2.25rem,5vw,3.5rem)] font-[650] leading-[1.05] tracking-[-0.015em] text-ink [font-stretch:118%] text-balance">{insight.title}</h1>
                 <p className="mt-5 text-lg leading-relaxed text-muted-ink">{insight.summary}</p>
-                <p className="mt-6 text-sm text-faint">By <span className="text-paper/90">{insight.author}</span></p>
+                <p className="mt-6 text-sm text-faint">By <span className="text-ink/90">{insight.author}</span></p>
             </header>
 
-            <div className="mt-10 border-t border-line pt-4 text-base sm:text-lg">
+            <div className="mt-10 border-t border-ink pt-4 text-base sm:text-lg">
                 <Markdown>{insight.body}</Markdown>
             </div>
 
-            <aside aria-label="About the author" className="mt-14 rounded-2xl border border-line bg-ink-2 p-6 sm:p-8">
-                <p className="text-xs font-medium uppercase tracking-[0.2em] text-faint">About the author</p>
-                <p className="mt-3 font-serif text-2xl text-paper">{insight.author}</p>
+            <aside aria-label="About the author" className="mt-16 grid gap-2 border-t border-ink pt-6 sm:grid-cols-[10rem_1fr] sm:gap-8">
+                <p className="text-sm text-faint">About the author</p>
+                <div>
+                <p className="font-display text-xl font-semibold text-ink [font-stretch:112%]">{insight.author}</p>
                 {insight.authorBio && <p className="mt-2 text-base text-muted-ink">{insight.authorBio}</p>}
+                </div>
             </aside>
 
             <JsonLd

@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from "react";
 import Link from "next/link";
-import { CircleCheck, LoaderCircle, Send } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 import { site } from "@/lib/site";
 
 // Must be referenced literally so Next.js inlines it into the browser bundle at build time.
@@ -54,7 +54,8 @@ function validate(data: FormData): Errors {
 }
 
 const inputBase =
-    "mt-2 block w-full rounded-xl border bg-ink px-4 py-3 text-base text-paper placeholder:text-faint transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-saffron/60 disabled:opacity-60";
+    // Ruled fields: a single underline that darkens on focus, like writing on a printed form.
+    "mt-1 block w-full border-0 border-b bg-transparent px-0 py-2.5 text-lg text-ink placeholder:text-faint transition-colors focus:outline-none focus-visible:border-b-2 disabled:opacity-60";
 
 export default function ContactForm() {
     const uid = useId();
@@ -67,7 +68,7 @@ export default function ContactForm() {
 
     const id = (f: string) => `${uid}-${f}`;
     const submitting = status === "submitting";
-    const border = (f: Field) => (errors[f] ? "border-destructive" : "border-line focus:border-saffron/60");
+    const border = (f: Field) => (errors[f] ? "border-destructive" : "border-ink/40 focus:border-signal");
 
     // Fields are disabled while sending, so focus can only move once the form has re-rendered.
     const pendingFocus = useRef<Field | null>(null);
@@ -173,25 +174,24 @@ export default function ContactForm() {
                 ref={successRef}
                 tabIndex={-1}
                 role="status"
-                className="rounded-2xl border border-line bg-ink-2 p-8 outline-none sm:p-10"
+                className="border-t border-ink pt-8 outline-none"
             >
-                <CircleCheck className="h-8 w-8 text-saffron" aria-hidden="true" strokeWidth={1.5} />
-                <h3 className="mt-5 font-serif text-3xl text-paper">Thank you — message received.</h3>
+                <h3 className="font-display text-3xl font-[620] text-ink [font-stretch:115%]">Thank you — message received.</h3>
                 <p className="mt-3 max-w-md text-base leading-relaxed text-muted-ink">
                     We read every message and will reply to the email address you gave us.
                 </p>
                 <p className="mt-3 max-w-md text-sm text-faint">
                     Want your message deleted later? Email{" "}
-                    <a href={`mailto:${site.email}?subject=Privacy%20request`} className="text-muted-ink underline underline-offset-4 hover:text-saffron">
+                    <a href={`mailto:${site.email}?subject=Privacy%20request`} className="text-muted-ink underline underline-offset-4 hover:text-signal">
                         {site.email}
                     </a>{" "}
                     — see our{" "}
-                    <Link href="/privacy" className="text-muted-ink underline underline-offset-4 hover:text-saffron">Privacy Policy</Link>.
+                    <Link href="/privacy" className="text-muted-ink underline underline-offset-4 hover:text-signal">Privacy Policy</Link>.
                 </p>
                 <button
                     type="button"
                     onClick={() => setStatus("idle")}
-                    className="mt-8 inline-flex min-h-11 cursor-pointer items-center rounded-full bg-white/5 px-5 py-3 text-sm font-medium text-paper ring-1 ring-white/15 transition-colors hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-saffron"
+                    className="link-draw mt-8 min-h-11 cursor-pointer text-base font-medium text-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-signal"
                 >
                     Send another message
                 </button>
@@ -205,7 +205,7 @@ export default function ContactForm() {
             noValidate
             onSubmit={onSubmit}
             aria-busy={submitting}
-            className="relative grid gap-6 rounded-2xl border border-line bg-ink-2 p-6 sm:grid-cols-2 sm:p-8"
+            className="relative grid gap-x-10 gap-y-9 sm:grid-cols-2"
         >
             {/* Honeypot: hidden from people and assistive tech; bots that fill every field reveal themselves. */}
             <div aria-hidden="true" className="absolute left-0 top-0 h-px w-px overflow-hidden opacity-0 pointer-events-none">
@@ -214,7 +214,7 @@ export default function ContactForm() {
             </div>
 
             <div>
-                <label htmlFor={id("name")} className="text-sm font-medium text-paper">Name</label>
+                <label htmlFor={id("name")} className="text-sm font-medium text-ink">Name</label>
                 <input
                     id={id("name")} name="name" type="text" autoComplete="name" maxLength={100} disabled={submitting}
                     aria-invalid={!!errors.name} aria-describedby={errors.name ? id("name-err") : undefined}
@@ -225,7 +225,7 @@ export default function ContactForm() {
             </div>
 
             <div>
-                <label htmlFor={id("email")} className="text-sm font-medium text-paper">Email</label>
+                <label htmlFor={id("email")} className="text-sm font-medium text-ink">Email</label>
                 <input
                     id={id("email")} name="email" type="email" autoComplete="email" inputMode="email" maxLength={254} disabled={submitting}
                     aria-invalid={!!errors.email} aria-describedby={errors.email ? id("email-err") : undefined}
@@ -236,17 +236,17 @@ export default function ContactForm() {
             </div>
 
             <div className="sm:col-span-2">
-                <label htmlFor={id("topic")} className="text-sm font-medium text-paper">Topic</label>
+                <label htmlFor={id("topic")} className="text-sm font-medium text-ink">Topic</label>
                 <select
                     id={id("topic")} name="topic" defaultValue={topics[0]} disabled={submitting}
-                    className={`${inputBase} border-line focus:border-saffron/60 appearance-none bg-[url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23a8a196' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")] bg-[length:16px] bg-[position:right_1rem_center] bg-no-repeat pr-10`}
+                    className={`${inputBase} border-ink/40 focus:border-signal appearance-none bg-[url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%2346566c' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")] bg-[length:16px] bg-[position:right_0.25rem_center] bg-no-repeat pr-10`}
                 >
                     {topics.map((t) => <option key={t} value={t}>{t}</option>)}
                 </select>
             </div>
 
             <div className="sm:col-span-2">
-                <label htmlFor={id("message")} className="text-sm font-medium text-paper">Message</label>
+                <label htmlFor={id("message")} className="text-sm font-medium text-ink">Message</label>
                 <textarea
                     id={id("message")} name="message" rows={5} maxLength={5000} disabled={submitting}
                     aria-invalid={!!errors.message}
@@ -266,15 +266,15 @@ export default function ContactForm() {
                 aria-invalid={!!errors.sender}
                 aria-describedby={`${id("sender-hint")}${errors.sender ? ` ${id("sender-err")}` : ""}`}
             >
-                <legend className="text-sm font-medium text-paper">Who is writing?</legend>
-                <div className="mt-3 grid gap-3">
+                <legend className="text-sm font-medium text-ink">Who is writing?</legend>
+                <div className="mt-2 grid border-t border-line">
                     {(
                         [
                             ["adult", "I am 18 or older"],
                             ["guardian", "I am a parent or legal guardian writing on behalf of someone under 18"],
                         ] as const
                     ).map(([value, label], i) => (
-                        <label key={value} className="flex min-h-11 cursor-pointer items-start gap-3 rounded-xl border border-line px-4 py-3 has-[:checked]:border-saffron/60 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-saffron/60">
+                        <label key={value} className="flex min-h-11 cursor-pointer items-start gap-3 border-b border-line py-3 has-[:checked]:border-signal has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-signal">
                             <input
                                 id={i === 0 ? id("sender") : undefined}
                                 type="radio"
@@ -287,9 +287,9 @@ export default function ContactForm() {
                                     clearError("sender");
                                     if (value === "adult") clearError("guardianConsent");
                                 }}
-                                className="mt-1 h-5 w-5 shrink-0 cursor-pointer accent-saffron focus:outline-none"
+                                className="mt-1 h-5 w-5 shrink-0 cursor-pointer accent-signal focus:outline-none"
                             />
-                            <span className="text-base text-paper/90">{label}</span>
+                            <span className="text-base text-ink/90">{label}</span>
                         </label>
                     ))}
                 </div>
@@ -303,7 +303,7 @@ export default function ContactForm() {
                 <ConsentCheckbox id={id("consent")} name="consent" error={errors.consent} disabled={submitting} onChange={() => clearError("consent")}>
                     I agree that {site.legal.name} may use my name, email address and message to reply to this enquiry, as
                     described in the{" "}
-                    <Link href="/privacy" className="text-paper underline underline-offset-4 hover:text-saffron">
+                    <Link href="/privacy" className="text-ink underline underline-offset-4 hover:text-signal">
                         Privacy Policy
                     </Link>
                     . I can withdraw my consent at any time.
@@ -322,18 +322,18 @@ export default function ContactForm() {
             </div>
 
             {status === "error" && (
-                <div role="alert" className="rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-paper sm:col-span-2">
+                <div role="alert" className="border-t-2 border-destructive pt-3 text-sm text-ink sm:col-span-2">
                     {failure}{" "}
                     You can also email us directly at{" "}
-                    <a href={`mailto:${site.email}`} className="font-medium text-saffron underline underline-offset-2">{site.email}</a>.
+                    <a href={`mailto:${site.email}`} className="font-medium text-signal underline underline-offset-2">{site.email}</a>.
                 </div>
             )}
 
-            <div className="flex flex-col gap-4 sm:col-span-2 sm:flex-row sm:items-center sm:justify-end">
+            <div className="flex flex-col gap-4 sm:col-span-2 sm:flex-row sm:items-center sm:justify-start">
                 <button
                     type="submit"
                     disabled={submitting}
-                    className="inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-full bg-saffron px-6 py-3 text-sm font-medium text-ink transition-colors hover:bg-saffron-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-saffron disabled:cursor-wait disabled:opacity-70"
+                    className="inline-flex min-h-12 cursor-pointer items-center justify-center gap-3 bg-ink px-8 py-3.5 font-display text-base font-semibold text-paper [font-stretch:112%] transition-colors hover:bg-signal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal disabled:cursor-wait disabled:opacity-70"
                 >
                     {submitting ? (
                         <>
@@ -343,7 +343,6 @@ export default function ContactForm() {
                     ) : (
                         <>
                             Send message
-                            <Send className="h-4 w-4" aria-hidden="true" />
                         </>
                     )}
                 </button>
@@ -381,7 +380,7 @@ function ConsentCheckbox({
                     onChange={onChange}
                     aria-invalid={!!error}
                     aria-describedby={error ? `${id}-err` : undefined}
-                    className="mt-1 h-5 w-5 shrink-0 cursor-pointer rounded accent-saffron focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-saffron"
+                    className="mt-1 h-5 w-5 shrink-0 cursor-pointer accent-signal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal"
                 />
                 <label htmlFor={id} className="cursor-pointer text-sm leading-relaxed text-muted-ink">
                     {children}

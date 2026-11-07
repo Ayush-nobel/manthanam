@@ -4,9 +4,6 @@ import MessagesCarousel, { type MessageCard } from "@/components/messages-carous
 import SectionHeading from "@/components/section-heading";
 import { messages, type Message } from "@/lib/messages";
 
-const WORDS = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
-const word = (n: number) => WORDS[n] ?? String(n);
-
 /**
  * Only verified messages are published. In `next dev` (NODE_ENV "development") unverified
  * ones are shown too, clearly labelled, so they can be previewed on localhost; production
@@ -41,19 +38,6 @@ function initials(name: string): string {
 export default function Messages() {
     if (visibleMessages.length === 0) return null;
 
-    // Counted from the published messages, so the sentence stays true as entries change.
-    const published = messages.filter((m) => m.verified);
-    const ministers = published.filter((m) => /\bminister\b/i.test(m.title ?? "")).length;
-    const ambassadors = published.filter((m) => /^ambassador\b/i.test(m.name)).length;
-    const parts = [
-        ministers > 0 && `${word(ministers)} minister${ministers === 1 ? "" : "s"} of the Government of India`,
-        ambassadors > 0 && `${word(ambassadors)} former ambassador${ambassadors === 1 ? "" : "s"}`,
-    ].filter(Boolean);
-    const intro =
-        published.length > 1 && parts.length
-            ? `${word(published.length).replace(/^./, (c) => c.toUpperCase())} messages so far, including ${parts.join(" and ")}.`
-            : "";
-
     const cards: MessageCard[] = visibleMessages.map((m) => ({
         slug: m.slug,
         quote: m.quote,
@@ -70,10 +54,7 @@ export default function Messages() {
     return (
         <section id="messages" aria-labelledby="messages-title" className="overflow-x-clip bg-paper-2">
             <div className="mx-auto max-w-[84rem] px-6 py-24 sm:px-10 sm:py-32">
-                <div className="grid gap-8 lg:grid-cols-12">
-                    <SectionHeading id="messages-title" title="Messages of support." className="lg:col-span-5" />
-                    {intro && <p className="max-w-[34rem] text-lg text-muted-ink lg:col-span-6 lg:col-start-7">{intro}</p>}
-                </div>
+                <SectionHeading id="messages-title" title="Messages of support." />
                 <MessagesCarousel cards={cards} />
             </div>
         </section>

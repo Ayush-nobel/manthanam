@@ -14,7 +14,6 @@ import p12 from "@/public/events/impact-stir-26/12.jpg";
 import p13 from "@/public/events/impact-stir-26/13.jpg";
 import p14 from "@/public/events/impact-stir-26/14.jpg";
 import p15 from "@/public/events/impact-stir-26/15.jpg";
-import p16 from "@/public/events/impact-stir-26/16.jpg";
 
 export interface EventPhoto {
     src: StaticImageData;
@@ -65,22 +64,21 @@ export const past: PastEvent[] = [
         body: "Hosted by HELPSTiR as the official pre-event of the BRICS India Youth Conference 2026, which Manthanam is organising. The day opened with the lighting of the lamp and ran through a panel discussion, a publication release, and a courtyard of stalls, crafts and conversation.",
         credit: "Photographs: HELPSTiR",
         photos: [
-            { src: p01, alt: "Guests stand behind the ceremonial lamp and a flower rangoli at the opening", span: "lead" },
+            { src: p01, alt: "Panellists in conversation on stage", span: "lead" },
             { src: p02, alt: "Volunteers arrange marigold petals around the lamp before the opening", span: "tall" },
-            { src: p05, alt: "The audience in the auditorium during the sessions" },
-            { src: p06, alt: "A guest is presented with a bouquet on stage" },
-            { src: p03, alt: "Panellists in conversation on stage", span: "wide" },
-            { src: p04, alt: "Guests on stage hold up copies of a publication at its release", span: "wide" },
-            { src: p07, alt: "The courtyard lined with stalls, with visitors moving between them", span: "wide" },
-            { src: p08, alt: "Students paint small crafts at a stall" },
-            { src: p09, alt: "Visitors at the Hiba Green Foundation stall" },
-            { src: p10, alt: "A game of chess at a table in the courtyard" },
-            { src: p11, alt: "Hand-printed postcards laid out with a handwritten sign: postcards for sale" },
-            { src: p12, alt: "Visitors browse a stall in the courtyard" },
-            { src: p13, alt: "Three guests talk in the auditorium" },
-            { src: p14, alt: "Guests in conversation beside a screen of market data" },
-            { src: p15, alt: "Two guests share a laugh in the courtyard at dusk" },
-            { src: p16, alt: "A group photo in front of the Impact Stir 26 backdrop at dusk", span: "wide" },
+            { src: p03, alt: "Two guests talk in the auditorium after a session" },
+            { src: p04, alt: "Two guests in the audience follow the discussion" },
+            { src: p05, alt: "Students paint small crafts at a stall", span: "wide" },
+            { src: p06, alt: "Students talk across a stall table in the courtyard", span: "wide" },
+            { src: p07, alt: "A game of chess at a table in the courtyard", span: "wide" },
+            { src: p08, alt: "Guests in conversation beside a screen of market data", span: "wide" },
+            { src: p09, alt: "Hand-printed postcards laid out with a handwritten sign: postcards for sale" },
+            { src: p10, alt: "Two students paint on a mat in the courtyard" },
+            { src: p11, alt: "Visitors browse a stall in the courtyard" },
+            { src: p12, alt: "Guests watch from the side of the auditorium" },
+            { src: p13, alt: "Students talk in the courtyard between the stalls", span: "wide" },
+            { src: p14, alt: "Members of the Manthanam team talk at the backdrop between sessions" },
+            { src: p15, alt: "Registration at the start of the day" },
         ],
     },
 ];

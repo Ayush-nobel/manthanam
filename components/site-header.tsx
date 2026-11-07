@@ -29,7 +29,7 @@ export default function SiteHeader() {
                     </Link>
 
                     <nav aria-label="Primary" className="hidden lg:block">
-                        <ul className="flex items-center gap-7 font-display text-sm font-medium text-ink [font-stretch:110%]">
+                        <ul className="flex items-center gap-5 whitespace-nowrap xl:gap-7 font-display text-sm font-medium text-ink [font-stretch:110%]">
                             {site.nav.map((l) => (
                                 <li key={l.label}>
                                     <Link href={l.href} aria-current={l.href === current ? "page" : undefined} className={navLink}>
@@ -37,7 +37,7 @@ export default function SiteHeader() {
                                     </Link>
                                 </li>
                             ))}
-                            <li className="border-l border-line pl-8">
+                            <li className="border-l border-line pl-5 xl:pl-8">
                                 <Link href="/#join" className={`${navLink} font-semibold text-signal`}>
                                     Join the mission
                                 </Link>

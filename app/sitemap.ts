@@ -10,7 +10,10 @@ import { site } from "@/lib/site";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const url = (path: string) => `${site.url}${path}`;
     const insights = await getInsights();
-    const entries: MetadataRoute.Sitemap = [{ url: url("/"), changeFrequency: "weekly", priority: 1 }];
+    const entries: MetadataRoute.Sitemap = [
+        { url: url("/"), changeFrequency: "weekly", priority: 1 },
+        { url: url("/events"), changeFrequency: "monthly", priority: 0.7 },
+    ];
 
     if (insights.length > 0) {
         entries.push({ url: url("/insights"), lastModified: insights[0].date, changeFrequency: "weekly", priority: 0.8 });

@@ -28,6 +28,7 @@ export const site = {
     { label: "Messages", href: "/#messages" },
     // Discussions = the "Discussion" category of Insights (roundtable notes, debates).
     { label: "Discussions", href: "/insights/category/discussion" },
+    { label: "Events", href: "/events" },
     { label: "Team", href: "/#team" },
     { label: "Contact", href: "/#contact" },
   ],

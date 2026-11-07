@@ -56,7 +56,7 @@ Its themes are geopolitics, security, and statecraft. "Civilisational wisdom" an
 - **Name:** Manthanam (मन्थनम्). Tagline: "India's youth-driven strategic think tank." Location and founding: New Delhi · Est. 2024.
 - **Logo:** monochrome white wordmark "MANTHAN▲M." with a twin-triangle mark (`public/logo.png`; trimmed `public/logo-wordmark.png`). The logo contains no colour.
 - **Approved copy:** hero headline "India Needs / Thinkers, Not Followers."; hero description "Manthanam is India's youth-driven strategic think tank — forging policy, shaping discourse, and reviving civilisational wisdom at the intersection of geopolitics, security, and statecraft."; buttons "Explore Research", "Our Philosophy"; CTA "Join the Mission".
-- **Visual constraints the user specified (binding):** restrained editorial look; dark ink background with a saffron accent; fonts Bodoni Moda (headings), EB Garamond (body, ≥18px), Noto Serif Devanagari (Devanagari). DESIGN.md, when written, owns the rest of the visual system.
+- **Visual direction (chosen by the user, November 2026):** a brand-new identity, "The Admiralty Chart": the Indian Ocean drawn as a nautical chart, light chart-white ground, sounding navy text, one chart-magenta accent; Archivo (headings) and Source Serif 4 (body, 18px), Noto Serif Devanagari for Devanagari. Earlier directions (dark ink with saffron; cream editorial) were replaced. Team and message photos stay at the sizes the user approved. DESIGN.md owns the visual system.
 - Copy drafted during the build (About principles, Focus Area descriptions, Join paths, section intros) has not been explicitly approved — treat it as draft.
 
 ## Evidence on Hand

@@ -1,398 +1,408 @@
 {
-  "schemaVersion": 2,
-  "generatedAt": "2026-11-04T13:29:01+00:00",
-  "title": "Design System: Manthanam",
-  "extensions": {
-    "colorMeta": {
-      "kesari-saffron": {
-        "role": "primary",
-        "displayName": "Kesari Saffron",
-        "canonical": "oklch(77.4% 0.163 60.3)",
-        "tonalRamp": [
-          "#150801",
-          "#451000",
-          "#781900",
-          "#9b3d00",
-          "#c05f00",
-          "#e58204",
-          "#fcb273",
-          "#ffead9"
-        ]
-      },
-      "kesari-saffron-deep": {
-        "role": "primary",
-        "displayName": "Kesari Saffron Deep",
-        "canonical": "oklch(70.5% 0.161 57.9)",
-        "tonalRamp": [
-          "#150701",
-          "#460f00",
-          "#781700",
-          "#9c3c00",
-          "#c15e00",
-          "#e68119",
-          "#fdb177",
-          "#ffeada"
-        ]
-      },
-      "midnight-ink": {
-        "role": "neutral",
-        "displayName": "Midnight Ink",
-        "canonical": "oklch(15.5% 0.009 274.3)",
-        "tonalRamp": [
-          "#0b0b0c",
-          "#232427",
-          "#3e3f44",
-          "#5c5d63",
-          "#7b7d83",
-          "#9d9ea4",
-          "#c3c4c8",
-          "#eeeef0"
-        ]
-      },
-      "ink-raised": {
-        "role": "neutral",
-        "displayName": "Raised Ink",
-        "canonical": "oklch(20.1% 0.012 270.7)",
-        "tonalRamp": [
-          "#0b0b0c",
-          "#222428",
-          "#3d4047",
-          "#5b5d65",
-          "#7a7d85",
-          "#9b9ea6",
-          "#c2c4ca",
-          "#eeeef0"
-        ]
-      },
-      "ink-lifted": {
-        "role": "neutral",
-        "displayName": "Lifted Ink",
-        "canonical": "oklch(24.0% 0.016 269.0)",
-        "tonalRamp": [
-          "#0b0b0d",
-          "#222429",
-          "#3c4048",
-          "#5a5d67",
-          "#797d87",
-          "#9a9ea9",
-          "#c1c4cc",
-          "#edeef1"
-        ]
-      },
-      "logo-white": {
-        "role": "neutral",
-        "displayName": "Logo White",
-        "canonical": "oklch(99.2% 0.001 17.2)",
-        "tonalRamp": [
-          "#0b0b0b",
-          "#242424",
-          "#403f3f",
-          "#5e5d5d",
-          "#7e7d7d",
-          "#9f9e9e",
-          "#c4c4c4",
-          "#eeeeee"
-        ]
-      },
-      "muted-ink": {
-        "role": "neutral",
-        "displayName": "Muted Ink",
-        "canonical": "oklch(71.2% 0.018 79.3)",
-        "tonalRamp": [
-          "#0c0b09",
-          "#27231e",
-          "#453f35",
-          "#635d53",
-          "#837c72",
-          "#a49d92",
-          "#c9c3bb",
-          "#f0eeec"
-        ]
-      },
-      "faint-ink": {
-        "role": "neutral",
-        "displayName": "Faint Ink",
-        "canonical": "#968f84",
-        "tonalRamp": [
-          "#0c0b0a",
-          "#27241e",
-          "#443f36",
-          "#625d53",
-          "#827c73",
-          "#a49e93",
-          "#c8c3bc",
-          "#efeeec"
-        ]
-      },
-      "hairline": {
-        "role": "neutral",
-        "displayName": "Hairline",
-        "canonical": "rgb(253 252 252 / 0.1)"
-      },
-      "field-edge": {
-        "role": "neutral",
-        "displayName": "Field Edge",
-        "canonical": "rgb(253 252 252 / 0.16)"
-      },
-      "ember-error": {
-        "role": "error",
-        "displayName": "Ember Error",
-        "canonical": "oklch(69.3% 0.167 29.8)",
-        "tonalRamp": [
-          "#170604",
-          "#4b0000",
-          "#820000",
-          "#a8261a",
-          "#ce4c3c",
-          "#f56f5d",
-          "#ffa696",
-          "#ffe7e1"
-        ]
-      }
-    },
-    "typographyMeta": {
-      "display": {
-        "displayName": "Display",
-        "purpose": "Hero headline only; normal case, upright, at most one saffron word."
-      },
-      "headline": {
-        "displayName": "Headline",
-        "purpose": "Section headings; also capped by its column width (cqi)."
-      },
-      "headline-page": {
-        "displayName": "Page Headline",
-        "purpose": "Index-page titles such as Insights."
-      },
-      "lead": {
-        "displayName": "Lead",
-        "purpose": "One Bodoni sentence opening a section's argument."
-      },
-      "title": {
-        "displayName": "Title",
-        "purpose": "Card titles, team names, focus-area names; normal case."
-      },
-      "body": {
-        "displayName": "Body",
-        "purpose": "All running text; 18px floor, ~42rem measure."
-      },
-      "body-large": {
-        "displayName": "Body Large",
-        "purpose": "Lead paragraphs from 640px."
-      },
-      "ui": {
-        "displayName": "UI",
-        "purpose": "Buttons, nav links, chips, form labels."
-      },
-      "label": {
-        "displayName": "Label",
-        "purpose": "Uppercase eyebrows, badge, card metadata (small labels only)."
-      },
-      "devanagari": {
-        "displayName": "Devanagari",
-        "purpose": "Hindi/Sanskrit text; every stack falls through to it."
-      }
-    },
-    "shadows": [],
-    "motion": [
-      {
-        "name": "hover",
-        "value": "150ms ease",
-        "purpose": "Colour/background changes on buttons, chips, links, icon buttons."
-      },
-      {
-        "name": "card-hover",
-        "value": "200ms ease",
-        "purpose": "Card border warming to saffron; Read-arrow nudge."
-      },
-      {
-        "name": "hero-entrance",
-        "value": "fadeSlideIn 0.8s ease-out, staggered 0.1s (translateY 20px → 0, opacity 0 → 1)",
-        "purpose": "Hero badge, headline, description, buttons on load."
-      },
-      {
-        "name": "scroll-reveal",
-        "value": "0.6s cubic-bezier(0.22, 1, 0.36, 1), translateY 18px → 0, once, stagger 0.06–0.1s",
-        "purpose": "Section content as it enters the viewport (motion library)."
-      },
-      {
-        "name": "churn-rings",
-        "value": "rotate 360deg, 220s linear, infinite",
-        "purpose": "Hero concentric rings, clockwise."
-      },
-      {
-        "name": "churn-spirals",
-        "value": "rotate -360deg, 160s linear, infinite",
-        "purpose": "Hero spiral arms, anticlockwise."
-      },
-      {
-        "name": "churn-glow",
-        "value": "11s ease-in-out, infinite, offset 5.5s",
-        "purpose": "Saffron glow rising from the churning centre."
-      },
-      {
-        "name": "reduced-motion",
-        "value": "prefers-reduced-motion: reduce → no animation, final state",
-        "purpose": "Applies to every motion token above."
-      }
-    ],
-    "breakpoints": [
-      {
-        "name": "sm",
-        "value": "640px"
-      },
-      {
-        "name": "md",
-        "value": "768px"
-      },
-      {
-        "name": "lg",
-        "value": "1024px"
-      },
-      {
-        "name": "xl",
-        "value": "1280px"
-      }
+ "schemaVersion": 2,
+ "generatedAt": "2026-11-07T10:10:05+00:00",
+ "title": "Design System: Manthanam",
+ "extensions": {
+  "colorMeta": {
+   "chart-white": {
+    "role": "neutral",
+    "displayName": "Chart White",
+    "canonical": "oklch(97.4% 0.002 165.1)",
+    "tonalRamp": [
+     "#0b0b0b",
+     "#212221",
+     "#3c3d3d",
+     "#5a5b5a",
+     "#797b7a",
+     "#9d9f9e",
+     "#c6c8c7",
+     "#eeefee"
     ]
+   },
+   "shoal": {
+    "role": "neutral",
+    "displayName": "Shoal",
+    "canonical": "oklch(92.1% 0.017 215.5)",
+    "tonalRamp": [
+     "#070c0e",
+     "#1c2325",
+     "#353f42",
+     "#515d60",
+     "#707d80",
+     "#95a1a4",
+     "#bfc9cc",
+     "#e8f0f2"
+    ]
+   },
+   "deep-shoal": {
+    "role": "neutral",
+    "displayName": "Deep Shoal",
+    "canonical": "oklch(87.3% 0.028 219.8)",
+    "tonalRamp": [
+     "#040d10",
+     "#172428",
+     "#304045",
+     "#4b5e65",
+     "#697e85",
+     "#8fa2a8",
+     "#bacbd0",
+     "#e4f1f6"
+    ]
+   },
+   "sounding-navy": {
+    "role": "primary",
+    "displayName": "Sounding Navy",
+    "canonical": "oklch(27.3% 0.073 259.8)",
+    "tonalRamp": [
+     "#030b1c",
+     "#132239",
+     "#2b3d5b",
+     "#455b80",
+     "#627ba4",
+     "#89a0c5",
+     "#b5c9e9",
+     "#dff0ff"
+    ]
+   },
+   "slate": {
+    "role": "neutral",
+    "displayName": "Slate",
+    "canonical": "oklch(44.9% 0.041 256.4)",
+    "tonalRamp": [
+     "#050b15",
+     "#19222f",
+     "#323e4e",
+     "#4d5c70",
+     "#6b7c92",
+     "#91a0b4",
+     "#bcc8da",
+     "#e5f0fe"
+    ]
+   },
+   "faint-slate": {
+    "role": "neutral",
+    "displayName": "Faint Slate",
+    "canonical": "oklch(49.3% 0.043 259.7)",
+    "tonalRamp": [
+     "#060b15",
+     "#19222f",
+     "#333e4f",
+     "#4e5c71",
+     "#6c7b93",
+     "#929fb5",
+     "#bcc8db",
+     "#e5efff"
+    ]
+   },
+   "chart-magenta": {
+    "role": "accent",
+    "displayName": "Chart Magenta",
+    "canonical": "oklch(46.8% 0.179 356.7)",
+    "tonalRamp": [
+     "#26000c",
+     "#480023",
+     "#71063e",
+     "#9c235d",
+     "#c5437c",
+     "#e573a0",
+     "#ffa5c9",
+     "#ffd3f0"
+    ]
+   },
+   "chart-magenta-deep": {
+    "role": "accent",
+    "displayName": "Chart Magenta Deep",
+    "canonical": "oklch(39.4% 0.150 356.4)",
+    "tonalRamp": [
+     "#22000c",
+     "#430123",
+     "#69193f",
+     "#93325d",
+     "#ba507c",
+     "#db7ca0",
+     "#feabc9",
+     "#ffd8f0"
+    ]
+   },
+   "chart-magenta-light": {
+    "role": "accent",
+    "displayName": "Chart Magenta Light",
+    "canonical": "oklch(78.9% 0.119 349.1)",
+    "tonalRamp": [
+     "#1d000f",
+     "#3b0d27",
+     "#5f2545",
+     "#863e64",
+     "#ac5c85",
+     "#cd85a8",
+     "#f1b2d0",
+     "#ffddf5"
+    ]
+   },
+   "navy-muted": {
+    "role": "neutral",
+    "displayName": "Navy Muted",
+    "canonical": "oklch(77.7% 0.033 255.6)",
+    "tonalRamp": [
+     "#060b13",
+     "#1b222c",
+     "#343e4b",
+     "#505c6c",
+     "#6e7c8d",
+     "#93a0b0",
+     "#bec8d6",
+     "#e7effb"
+    ]
+   },
+   "error-red": {
+    "role": "semantic",
+    "displayName": "Error Red",
+    "canonical": "oklch(50.1% 0.178 28.7)",
+    "tonalRamp": [
+     "#290000",
+     "#4c0000",
+     "#760806",
+     "#a2251d",
+     "#cc463a",
+     "#ec7667",
+     "#ffa899",
+     "#ffd6c8"
+    ]
+   },
+   "hairline": {
+    "role": "neutral",
+    "displayName": "Hairline",
+    "canonical": "rgb(16 38 74 / 0.16)"
+   },
+   "rule": {
+    "role": "neutral",
+    "displayName": "Rule",
+    "canonical": "rgb(16 38 74 / 0.8)"
+   },
+   "hairline-on-navy": {
+    "role": "neutral",
+    "displayName": "Hairline on Navy",
+    "canonical": "rgb(245 247 246 / 0.18)"
+   },
+   "field-edge": {
+    "role": "neutral",
+    "displayName": "Field Edge",
+    "canonical": "rgb(16 38 74 / 0.4)"
+   }
   },
-  "components": [
-    {
-      "name": "Primary Button",
-      "kind": "button",
-      "refersTo": "button-primary",
-      "description": "The one saffron action per view (Explore Research, Send message, Join the Mission).",
-      "html": "<a class=\"ds-btn-primary\" href=\"#\">Explore Research <svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg></a>",
-      "css": ".ds-btn-primary { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 12px 20px; border-radius: 9999px; background: var(--saffron, #ff9933); color: var(--ink, #0b0c10); font-family: var(--font-body, 'EB Garamond', Georgia, serif); font-size: 16px; font-weight: 500; line-height: 1.55; text-decoration: none; transition: background-color 150ms; } .ds-btn-primary:hover { background: var(--saffron-deep, #e8821c); } .ds-btn-primary:focus-visible { outline: 2px solid var(--saffron, #ff9933); outline-offset: 2px; }"
-    },
-    {
-      "name": "Secondary Button",
-      "kind": "button",
-      "refersTo": "button-secondary",
-      "description": "Quiet companion to the primary action (Our Philosophy, All insights).",
-      "html": "<a class=\"ds-btn-secondary\" href=\"#\">Our Philosophy</a>",
-      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 12px 20px; border-radius: 9999px; background: rgb(253 252 252 / 0.05); box-shadow: inset 0 0 0 1px rgb(253 252 252 / 0.15); color: rgb(253 252 252 / 0.9); font-family: var(--font-body, 'EB Garamond', Georgia, serif); font-size: 16px; font-weight: 500; line-height: 1.55; text-decoration: none; transition: background-color 150ms, color 150ms; } .ds-btn-secondary:hover { background: rgb(253 252 252 / 0.1); color: var(--paper, #fdfcfc); } .ds-btn-secondary:focus-visible { outline: 2px solid var(--saffron, #ff9933); outline-offset: 2px; }"
-    },
-    {
-      "name": "Filter Chips",
-      "kind": "chip",
-      "refersTo": "chip",
-      "description": "Category filters on Insights; the active one becomes a saffron pill.",
-      "html": "<div class=\"ds-chips\"><a class=\"ds-chip ds-chip-active\" href=\"#\" aria-current=\"page\">All</a><a class=\"ds-chip\" href=\"#\">Commentary</a><a class=\"ds-chip\" href=\"#\">Policy Brief</a></div>",
-      "css": ".ds-chips { display: flex; flex-wrap: wrap; gap: 8px; } .ds-chip { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 9999px; background: rgb(253 252 252 / 0.05); box-shadow: inset 0 0 0 1px rgb(253 252 252 / 0.1); color: rgb(253 252 252 / 0.8); font-family: var(--font-body, 'EB Garamond', Georgia, serif); font-size: 16px; font-weight: 500; text-decoration: none; transition: background-color 150ms, color 150ms; } .ds-chip:hover { background: rgb(253 252 252 / 0.1); color: var(--paper, #fdfcfc); } .ds-chip-active, .ds-chip-active:hover { background: var(--saffron, #ff9933); color: var(--ink, #0b0c10); box-shadow: none; } .ds-chip:focus-visible { outline: 2px solid var(--saffron, #ff9933); outline-offset: 2px; }"
-    },
-    {
-      "name": "Text Field",
-      "kind": "input",
-      "refersTo": "input",
-      "description": "Contact form field: visible label, ink fill, hairline edge, saffron focus.",
-      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">Email</span><input class=\"ds-input\" type=\"email\" placeholder=\"name@example.org\"></label>",
-      "css": ".ds-field { display: block; font-family: var(--font-body, 'EB Garamond', Georgia, serif); } .ds-field-label { display: block; font-size: 16px; font-weight: 500; color: var(--paper, #fdfcfc); } .ds-input { display: block; width: 100%; margin-top: 8px; padding: 12px 16px; border-radius: 14px; border: 1px solid rgb(253 252 252 / 0.1); background: var(--ink, #0b0c10); color: var(--paper, #fdfcfc); font-family: var(--font-body, 'EB Garamond', Georgia, serif); font-size: 18px; line-height: 1.6; transition: border-color 150ms; } .ds-input::placeholder { color: var(--faint, #968f84); } .ds-input:focus { outline: none; border-color: rgb(255 153 51 / 0.6); box-shadow: 0 0 0 2px rgb(255 153 51 / 0.6); }"
-    },
-    {
-      "name": "Navigation Pill",
-      "kind": "nav",
-      "refersTo": "nav-link",
-      "description": "Floating blurred pill of links with the saffron CTA at the end.",
-      "html": "<nav class=\"ds-nav\" aria-label=\"Primary\"><a href=\"#\" aria-current=\"page\">About</a><a href=\"#\">Research</a><a href=\"#\">Insights</a><a href=\"#\">Team</a><a class=\"ds-nav-cta\" href=\"#\">Join the Mission <svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M7 7h10v10\"/><path d=\"M7 17 17 7\"/></svg></a></nav>",
-      "css": ".ds-nav { display: inline-flex; align-items: center; gap: 4px; padding: 4px; border-radius: 9999px; background: rgb(253 252 252 / 0.05); box-shadow: inset 0 0 0 1px rgb(253 252 252 / 0.1); backdrop-filter: blur(8px); font-family: var(--font-body, 'EB Garamond', Georgia, serif); } .ds-nav a { padding: 8px 12px; color: rgb(253 252 252 / 0.75); font-size: 16px; font-weight: 500; text-decoration: none; border-radius: 9999px; transition: color 150ms; } .ds-nav a:hover, .ds-nav a[aria-current='page'] { color: var(--paper, #fdfcfc); } .ds-nav .ds-nav-cta { display: inline-flex; align-items: center; gap: 8px; margin-left: 4px; padding: 8px 14px; background: var(--saffron, #ff9933); color: var(--ink, #0b0c10); } .ds-nav .ds-nav-cta:hover { background: var(--saffron-deep, #e8821c); color: var(--ink, #0b0c10); } .ds-nav a:focus-visible { outline: 2px solid var(--saffron, #ff9933); outline-offset: 2px; }"
-    },
-    {
-      "name": "Insight Card",
-      "kind": "card",
-      "refersTo": "card",
-      "description": "Raised-ink card with uppercase metadata, Bodoni title, and a saffron hairline on hover.",
-      "html": "<article class=\"ds-card\"><p class=\"ds-card-meta\"><span class=\"ds-saffron\">Commentary</span> · 4 November 2026</p><h3 class=\"ds-card-title\"><a href=\"#\">What the Arthashastra still teaches about statecraft</a></h3><p class=\"ds-card-body\">Summary text in Muted Ink at the 18px body size.</p><p class=\"ds-card-foot\"><span>Author name</span><span class=\"ds-card-read\">Read <svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M7 7h10v10\"/><path d=\"M7 17 17 7\"/></svg></span></p></article>",
-      "css": ".ds-card { position: relative; display: flex; flex-direction: column; max-width: 400px; padding: 28px; border-radius: 18px; border: 1px solid rgb(253 252 252 / 0.1); background: var(--ink-2, #14161c); color: var(--paper, #fdfcfc); font-family: var(--font-body, 'EB Garamond', Georgia, serif); transition: border-color 200ms; } .ds-card:hover, .ds-card:focus-within { border-color: rgb(255 153 51 / 0.5); } .ds-card-meta { margin: 0; font-size: 14px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: var(--faint, #968f84); } .ds-saffron { color: var(--saffron, #ff9933); } .ds-card-title { margin: 20px 0 0; font-family: var(--font-heading, 'Bodoni Moda', Didot, serif); font-size: 24px; font-weight: 400; line-height: 1.33; } .ds-card-title a { color: inherit; text-decoration: none; } .ds-card-title a::after { content: ''; position: absolute; inset: 0; border-radius: 18px; } .ds-card-body { margin: 16px 0 0; font-size: 18px; line-height: 1.6; color: var(--muted-ink, #a8a196); } .ds-card-foot { display: flex; justify-content: space-between; margin: 32px 0 0; font-size: 16px; color: var(--faint, #968f84); } .ds-card-read { display: inline-flex; align-items: center; gap: 6px; font-weight: 500; color: rgb(253 252 252 / 0.9); transition: color 150ms; } .ds-card:hover .ds-card-read { color: var(--saffron, #ff9933); }"
-    },
-    {
-      "name": "Section Eyebrow + Headline",
-      "kind": "custom",
-      "refersTo": "headline",
-      "description": "Every section opens with a saffron index, a hairline rule, an uppercase label, then a Bodoni headline.",
-      "html": "<div class=\"ds-eyebrow-block\"><p class=\"ds-eyebrow\"><span class=\"ds-saffron\">01</span><span class=\"ds-rule\"></span>Our Philosophy</p><h2 class=\"ds-headline\">Truth emerges from the churning.</h2></div>",
-      "css": ".ds-eyebrow-block { color: var(--paper, #fdfcfc); } .ds-eyebrow { display: flex; align-items: center; gap: 12px; margin: 0; font-family: var(--font-body, 'EB Garamond', Georgia, serif); font-size: 14px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--faint, #968f84); } .ds-saffron { color: var(--saffron, #ff9933); } .ds-rule { width: 32px; height: 1px; background: rgb(253 252 252 / 0.1); } .ds-headline { margin: 20px 0 0; font-family: var(--font-heading, 'Bodoni Moda', Didot, serif); font-size: 44px; font-weight: 400; line-height: 1.15; }"
-    },
-    {
-      "name": "Icon Button",
-      "kind": "button",
-      "refersTo": "icon-button",
-      "description": "44px round link for social/contact icons; fills saffron on hover.",
-      "html": "<a class=\"ds-icon-btn\" href=\"#\" aria-label=\"Email Harsh Dev Garg\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect width=\"20\" height=\"16\" x=\"2\" y=\"4\" rx=\"2\"/><path d=\"m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7\"/></svg></a>",
-      "css": ".ds-icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 9999px; background: rgb(253 252 252 / 0.05); box-shadow: inset 0 0 0 1px rgb(253 252 252 / 0.1); color: rgb(253 252 252 / 0.8); transition: background-color 150ms, color 150ms; } .ds-icon-btn:hover { background: var(--saffron, #ff9933); color: var(--ink, #0b0c10); box-shadow: none; } .ds-icon-btn:focus-visible { outline: 2px solid var(--saffron, #ff9933); outline-offset: 2px; }"
-    },
-    {
-      "name": "Hero Badge",
-      "kind": "chip",
-      "refersTo": "badge",
-      "description": "Blurred pill with a saffron dot and uppercase label above the hero headline.",
-      "html": "<div class=\"ds-badge\"><span class=\"ds-badge-dot\"></span><span>New Delhi · Est. 2024</span></div>",
-      "css": ".ds-badge { display: inline-flex; align-items: center; gap: 12px; padding: 8px 16px 8px 14px; border-radius: 9999px; background: rgb(253 252 252 / 0.1); box-shadow: inset 0 0 0 1px rgb(253 252 252 / 0.15); backdrop-filter: blur(8px); font-family: var(--font-body, 'EB Garamond', Georgia, serif); font-size: 14px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: rgb(253 252 252 / 0.9); } .ds-badge-dot { width: 6px; height: 6px; border-radius: 9999px; background: var(--saffron, #ff9933); }"
-    }
+  "typographyMeta": {
+   "display": {
+    "displayName": "Display",
+    "purpose": "Hero headline only, inside the title cartouche."
+   },
+   "headline": {
+    "displayName": "Headline",
+    "purpose": "Section headings."
+   },
+   "headline-page": {
+    "displayName": "Page Headline",
+    "purpose": "Legal, insights and 404 page titles."
+   },
+   "title": {
+    "displayName": "Title",
+    "purpose": "Names, focus areas, method steps, chapter titles."
+   },
+   "ui": {
+    "displayName": "UI",
+    "purpose": "Navigation, text links, the primary button."
+   },
+   "body": {
+    "displayName": "Body",
+    "purpose": "Running text."
+   },
+   "body-large": {
+    "displayName": "Body Large",
+    "purpose": "Section intros, quotes, form fields."
+   },
+   "small": {
+    "displayName": "Small",
+    "purpose": "Hints, consent text, metadata."
+   },
+   "caption": {
+    "displayName": "Caption",
+    "purpose": "Chart captions, graduations, soundings."
+   },
+   "devanagari": {
+    "displayName": "Devanagari",
+    "purpose": "Hindi/Sanskrit; last fallback in every stack."
+   }
+  },
+  "shadows": [],
+  "motion": [
+   {
+    "name": "hero-entrance",
+    "value": "translateY 12px → 0, 0.6s cubic-bezier(0.22, 1, 0.36, 1), transform only",
+    "purpose": "Title cartouche on load; opacity never animated so LCP is not delayed."
+   },
+   {
+    "name": "chart-contours",
+    "value": "canvas redraw ~24 fps, time step 0.35/s",
+    "purpose": "Churning depth chart in the hero; pauses off-screen and in hidden tabs."
+   },
+   {
+    "name": "globe-scroll",
+    "value": "scroll-linked; cubic in-out between chapter keyframes; log-interpolated zoom",
+    "purpose": "Pinned globe story for the five areas of work."
+   },
+   {
+    "name": "chapter-text",
+    "value": "opacity + translateY 12px, 500ms ease-out",
+    "purpose": "Globe chapter text swap."
+   },
+   {
+    "name": "link",
+    "value": "250ms ease on colour and underline thickness",
+    "purpose": "Text links."
+   },
+   {
+    "name": "nav-rule",
+    "value": "scale-x 0 → 1, 300ms cubic-bezier(0.22, 1, 0.36, 1)",
+    "purpose": "Nav hover underline."
+   },
+   {
+    "name": "carousel",
+    "value": "8s auto-advance, 500ms slide",
+    "purpose": "Messages of support; pauses on hover, focus, touch, off-screen; pause button."
+   },
+   {
+    "name": "reduced-motion",
+    "value": "prefers-reduced-motion: reduce",
+    "purpose": "No autoplay or entrance, still chart, globe snaps between chapters."
+   }
   ],
-  "narrative": {
-    "northStar": "The Night Assembly",
-    "overview": "A late-evening chamber of debate: formal, composed, and lit by a single warm signal. Every surface is a shade of Midnight Ink; type is set in Logo White, the exact white of Manthanam's own wordmark; and Kesari Saffron appears only where the room needs to look — the one primary action, the one word that matters in a headline, the small marker that says \"here\". The effect should read as an institution that takes its subject seriously, not as a student project dressed up.\n\nThe system is **authoritative, warm, austere, and composed**. Authority comes from high-contrast Didone headlines (Bodoni Moda) and generous, unhurried spacing. Warmth comes from the saffron and from a humanist old-style text face (EB Garamond) set large enough to read comfortably at 18px. Austerity means no decoration that isn't doing work: no shadows, no photographic or noise textures, no gradients on type. Composure means motion is slow and ambient — fades that settle, and a churning background of rings and spirals that turns over minutes and never crosses the words.\n\nThe world is dark by design and has no light mode. Density is low on marketing sections (128px between sections on desktop) and rises only inside forms and lists.",
-    "keyCharacteristics": [
-      "Midnight Ink ground with three tonal steps instead of shadows.",
-      "One chromatic colour, Kesari Saffron, used sparingly.",
-      "Bodoni Moda speaks; EB Garamond explains. No sans-serif anywhere.",
-      "Hairline (10% white) borders and dividers carry all structure.",
-      "Pill-shaped controls; softly rounded cards and fields.",
-      "Slow, purposeful motion that respects reduced-motion settings."
-    ],
-    "rules": [
-      {
-        "name": "The Single Lamp Rule",
-        "body": "Kesari Saffron is the only colour that isn't ink or white, and it covers well under 10% of any screen. If two saffron elements compete in one view, one of them is wrong.",
-        "section": "colors"
-      },
-      {
-        "name": "The Logo White Rule",
-        "body": "Light text is Logo White (#fdfcfc) or a translucent form of it — never pure #ffffff, never a cream or cool grey. Type and logo must match.",
-        "section": "colors"
-      },
-      {
-        "name": "The Two Voices Rule",
-        "body": "Bodoni Moda speaks (headlines, titles, names); EB Garamond explains (everything else). No sans-serif and no third Latin family.",
-        "section": "typography"
-      },
-      {
-        "name": "The Small Caps Only Rule",
-        "body": "Uppercase with wide tracking is reserved for small labels (14–16px: eyebrows, badge, card metadata, roles). Headlines and titles are always normal case.",
-        "section": "typography"
-      },
-      {
-        "name": "The 18px Floor Rule",
-        "body": "Running text is never smaller than 18px; Garamond's small x-height makes anything below read as fine print.",
-        "section": "typography"
-      },
-      {
-        "name": "The No-Shadow Rule",
-        "body": "Surfaces separate by tone and hairline, never by shadow. If something needs to feel \"above\", give it the next ink step, not a `box-shadow`.",
-        "section": "elevation"
-      },
-      {
-        "name": "The Clear Copy Rule",
-        "body": "Decorative layers (the churning rings and spirals, glows) are masked away from the text block with clear space around it. No line or texture ever passes behind words.",
-        "section": "elevation"
-      }
-    ],
-    "dos": [
-      "Do keep Kesari Saffron to one primary action, one headline word, and small markers per view (The Single Lamp Rule).",
-      "Do set all light text in Logo White (#fdfcfc) or its 90/80/75% forms.",
-      "Do separate surfaces with the next ink step and a 1px Hairline (rgb(253 252 252 / 0.1)).",
-      "Do keep running text at 18px / 1.6 or larger.",
-      "Do introduce sections with the eyebrow pattern: saffron index, hairline rule, uppercase label.",
-      "Do render Devanagari with Noto Serif Devanagari and tag it with `lang`.",
-      "Do honour `prefers-reduced-motion`: show final states with no animation."
-    ],
-    "donts": [
-      "Don't use drop shadows (The No-Shadow Rule).",
-      "Don't set headlines or titles in uppercase or with wide tracking (The Small Caps Only Rule).",
-      "Don't italicise or colour whole headline lines; the hero highlights only the word \"Thinkers\".",
-      "Don't add glows, gradients, or strokes to text.",
-      "Don't put photographic, speckle, grain, or noise textures behind the hero.",
-      "Don't let any decorative line or motif cross a text block (The Clear Copy Rule).",
-      "Don't introduce a sans-serif or a second accent colour."
-    ]
+  "breakpoints": [
+   {
+    "name": "sm",
+    "value": "640px"
+   },
+   {
+    "name": "md",
+    "value": "768px"
+   },
+   {
+    "name": "lg",
+    "value": "1024px"
+   },
+   {
+    "name": "xl",
+    "value": "1280px"
+   }
+  ]
+ },
+ "components": [
+  {
+   "name": "Text Link",
+   "kind": "link",
+   "refersTo": "text-link",
+   "description": "The default call to action: a real underline that thickens and turns magenta on hover.",
+   "html": "<a class=\"ds-link\" href=\"#\">Read the research</a>",
+   "css": ".ds-link { font-family: Archivo, sans-serif; font-stretch: 112%; font-weight: 600; color: #10264a; text-decoration: underline; text-decoration-color: rgb(16 38 74 / 0.8); text-decoration-thickness: 1px; text-underline-offset: 0.3em; transition: color 250ms, text-decoration-color 250ms, text-decoration-thickness 250ms; } .ds-link:hover, .ds-link:focus-visible { color: #a0145c; text-decoration-color: #a0145c; text-decoration-thickness: 2px; }"
+  },
+  {
+   "name": "Primary Button",
+   "kind": "button",
+   "refersTo": "button-primary",
+   "description": "Used once: Send message.",
+   "html": "<button class=\"ds-btn\" type=\"button\">Send message</button>",
+   "css": ".ds-btn { min-height: 48px; padding: 14px 32px; border: 0; border-radius: 0; background: #10264a; color: #f5f7f6; font-family: Archivo, sans-serif; font-stretch: 112%; font-weight: 600; font-size: 16px; cursor: pointer; transition: background-color 250ms; } .ds-btn:hover { background: #a0145c; } .ds-btn:focus-visible { outline: 2px solid #a0145c; outline-offset: 2px; }"
+  },
+  {
+   "name": "Title Cartouche",
+   "kind": "container",
+   "refersTo": "title-cartouche",
+   "description": "The chart's double-ruled title box; holds the hero headline.",
+   "html": "<div class=\"ds-cartouche\"><h1>India needs thinkers, not followers.</h1><p>Manthanam is India’s youth-driven strategic think tank.</p></div>",
+   "css": ".ds-cartouche { max-width: 40rem; border: 5px double #10264a; background: #f5f7f6; padding: 44px 40px; } .ds-cartouche h1 { margin: 0; font-family: Archivo, sans-serif; font-stretch: 125%; font-weight: 650; font-size: 4.5rem; line-height: 0.98; letter-spacing: -0.02em; color: #10264a; } .ds-cartouche p { margin: 28px 0 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 1.3125rem; line-height: 1.6; color: #46566c; }"
+  },
+  {
+   "name": "Photo Mount",
+   "kind": "container",
+   "refersTo": "photo-mount",
+   "description": "Double-rule mount for team and message portraits.",
+   "html": "<div class=\"ds-mount\"><div class=\"ds-photo\"></div></div>",
+   "css": ".ds-mount { display: inline-block; border: 5px double #10264a; background: #f5f7f6; padding: 6px; } .ds-photo { width: 160px; height: 160px; background: #c2dae2; }"
+  },
+  {
+   "name": "Ruled Field",
+   "kind": "input",
+   "refersTo": "input",
+   "description": "Single-underline form field; magenta 2px line on focus.",
+   "html": "<label class=\"ds-field\"><span>Email</span><input type=\"email\"></label>",
+   "css": ".ds-field { display: block; font-family: 'Source Serif 4', Georgia, serif; color: #10264a; font-size: 15px; } .ds-field input { display: block; width: 100%; margin-top: 4px; padding: 10px 0; border: 0; border-bottom: 1px solid rgb(16 38 74 / 0.4); border-radius: 0; background: transparent; font: inherit; font-size: 1.3125rem; color: #10264a; caret-color: #a0145c; } .ds-field input:focus { outline: none; border-bottom: 2px solid #a0145c; }"
+  },
+  {
+   "name": "Navigation",
+   "kind": "navigation",
+   "refersTo": "nav-link",
+   "description": "Text links; a rule draws in on hover and stays under the current page.",
+   "html": "<nav class=\"ds-nav\"><a href=\"#\" aria-current=\"page\">About</a><a href=\"#\">Research</a><a href=\"#\" class=\"ds-join\">Join the mission</a></nav>",
+   "css": ".ds-nav { display: flex; gap: 28px; font-family: Archivo, sans-serif; font-stretch: 110%; font-weight: 500; font-size: 15px; } .ds-nav a { position: relative; padding: 4px 0; color: #10264a; text-decoration: none; } .ds-nav a::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1); } .ds-nav a:hover::after, .ds-nav a[aria-current=page]::after { transform: scaleX(1); } .ds-nav .ds-join { color: #a0145c; font-weight: 600; }"
+  },
+  {
+   "name": "Chapter Marks",
+   "kind": "indicator",
+   "refersTo": "chapter-marks",
+   "description": "Position in the globe story: past navy, current magenta, upcoming faint.",
+   "html": "<ol class=\"ds-marks\"><li class=\"past\"></li><li class=\"now\"></li><li></li><li></li><li></li></ol>",
+   "css": ".ds-marks { display: flex; gap: 8px; list-style: none; padding: 0; } .ds-marks li { width: 32px; height: 3px; background: rgb(16 38 74 / 0.2); } .ds-marks .past { background: rgb(16 38 74 / 0.6); } .ds-marks .now { background: #a0145c; }"
   }
+ ],
+ "narrative": {
+  "northStar": "The Admiralty Chart",
+  "overview": "Samudra Manthan is the churning of the ocean, and Manthanam's subject is strategy, so the site speaks the visual language of a nautical chart of the Indian Ocean: exact, calm, legible at a glance, made for people who have to decide. Cool chart white is deep water, shallow-water blue groups content, sounding navy carries all type, and chart magenta marks cautions and the current state. Archivo set wide speaks; Source Serif 4 explains. Corners are square and there are no shadows. Boldness is spent in two places only: the animated depth-chart hero inside a graduated neatline, and the pinned, scroll-driven globe that tells the five areas of work.",
+  "keyCharacteristics": [
+   "Chart White ground, Shoal regions, one Sounding Navy band.",
+   "One accent, Chart Magenta, used as charts use it: cautions and 'you are here'.",
+   "Archivo set wide speaks; Source Serif 4 explains.",
+   "Square corners; tint, double rules and spacing instead of cards and shadows.",
+   "Real geography and data: India's coordinates, soundings, sea lanes, counts from the site's own data.",
+   "Two motion moments only, both respecting reduced motion."
+  ],
+  "rules": [
+   {
+    "name": "The Chart Magenta Rule",
+    "body": "Magenta means caution or 'you are here'. Never decoration, never a headline accent, never more than a few percent of a screen.",
+    "section": "colors"
+   },
+   {
+    "name": "The No-Black Rule",
+    "body": "Text is Sounding Navy, never black or tinted near-black; backgrounds are never pure white or cream.",
+    "section": "colors"
+   },
+   {
+    "name": "The Two Voices Rule",
+    "body": "Archivo speaks (headlines, names, controls); Source Serif 4 explains. No third Latin family.",
+    "section": "typography"
+   },
+   {
+    "name": "The No-Kicker Rule",
+    "body": "No eyebrows, all-caps labels, one-word colour accents, middle-dot meta strings or arrows on links.",
+    "section": "typography"
+   },
+   {
+    "name": "The Official Map Rule",
+    "body": "Coastlines only. Never draw political boundaries or a map of India that does not come from an official source.",
+    "section": "components"
+   }
+  ],
+  "dos": [
+   "Use real geography, coordinates and data, and label what the chart shows.",
+   "Keep magenta for cautions, the current state and hover.",
+   "Group with tinted regions and spacing.",
+   "Write headings and links in plain sentence case.",
+   "Count figures from the site's own data so they stay true."
+  ],
+  "donts": [
+   "Don't draw political boundaries.",
+   "Don't add cards, shadows, rounded corners, gradients or glass.",
+   "Don't add eyebrows, all-caps labels, section numbers (except real sequences) or arrows on links.",
+   "Don't use black text, pure white or cream.",
+   "Don't animate entrances on every section."
+  ]
+ }
 }

@@ -34,17 +34,28 @@ export function zohoMissing(): string[] {
 export const zohoConfigured = () => zohoMissing().length === 0;
 export const zohoDataCentre = () => DC;
 
-let cached: { token: string; until: number } | null = null;
+export interface ZohoCredentials {
+    clientId: string;
+    clientSecret: string;
+    refreshToken: string;
+}
+const SHEET_CREDS = (): ZohoCredentials => ({ clientId: CLIENT_ID!, clientSecret: CLIENT_SECRET!, refreshToken: REFRESH_TOKEN! });
 
-async function accessToken(): Promise<string> {
-    if (cached && Date.now() < cached.until) return cached.token;
+// Access tokens by refresh token: Zoho allows only ten new access tokens per ten minutes, so reuse them.
+const tokens = new Map<string, { token: string; until: number }>();
+export const forgetToken = (c: ZohoCredentials) => tokens.delete(c.refreshToken);
+
+/** An access token for these credentials (from cache while it's still valid for 5+ minutes). */
+export async function accessToken(c: ZohoCredentials = SHEET_CREDS()): Promise<string> {
+    const hit = tokens.get(c.refreshToken);
+    if (hit && Date.now() < hit.until) return hit.token;
     const res = await fetch(`https://accounts.zoho.${DC}/oauth/v2/token`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({
-            refresh_token: REFRESH_TOKEN!,
-            client_id: CLIENT_ID!,
-            client_secret: CLIENT_SECRET!,
+            refresh_token: c.refreshToken,
+            client_id: c.clientId,
+            client_secret: c.clientSecret,
             grant_type: "refresh_token",
         }),
         signal: AbortSignal.timeout(10_000),
@@ -52,9 +63,9 @@ async function accessToken(): Promise<string> {
     });
     const body = (await res.json().catch(() => null)) as { access_token?: string; expires_in?: number; error?: string } | null;
     if (!res.ok || !body?.access_token) throw new Error(`Zoho token refresh failed: ${res.status} ${body?.error ?? ""}`);
-    // Renew five minutes early.
-    cached = { token: body.access_token, until: Date.now() + ((body.expires_in ?? 3600) - 300) * 1000 };
-    return cached.token;
+    const entry = { token: body.access_token, until: Date.now() + ((body.expires_in ?? 3600) - 300) * 1000 };
+    tokens.set(c.refreshToken, entry);
+    return entry.token;
 }
 
 interface SheetResponse {
@@ -73,7 +84,7 @@ async function call(params: Record<string, string>): Promise<SheetResponse> {
         signal: AbortSignal.timeout(15_000),
         cache: "no-store",
     });
-    if (res.status === 401) cached = null; // token revoked or expired early: refresh next time
+    if (res.status === 401) forgetToken(SHEET_CREDS()); // token revoked or expired early: refresh next time
     const body = (await res.json().catch(() => null)) as SheetResponse | null;
     if (!body) throw new Error(`Zoho Sheet returned ${res.status} with no JSON`);
     return body;
@@ -115,7 +126,7 @@ export async function diagnose(): Promise<ZohoDiagnosis> {
     if (lastDiagnosis && Date.now() - lastDiagnosis.at < 30_000) return lastDiagnosis.result;
     const result: ZohoDiagnosis = { signIn: "not tried" };
     try {
-        cached = null;
+        forgetToken(SHEET_CREDS());
         await accessToken();
         result.signIn = "ok";
     } catch (err) {

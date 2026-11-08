@@ -12,6 +12,7 @@ import {
     type Values,
 } from "@/lib/registration";
 import { connection } from "next/server";
+import { diagnoseMail, mailConfigured, sendRegistrationEmail } from "@/lib/zoho-mail";
 import { addRow, diagnose, hasValue, zohoConfigured, zohoDataCentre, zohoMissing } from "@/lib/zoho-sheet";
 
 /**
@@ -145,11 +146,22 @@ export async function POST(request: Request) {
             return json({ errors: { email: "This email address is already registered. To change your registration, email us." } }, 409);
         await addRow(row);
         console.info("Registration saved:", ref);
-        return json({ ok: true, reference: ref });
     } catch (err) {
         console.error("Registration not saved:", err);
         return json({ error: "We couldn’t save your registration right now." }, 502);
     }
+
+    // The registration is saved; a failed email must not undo that, so it's reported, not thrown.
+    let emailed = false;
+    if (mailConfigured()) {
+        try {
+            await sendRegistrationEmail({ name: v.fullName!, email, reference: ref, guardianEmail: minor ? v.guardianEmail?.toLowerCase() : undefined });
+            emailed = true;
+        } catch (err) {
+            console.error("Confirmation email not sent for", ref, err);
+        }
+    }
+    return json({ ok: true, reference: ref, emailed });
 }
 
 /** Setup check: says whether the Zoho settings reached the server, naming (never showing) any that are missing. */
@@ -157,6 +169,6 @@ export async function GET(request: Request) {
     await connection();
     const status = { connected: zohoConfigured(), dataCentre: zohoDataCentre(), missing: zohoMissing() };
     // ?check=zoho also tries each step against Zoho (sign in, spreadsheet, worksheet, header row).
-    if (status.connected && new URL(request.url).searchParams.get("check") === "zoho") return json({ ...status, ...(await diagnose()) });
+    if (status.connected && new URL(request.url).searchParams.get("check") === "zoho") return json({ ...status, ...(await diagnose()), email: await diagnoseMail() });
     return json(status);
 }

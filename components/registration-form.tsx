@@ -48,6 +48,8 @@ const inputBase =
     "mt-1 block w-full border-0 border-b bg-transparent px-0 py-2.5 text-lg text-ink placeholder:text-faint transition-colors focus:outline-none focus-visible:border-b-2 disabled:opacity-60";
 const chevron = `appearance-none bg-[url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%2346566c' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")] bg-[length:16px] bg-[position:right_0.25rem_center] bg-no-repeat pr-10`;
 const today = () => new Date().toISOString().slice(0, 10);
+const formatDate = (iso: string) =>
+    new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 
 export default function RegistrationForm() {
     const uid = useId();
@@ -56,6 +58,7 @@ export default function RegistrationForm() {
     const [status, setStatus] = useState<Status>("idle");
     const [failure, setFailure] = useState("");
     const [reference, setReference] = useState("");
+    const [emailedTo, setEmailedTo] = useState("");
     const [dob, setDob] = useState("");
     const [maxDob, setMaxDob] = useState<string>();
     const formRef = useRef<HTMLFormElement>(null);
@@ -100,9 +103,10 @@ export default function RegistrationForm() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ ...values, x_hp_9: data.x_hp_9 ?? "" }),
             });
-            const body = (await res.json().catch(() => null)) as { ok?: boolean; reference?: string; errors?: Errors; error?: string } | null;
+            const body = (await res.json().catch(() => null)) as { ok?: boolean; reference?: string; emailed?: boolean; errors?: Errors; error?: string } | null;
             if (res.ok && body?.ok && body.reference) {
                 setReference(body.reference);
+                setEmailedTo(body.emailed ? (values.email ?? "") : "");
                 setStatus("success");
                 window.scrollTo({ top: (formRef.current?.closest("section")?.offsetTop ?? 0) - 16 });
                 return;
@@ -127,13 +131,24 @@ export default function RegistrationForm() {
                     <h2 className="font-display text-[clamp(1.75rem,3vw,2.5rem)] font-[650] leading-[1.05] text-ink [font-stretch:118%]">
                         Registration received.
                     </h2>
-                    <p className="mt-6 text-base text-muted-ink">Your reference number</p>
+                    <p className="mt-6 text-base text-muted-ink">Your registration number</p>
                     <p className="mt-1 select-all whitespace-nowrap font-display text-[clamp(1.375rem,6.5vw,3.25rem)] font-[650] tracking-[0.04em] text-signal [font-stretch:125%]">
                         {reference}
                     </p>
                     <p className="mt-6 max-w-[34rem] text-lg text-ink">
-                        Your place is not confirmed yet. We will review your registration and email you to confirm it, with
-                        payment details where a fee applies.
+                        Thank you for registering. Payment details will be shared by{" "}
+                        {conference.paymentDetailsBy ? formatDate(conference.paymentDetailsBy) : "email"}, and your place is confirmed once
+                        payment is received.
+                    </p>
+                    <p className="mt-4 max-w-[34rem] text-base text-muted-ink">
+                        {emailedTo ? (
+                            <>
+                                We&rsquo;ve also emailed this to <span className="text-ink">{emailedTo}</span>. If it isn&rsquo;t in your inbox in a few
+                                minutes, check your spam folder.
+                            </>
+                        ) : (
+                            <>Please note this number down or take a screenshot of this page.</>
+                        )}
                     </p>
                     {minor && (
                         <p className="mt-4 max-w-[34rem] text-base text-muted-ink">
@@ -141,7 +156,7 @@ export default function RegistrationForm() {
                         </p>
                     )}
                     <p className="mt-4 max-w-[34rem] text-base text-muted-ink">
-                        Keep the reference number for any message to us at{" "}
+                        Quote the registration number in any message to us at{" "}
                         <a href={`mailto:${site.email}?subject=${encodeURIComponent(`Registration ${reference}`)}`} className="link-draw text-ink">
                             {site.email}
                         </a>
@@ -382,7 +397,7 @@ export default function RegistrationForm() {
                         "Register"
                     )}
                 </button>
-                <p className="mt-3 text-sm text-faint">You will get a reference number straight away.</p>
+                <p className="mt-3 text-sm text-faint">You will get a registration number straight away, on screen and by email.</p>
             </div>
         </form>
     );

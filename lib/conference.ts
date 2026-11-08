@@ -26,6 +26,8 @@ export const conference = {
     registrationOpen: true,
     /** ISO date of the last day to register — not yet announced. */
     deadline: null as string | null,
+    /** ISO date by which payment details are emailed to everyone registered. */
+    paymentDetailsBy: "2026-11-25" as string | null,
     /** ISO date after which cancellations are not refunded — not yet announced. */
     cancellationDeadline: null as string | null,
     /** Fees by category — not yet confirmed; empty shows "to be announced". */
@@ -59,15 +61,15 @@ export const FAQS: { q: string; a: string }[] = [
     },
     {
         q: "Is my place confirmed when I submit the form?",
-        a: "Not yet. Submitting the form records your registration and gives you a reference number. We review every registration and email you to confirm your place, with payment details where a fee applies.",
+        a: "Not yet. Submitting the form records your registration, and you get a registration number on screen and by email. Your place is confirmed once payment is received; payment details follow by 25 November 2026.",
     },
     {
         q: "How do I pay?",
-        a: "You don't pay on this website. Once we have reviewed your registration, we email you how to pay. Manthanam will never ask you for card details, UPI PINs or passwords by email or phone.",
+        a: "You don't pay on this website. We will email payment details to everyone registered by 25 November 2026. Manthanam will never ask you for card details, UPI PINs or passwords by email or phone.",
     },
     {
         q: "Can I cancel?",
-        a: "Yes. Email us with your reference number. Refunds follow our Refund Policy; the cancellation deadline will be announced on this page.",
+        a: "Yes. Email us with your registration number. Refunds follow our Refund Policy; the cancellation deadline will be announced on this page.",
     },
     {
         q: "When and where is it?",
@@ -75,6 +77,6 @@ export const FAQS: { q: string; a: string }[] = [
     },
     {
         q: "I made a mistake in my form.",
-        a: "Email us with your reference number and the correction. Please don't register a second time with the same email address.",
+        a: "Email us with your registration number and the correction. Please don't register a second time with the same email address.",
     },
 ];

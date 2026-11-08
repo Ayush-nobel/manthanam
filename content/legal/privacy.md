@@ -38,6 +38,7 @@ We use a small number of service providers ("Data Processors") who handle data o
 | --- | --- | --- |
 | **Formspree** | Receives contact-form submissions and forwards them to us | United States |
 | **Zoho Sheet** | Stores event registrations in a private spreadsheet that only Manthanam can open | Zoho's data centres for our account |
+| **Zoho Mail** (sending) | Sends the email confirming your registration, with your registration number, from contact@manthanam.in | Zoho's data centres for our account |
 | **Zoho Mail** | Hosts our email inbox, where enquiries and replies are kept | Zoho's data centres for our account |
 | **Amazon Web Services** (Amazon CloudFront) | Hosts and delivers this website | Global network of servers |
 

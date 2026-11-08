@@ -24,9 +24,9 @@ const TBA = "To be announced";
 
 // The real order of events for a registrant: a sequence, so it is numbered.
 const STEPS = [
-    { title: "Register here", body: "Fill in the form. You get a reference number straight away. Note it down." },
-    { title: "We review it", body: "We read every registration and email you to confirm your place. For anyone under 18, we first check with their parent or guardian." },
-    { title: "Pay and you’re in", body: "Where a fee applies, the confirmation email says how to pay. Your place is confirmed once payment is received." },
+    { title: "Register here", body: "Fill in the form. You get a registration number straight away, on screen and by email." },
+    { title: "Payment details by email", body: "We email payment details to everyone registered by 25 November 2026. For anyone under 18, we also check with their parent or guardian." },
+    { title: "Pay and you’re in", body: "Your place is confirmed once payment is received." },
 ];
 
 export default function RegisterPage() {
@@ -91,7 +91,7 @@ export default function RegisterPage() {
                                 </table>
                             ) : (
                                 <p className="mt-3 text-base text-muted-ink">
-                                    To be announced. You can register now; we will email you the fee with your confirmation, before you pay anything.
+                                    To be announced. You can register now; payment details will be emailed to you by 25 November 2026.
                                 </p>
                             )}
                             <p className="mt-3 text-sm text-faint">

@@ -95,3 +95,53 @@ export async function addRow(record: Record<string, string>): Promise<void> {
     const out = await call({ method: "worksheet.records.add", json_data: JSON.stringify([record]) });
     if (out.status !== "success") throw new Error(`Zoho Sheet add failed: ${out.error_code ?? ""} ${out.error_message ?? ""}`);
 }
+
+export interface ZohoDiagnosis {
+    signIn: string;
+    spreadsheet?: string;
+    worksheets?: string[];
+    worksheetFound?: boolean;
+    headerRow?: string;
+}
+
+let lastDiagnosis: { at: number; result: ZohoDiagnosis } | null = null;
+
+/**
+ * Setup check, step by step: sign in to Zoho, open the spreadsheet, find the worksheet, read its
+ * header row. Reports Zoho's own error messages, never any setting's value. Runs at most once
+ * every 30 seconds (Zoho limits how often new access tokens can be created).
+ */
+export async function diagnose(): Promise<ZohoDiagnosis> {
+    if (lastDiagnosis && Date.now() - lastDiagnosis.at < 30_000) return lastDiagnosis.result;
+    const result: ZohoDiagnosis = { signIn: "not tried" };
+    try {
+        cached = null;
+        await accessToken();
+        result.signIn = "ok";
+    } catch (err) {
+        result.signIn = `failed: ${(err as Error).message}`;
+    }
+    if (result.signIn === "ok") {
+        try {
+            const list = (await call({ method: "worksheet.list" })) as SheetResponse & { worksheet_names?: { worksheet_name: string }[] };
+            if (list.status === "success") {
+                result.spreadsheet = "ok";
+                result.worksheets = (list.worksheet_names ?? []).map((w) => w.worksheet_name);
+                result.worksheetFound = result.worksheets.includes(WORKSHEET);
+            } else result.spreadsheet = `failed: ${list.error_code ?? ""} ${list.error_message ?? ""}`.trim();
+        } catch (err) {
+            result.spreadsheet = `failed: ${(err as Error).message}`;
+        }
+    }
+    if (result.worksheetFound) {
+        try {
+            const out = await call({ method: "worksheet.records.fetch", criteria: `"Reference"="__setup_check__"` });
+            result.headerRow =
+                out.status === "success" ? "ok (a column called Reference exists)" : `failed: ${out.error_code ?? ""} ${out.error_message ?? ""}`.trim();
+        } catch (err) {
+            result.headerRow = `failed: ${(err as Error).message}`;
+        }
+    }
+    lastDiagnosis = { at: Date.now(), result };
+    return result;
+}

@@ -12,7 +12,7 @@ import {
     type Values,
 } from "@/lib/registration";
 import { connection } from "next/server";
-import { addRow, hasValue, zohoConfigured, zohoDataCentre, zohoMissing } from "@/lib/zoho-sheet";
+import { addRow, diagnose, hasValue, zohoConfigured, zohoDataCentre, zohoMissing } from "@/lib/zoho-sheet";
 
 /**
  * Registration gateway for the BRICS India Youth Conference 2026.
@@ -153,7 +153,10 @@ export async function POST(request: Request) {
 }
 
 /** Setup check: says whether the Zoho settings reached the server, naming (never showing) any that are missing. */
-export async function GET() {
+export async function GET(request: Request) {
     await connection();
-    return json({ connected: zohoConfigured(), dataCentre: zohoDataCentre(), missing: zohoMissing() });
+    const status = { connected: zohoConfigured(), dataCentre: zohoDataCentre(), missing: zohoMissing() };
+    // ?check=zoho also tries each step against Zoho (sign in, spreadsheet, worksheet, header row).
+    if (status.connected && new URL(request.url).searchParams.get("check") === "zoho") return json({ ...status, ...(await diagnose()) });
+    return json(status);
 }

@@ -1,5 +1,5 @@
 import "server-only";
-import { conference } from "@/lib/conference";
+import { registrationEmailHtml, registrationEmailSubject } from "@/lib/registration-email";
 import { accessToken, forgetToken, zohoDataCentre, type ZohoCredentials } from "@/lib/zoho-sheet";
 
 /**
@@ -69,13 +69,13 @@ async function account(): Promise<string> {
     return accountId;
 }
 
-async function send(to: string, cc: string | undefined, subject: string, content: string) {
+async function send(to: string, cc: string | undefined, subject: string, content: string, mailFormat: "html" | "plaintext" = "html") {
     const id = await account();
     const token = await accessToken(creds());
     const res = await fetch(`${base()}/accounts/${encodeURIComponent(id)}/messages`, {
         method: "POST",
         headers: { Authorization: `Zoho-oauthtoken ${token}`, Accept: "application/json", "Content-Type": "application/json" },
-        body: JSON.stringify({ fromAddress: FROM, toAddress: to, ...(cc ? { ccAddress: cc } : {}), subject, content, mailFormat: "plaintext", encoding: "UTF-8" }),
+        body: JSON.stringify({ fromAddress: FROM, toAddress: to, ...(cc ? { ccAddress: cc } : {}), subject, content, mailFormat, encoding: "UTF-8" }),
         signal: AbortSignal.timeout(15_000),
         cache: "no-store",
     });
@@ -86,39 +86,10 @@ async function send(to: string, cc: string | undefined, subject: string, content
     }
 }
 
-const longDate = (iso: string) =>
-    new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
-
-/** Thank-you email with the registration number. A parent or guardian, if given, is copied in. */
+/** Thank-you email with the registration number (HTML, see lib/registration-email.ts). A parent or guardian, if given, is copied in. */
 export async function sendRegistrationEmail(r: { name: string; email: string; reference: string; guardianEmail?: string }) {
-    const subject = `Thank you for registering: ${conference.title} (${r.reference})`;
-    const lines = [
-        `Dear ${r.name},`,
-        "",
-        `Thank you for registering for the ${conference.title}, on ${longDate(conference.date)} in ${conference.place}.`,
-        "",
-        `Your registration number is ${r.reference}. Please quote it whenever you write to us.`,
-        "",
-        conference.paymentDetailsBy
-            ? `Payment details will be shared by ${longDate(conference.paymentDetailsBy)}. Your place is confirmed once payment is received.`
-            : "We will email you payment details. Your place is confirmed once payment is received.",
-        "",
-        ...(r.guardianEmail
-            ? [
-                  "As the registrant is under 18, we have copied their parent or guardian, whom we will contact to verify their consent before confirming the place.",
-                  "",
-              ]
-            : []),
-        "Manthanam will never ask for card details, UPI PINs or passwords by email or phone.",
-        "",
-        "If you have any questions, just reply to this email.",
-        "",
-        "Warm regards,",
-        "Manthanam Research Foundation",
-        "New Delhi",
-        "https://www.manthanam.in",
-    ];
-    await send(r.email, r.guardianEmail, subject, lines.join("\n"));
+    const html = registrationEmailHtml({ name: r.name, reference: r.reference, minor: !!r.guardianEmail });
+    await send(r.email, r.guardianEmail, registrationEmailSubject(r), html);
 }
 
 /** Setup check: can these credentials find a mailbox that sends as FROM? (Sends nothing.) */

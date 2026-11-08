@@ -68,13 +68,14 @@ ZOHO_SHEET_RESOURCE_ID=…
 ZOHO_SHEET_WORKSHEET=Registrations
 ```
 
-They are **server-only** (no `NEXT_PUBLIC_` prefix). On **AWS Amplify**, server-side variables are
-not visible to the running site unless the build writes them out. In the build settings
-(`amplify.yml`), add this line before `npm run build`, then redeploy:
+They are **server-only** (no `NEXT_PUBLIC_` prefix). `next.config.ts` bakes them into the server
+code at build time, because AWS Amplify only gives environment variables to the build, not to the
+running site. So after adding or changing any of them, **redeploy** for them to take effect. They
+never appear in the JavaScript sent to visitors' browsers.
 
-```
-- env | grep -e ZOHO_ >> .env.production
-```
+To check the settings reached the live site, open **https://www.manthanam.in/api/register**. It
+shows `"connected": true` and the data centre, or lists the names (never the values) of any
+setting that is missing.
 
 ### 4. Test
 

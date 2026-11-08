@@ -38,7 +38,17 @@ const securityHeaders = [
   { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
 ];
 
+/**
+ * Zoho Sheet settings for the registration gateway, baked in at build time. AWS Amplify only
+ * exposes environment variables to the build, not to the running server, so without this the
+ * live site can't see them. They are only referenced from lib/zoho-sheet.ts (server-only), so
+ * they end up in the server bundle, never in the browser's JavaScript.
+ */
+const ZOHO_KEYS = ["ZOHO_DC", "ZOHO_CLIENT_ID", "ZOHO_CLIENT_SECRET", "ZOHO_REFRESH_TOKEN", "ZOHO_SHEET_RESOURCE_ID", "ZOHO_SHEET_WORKSHEET"];
+const buildEnv = Object.fromEntries(ZOHO_KEYS.flatMap((k) => (process.env[k] ? [[k, process.env[k]!]] : [])));
+
 const nextConfig: NextConfig = {
+  env: buildEnv,
   cacheComponents: true,
   partialPrefetching: true,
   // Don't advertise the framework in an X-Powered-By header.

@@ -10,15 +10,29 @@ import "server-only";
  * names; each record is an object keyed by those names. Setup: docs/registration-sheet.md.
  */
 
-const env = (k: string) => process.env[k]?.trim() || undefined;
-const DC = env("ZOHO_DC") ?? "in"; // data centre: in, com, eu, com.au, jp, ca, sa …
-const CLIENT_ID = env("ZOHO_CLIENT_ID");
-const CLIENT_SECRET = env("ZOHO_CLIENT_SECRET");
-const REFRESH_TOKEN = env("ZOHO_REFRESH_TOKEN");
-const RESOURCE_ID = env("ZOHO_SHEET_RESOURCE_ID");
-const WORKSHEET = env("ZOHO_SHEET_WORKSHEET") ?? "Registrations";
+// Written as literal process.env.NAME so next.config.ts can bake build-time values into the server
+// bundle (some hosts, such as AWS Amplify, only expose environment variables during the build).
+const v = (s: string | undefined) => s?.trim() || undefined;
+// Data centre: in, com, eu, com.au, jp, ca, sa … ("zoho.com", ".com" and "COM" are accepted too).
+const DC = (v(process.env.ZOHO_DC) ?? "in").toLowerCase().replace(/^(https?:\/\/)?([a-z]+\.)?zoho\./, "").replace(/^\./, "");
+const CLIENT_ID = v(process.env.ZOHO_CLIENT_ID);
+const CLIENT_SECRET = v(process.env.ZOHO_CLIENT_SECRET);
+const REFRESH_TOKEN = v(process.env.ZOHO_REFRESH_TOKEN);
+const RESOURCE_ID = v(process.env.ZOHO_SHEET_RESOURCE_ID);
+const WORKSHEET = v(process.env.ZOHO_SHEET_WORKSHEET) ?? "Registrations";
 
-export const zohoConfigured = () => !!(CLIENT_ID && CLIENT_SECRET && REFRESH_TOKEN && RESOURCE_ID && /^[a-z.]+$/.test(DC));
+/** Names (never values) of the settings that are missing or malformed. */
+export function zohoMissing(): string[] {
+    const missing: string[] = [];
+    if (!CLIENT_ID) missing.push("ZOHO_CLIENT_ID");
+    if (!CLIENT_SECRET) missing.push("ZOHO_CLIENT_SECRET");
+    if (!REFRESH_TOKEN) missing.push("ZOHO_REFRESH_TOKEN");
+    if (!RESOURCE_ID) missing.push("ZOHO_SHEET_RESOURCE_ID");
+    if (!/^[a-z]+(\.[a-z]+)?$/.test(DC)) missing.push("ZOHO_DC");
+    return missing;
+}
+export const zohoConfigured = () => zohoMissing().length === 0;
+export const zohoDataCentre = () => DC;
 
 let cached: { token: string; until: number } | null = null;
 

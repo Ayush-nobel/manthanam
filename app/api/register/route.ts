@@ -11,7 +11,8 @@ import {
     validate,
     type Values,
 } from "@/lib/registration";
-import { addRow, hasValue, zohoConfigured } from "@/lib/zoho-sheet";
+import { connection } from "next/server";
+import { addRow, hasValue, zohoConfigured, zohoDataCentre, zohoMissing } from "@/lib/zoho-sheet";
 
 /**
  * Registration gateway for the BRICS India Youth Conference 2026.
@@ -104,7 +105,7 @@ export async function POST(request: Request) {
     if (Object.keys(errors).length) return json({ errors }, 422);
 
     if (!zohoConfigured()) {
-        console.error("Zoho Sheet credentials are not set — see docs/registration-sheet.md.");
+        console.error("Zoho Sheet settings missing:", zohoMissing().join(", "), "— see docs/registration-sheet.md.");
         return json({ error: "Registration isn’t connected yet." }, 503);
     }
 
@@ -149,4 +150,10 @@ export async function POST(request: Request) {
         console.error("Registration not saved:", err);
         return json({ error: "We couldn’t save your registration right now." }, 502);
     }
+}
+
+/** Setup check: says whether the Zoho settings reached the server, naming (never showing) any that are missing. */
+export async function GET() {
+    await connection();
+    return json({ connected: zohoConfigured(), dataCentre: zohoDataCentre(), missing: zohoMissing() });
 }

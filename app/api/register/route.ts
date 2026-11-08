@@ -92,8 +92,12 @@ export async function POST(request: Request) {
         return json({ error: "The form could not be read. Please try again." }, 400);
     }
 
-    // Honeypot: people never see this field. Answer as if it worked and store nothing.
-    if (typeof raw.company_website === "string" && raw.company_website !== "") return json({ ok: true, reference: reference() });
+    // Honeypot: people never see this field. Answer as if it worked and store nothing (logged, so a false
+    // positive shows up in the server logs rather than as a silently missing registration).
+    if (typeof raw.x_hp_9 === "string" && raw.x_hp_9 !== "") {
+        console.warn("Registration honeypot triggered; nothing saved.");
+        return json({ ok: true, reference: reference() });
+    }
 
     const v: Values = clean(raw);
     const errors = validate(v);
@@ -139,6 +143,7 @@ export async function POST(request: Request) {
         if (await hasValue("Email", email))
             return json({ errors: { email: "This email address is already registered. To change your registration, email us." } }, 409);
         await addRow(row);
+        console.info("Registration saved:", ref);
         return json({ ok: true, reference: ref });
     } catch (err) {
         console.error("Registration not saved:", err);

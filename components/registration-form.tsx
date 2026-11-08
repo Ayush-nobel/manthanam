@@ -98,7 +98,7 @@ export default function RegistrationForm() {
             const res = await fetch("/api/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ...values, company_website: data.company_website ?? "" }),
+                body: JSON.stringify({ ...values, x_hp_9: data.x_hp_9 ?? "" }),
             });
             const body = (await res.json().catch(() => null)) as { ok?: boolean; reference?: string; errors?: Errors; error?: string } | null;
             if (res.ok && body?.ok && body.reference) {
@@ -248,10 +248,11 @@ export default function RegistrationForm() {
 
     return (
         <form ref={formRef} noValidate onSubmit={onSubmit} aria-busy={submitting} className="relative grid gap-16">
-            {/* Honeypot: hidden from people and assistive tech; bots that fill every field reveal themselves. */}
-            <div aria-hidden="true" className="pointer-events-none absolute left-0 top-0 h-px w-px overflow-hidden opacity-0">
-                <label htmlFor={id("hp")}>Company website (leave blank)</label>
-                <input id={id("hp")} type="text" name="company_website" tabIndex={-1} autoComplete="off" />
+            {/* Honeypot for bots that fill every field in the HTML. display:none (the `hidden` attribute) so browsers
+                never autofill it, and a meaningless name so no autofill heuristic matches it. */}
+            <div hidden>
+                <label htmlFor={id("hp")}>Leave this empty</label>
+                <input id={id("hp")} type="text" name="x_hp_9" tabIndex={-1} autoComplete="off" />
             </div>
 
             {errorList.length > 0 && (

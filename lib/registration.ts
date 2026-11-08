@@ -140,3 +140,31 @@ export function validate(v: Values): Errors {
     }
     return e;
 }
+
+/** The registration sheet's header row (row 1), in order. The server writes each row by these names. */
+export const SHEET_COLUMNS = [
+    "Reference",
+    "Submitted (UTC)",
+    "Full name",
+    "Email",
+    "Phone",
+    "Date of birth",
+    "Under 18",
+    "Status",
+    "Institution",
+    "City",
+    "State",
+    "Country",
+    "Why they want to attend",
+    "Heard about it from",
+    "Access needs",
+    "Guardian name",
+    "Guardian relation",
+    "Guardian email",
+    "Guardian phone",
+    "Consent given",
+    "Guardian consent",
+    "Place terms accepted",
+    "Privacy policy version",
+    "Registration status",
+] as const;

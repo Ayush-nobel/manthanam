@@ -82,11 +82,11 @@ setting that is missing.
 Submit one registration on the live site, check the row appears, then delete the test row.
 Submitting again with the same email should say it's already registered.
 
-## Confirmation emails from contact@manthanam.in
+## Confirmation emails from ayush.shukla@manthanam.in
 
 As soon as someone registers, the site emails them (and their parent or guardian, if they are under
 18) a thank-you with their registration number and the date payment details will be shared. It is
-sent through the Zoho Mail API from **contact@manthanam.in**, so it appears in that mailbox's Sent
+sent through the Zoho Mail API from **ayush.shukla@manthanam.in**, so it appears in that mailbox's Sent
 folder, and replies come back to it. If the email fails, the registration is still saved and the
 person still sees their number on screen.
 
@@ -100,8 +100,8 @@ ZohoSheet.dataAPI.UPDATE,ZohoSheet.dataAPI.READ,ZohoMail.messages.CREATE,ZohoMai
 swap it for a refresh token as in step 2.4 (at `accounts.zoho.com` for a `.com` account), replace
 `ZOHO_REFRESH_TOKEN` in Amplify, and **redeploy**.
 
-This works when the Zoho user who owns the sheet also owns (or can send as) contact@manthanam.in.
-If contact@manthanam.in is a different Zoho user, sign in as that user, create a Self Client there
+This works when the Zoho user who owns the sheet also owns (or can send as) ayush.shukla@manthanam.in.
+If ayush.shukla@manthanam.in is a different Zoho user, sign in as that user, create a Self Client there
 with the two `ZohoMail` scopes, and set these instead (the sheet keeps its own credentials):
 
 ```
@@ -110,10 +110,10 @@ ZOHO_MAIL_CLIENT_SECRET=…
 ZOHO_MAIL_REFRESH_TOKEN=…
 ```
 
-Optional: `ZOHO_MAIL_FROM` (default `contact@manthanam.in`).
+Optional: `ZOHO_MAIL_FROM` (default `ayush.shukla@manthanam.in`).
 
 **Check it:** https://www.manthanam.in/api/register?check=zoho shows `"email": "ok (sends as
-contact@manthanam.in)"` when it's ready. It looks up the mailbox but sends nothing.
+ayush.shukla@manthanam.in)"` when it's ready. It looks up the mailbox but sends nothing.
 
 The email text is in `lib/zoho-mail.ts`; the payment-details date is `paymentDetailsBy` in
 `lib/conference.ts`.

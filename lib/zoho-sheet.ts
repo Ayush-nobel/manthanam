@@ -1,4 +1,5 @@
 import "server-only";
+import { SHEET_COLUMNS } from "@/lib/registration";
 
 /**
  * Minimal Zoho Sheet client for the conference registration gateway (server only).
@@ -113,6 +114,8 @@ export interface ZohoDiagnosis {
     worksheets?: string[];
     worksheetFound?: boolean;
     headerRow?: string;
+    columnsMissing?: string[];
+    columnsInSheetNotExpected?: string[];
 }
 
 let lastDiagnosis: { at: number; result: ZohoDiagnosis } | null = null;
@@ -146,9 +149,16 @@ export async function diagnose(): Promise<ZohoDiagnosis> {
     }
     if (result.worksheetFound) {
         try {
-            const out = await call({ method: "worksheet.records.fetch", criteria: `"Reference"="__setup_check__"` });
-            result.headerRow =
-                out.status === "success" ? "ok (a column called Reference exists)" : `failed: ${out.error_code ?? ""} ${out.error_message ?? ""}`.trim();
+            const out = await call({ method: "worksheet.records.fetch", count: "1" });
+            if (out.status !== "success") result.headerRow = `failed: ${out.error_code ?? ""} ${out.error_message ?? ""}`.trim();
+            else if (!out.records?.length) result.headerRow = "no rows yet, so the column names can't be read";
+            else {
+                const found = Object.keys(out.records[0]).filter((k) => k !== "row_index");
+                const missing = SHEET_COLUMNS.filter((c) => !found.includes(c));
+                result.headerRow = missing.length ? "some columns don't match" : "ok";
+                result.columnsMissing = missing;
+                result.columnsInSheetNotExpected = found.filter((c) => !(SHEET_COLUMNS as readonly string[]).includes(c));
+            }
         } catch (err) {
             result.headerRow = `failed: ${(err as Error).message}`;
         }

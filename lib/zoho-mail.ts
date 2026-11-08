@@ -13,7 +13,7 @@ import { accessToken, forgetToken, zohoDataCentre, type ZohoCredentials } from "
 
 const v = (s: string | undefined) => s?.trim() || undefined;
 // Literal process.env.NAME references, so next.config.ts can bake them in at build time.
-const FROM = v(process.env.ZOHO_MAIL_FROM) ?? "contact@manthanam.in";
+const FROM = v(process.env.ZOHO_MAIL_FROM) ?? "ayush.shukla@manthanam.in";
 const ACCOUNT_ID = v(process.env.ZOHO_MAIL_ACCOUNT_ID);
 const CREDS: Partial<ZohoCredentials> = {
     clientId: v(process.env.ZOHO_MAIL_CLIENT_ID) ?? v(process.env.ZOHO_CLIENT_ID),
@@ -28,6 +28,22 @@ export const mailFrom = () => FROM;
 
 let accountId: string | undefined = ACCOUNT_ID;
 
+interface MailAccount {
+    accountId: string;
+    primaryEmailAddress?: string;
+    mailboxAddress?: string;
+    incomingUserName?: string;
+    emailAddress?: { mailId?: string }[];
+    sendMailDetails?: { fromAddress?: string }[];
+}
+/** Every address an account can send as: primary, mailbox, aliases and send-as addresses. */
+const addresses = (a: MailAccount) =>
+    [a.primaryEmailAddress, a.mailboxAddress, a.incomingUserName, ...(a.emailAddress ?? []).map((e) => e.mailId), ...(a.sendMailDetails ?? []).map((d) => d.fromAddress)]
+        .filter((x): x is string => !!x && x.includes("@"))
+        .map((x) => x.toLowerCase());
+/** a***@manthanam.in: enough to recognise an address in a public setup check without publishing it. */
+const mask = (addr: string) => addr.replace(/^(.)[^@]*@/, "$1***@");
+
 /** The Zoho Mail account that can send as FROM (looked up once, then remembered). */
 async function account(): Promise<string> {
     if (accountId) return accountId;
@@ -40,14 +56,15 @@ async function account(): Promise<string> {
     if (res.status === 401) forgetToken(creds());
     const body = (await res.json().catch(() => null)) as {
         status?: { code?: number; description?: string };
-        data?: { accountId: string; primaryEmailAddress?: string; sendMailDetails?: { fromAddress?: string }[] }[];
+        data?: MailAccount[];
     } | null;
     if (!res.ok || !body?.data) throw new Error(`Zoho Mail accounts lookup failed: ${res.status} ${body?.status?.description ?? ""}`);
     const want = FROM.toLowerCase();
-    const match = body.data.find(
-        (a) => a.primaryEmailAddress?.toLowerCase() === want || a.sendMailDetails?.some((d) => d.fromAddress?.toLowerCase() === want),
-    );
-    if (!match) throw new Error(`No Zoho Mail account for this token can send as ${FROM}`);
+    const match = body.data.find((a) => addresses(a).includes(want));
+    if (!match) {
+        const owned = [...new Set(body.data.flatMap(addresses))].map(mask);
+        throw new Error(`No Zoho Mail account for this token can send as ${FROM}. This Zoho login's addresses: ${owned.join(", ") || "none"}`);
+    }
     accountId = String(match.accountId);
     return accountId;
 }

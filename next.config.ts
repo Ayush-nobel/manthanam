@@ -46,7 +46,7 @@ const securityHeaders = [
  */
 const ZOHO_KEYS = [
   "ZOHO_DC", "ZOHO_CLIENT_ID", "ZOHO_CLIENT_SECRET", "ZOHO_REFRESH_TOKEN", "ZOHO_SHEET_RESOURCE_ID", "ZOHO_SHEET_WORKSHEET",
-  // Confirmation emails (optional overrides; default to the sheet credentials and contact@manthanam.in).
+  // Confirmation emails (optional overrides; default to the sheet credentials and ayush.shukla@manthanam.in).
   "ZOHO_MAIL_FROM", "ZOHO_MAIL_ACCOUNT_ID", "ZOHO_MAIL_CLIENT_ID", "ZOHO_MAIL_CLIENT_SECRET", "ZOHO_MAIL_REFRESH_TOKEN",
 ];
 const buildEnv = Object.fromEntries(ZOHO_KEYS.flatMap((k) => (process.env[k] ? [[k, process.env[k]!]] : [])));

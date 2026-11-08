@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import Breadcrumbs from "@/components/breadcrumbs";
 import JsonLd from "@/components/json-ld";
@@ -8,6 +9,7 @@ import SiteFooter from "@/components/site-footer";
 import SiteHeader from "@/components/site-header";
 import { conference, FAQS } from "@/lib/conference";
 import { site } from "@/lib/site";
+import conferenceLogo from "@/public/events/biyc-2026-logo.png";
 
 export const metadata: Metadata = {
     title: `Register — ${conference.title}`,
@@ -41,10 +43,21 @@ export default function RegisterPage() {
             <main className="flex-1">
                 <div className="mx-auto max-w-[84rem] px-6 pt-12 sm:px-10 sm:pt-16">
                     <Breadcrumbs items={[{ name: "Events", href: "/events" }, { name: "Register" }]} />
-                    <p className="mt-10 text-base italic text-signal">{conference.registrationOpen ? "Registration is open" : "Registration is closed"}</p>
-                    <h1 className="mt-3 max-w-[18ch] font-display text-[clamp(2.25rem,6vw,4.5rem)] font-[650] leading-[1.02] tracking-[-0.015em] text-ink [font-stretch:120%]">
-                        Register for the {conference.title}.
-                    </h1>
+                    <div className="mt-10 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between lg:gap-10">
+                        <div className="order-2 lg:order-1">
+                            <p className="text-base italic text-signal">{conference.registrationOpen ? "Registration is open" : "Registration is closed"}</p>
+                            <h1 className="mt-3 max-w-[18ch] font-display text-[clamp(2.25rem,6vw,4.5rem)] font-[650] leading-[1.02] tracking-[-0.015em] text-ink [font-stretch:120%]">
+                                Register for the {conference.title}.
+                            </h1>
+                        </div>
+                        <Image
+                            src={conferenceLogo}
+                            alt={`${conference.title} logo`}
+                            priority
+                            sizes="(min-width: 1024px) 15rem, 8rem"
+                            className="order-1 h-auto w-32 shrink-0 sm:w-40 lg:order-2 lg:w-60"
+                        />
+                    </div>
                 </div>
 
                 <section aria-labelledby="register-title" className="mx-auto grid max-w-[84rem] gap-16 px-6 pb-24 pt-14 sm:px-10 sm:pb-32 lg:grid-cols-12 lg:gap-10">

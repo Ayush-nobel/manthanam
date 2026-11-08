@@ -34,18 +34,29 @@ function limited(ip: string) {
     return recent.length > MAX_PER_WINDOW;
 }
 
-/** The Origin header must be this site (behind a CDN the Host header may be an internal name, so both are allowed). */
+/**
+ * Only accept posts made by this site's own pages. Browsers mark every request with
+ * Sec-Fetch-Site, which a web page cannot forge: "same-origin" means our own form sent it.
+ * Older browsers that don't send it fall back to comparing the Origin header with our domains.
+ */
 function fromThisSite(request: Request) {
+    const fetchSite = request.headers.get("sec-fetch-site");
+    if (fetchSite) return fetchSite === "same-origin";
     const origin = request.headers.get("origin");
     if (!origin) return false;
     let host: string;
     try {
-        host = new URL(origin).host;
+        host = new URL(origin).host.replace(/\.$/, "").replace(/\.:/, ":");
     } catch {
         return false;
     }
     const allowed = new Set([new URL(site.url).host, "manthanam.in"]);
-    for (const h of [request.headers.get("host"), request.headers.get("x-forwarded-host")]) if (h) allowed.add(h);
+    // "www.manthanam.in." (trailing dot) is the same host written as a fully qualified name.
+    for (const h of [request.headers.get("host"), request.headers.get("x-forwarded-host")]) if (h) allowed.add(h.replace(/\.$/, "").replace(/\.:/, ":"));
+    try {
+        allowed.add(new URL(request.url).host);
+    } catch {}
+    if (!allowed.has(host)) console.warn("Registration refused: origin", origin, "host", request.headers.get("host"), "x-forwarded-host", request.headers.get("x-forwarded-host"));
     return allowed.has(host);
 }
 

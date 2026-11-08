@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import Breadcrumbs from "@/components/breadcrumbs";
 import EventGallery from "@/components/event-gallery";
@@ -41,6 +42,7 @@ export default function EventsPage() {
                                     {/* Chart cartouche: the same double rule as the homepage title box. */}
                                     <article className="grid gap-6 border-[5px] border-double border-ink bg-paper px-6 py-8 sm:px-10 sm:py-10 md:grid-cols-12 md:gap-10">
                                         <div className="md:col-span-4">
+                                            {e.logo && <Image src={e.logo} alt={`${e.title} logo`} sizes="10rem" className="mb-6 h-auto w-28 sm:w-36" />}
                                             <p className="text-base italic text-signal">Coming up</p>
                                             <p className="mt-2 font-display text-[clamp(1.75rem,3vw,2.5rem)] font-[650] leading-[1.05] text-ink [font-stretch:118%]">
                                                 <time dateTime={e.date}>{formatDate(e.date)}</time>

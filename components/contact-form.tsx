@@ -21,7 +21,7 @@ const FIELDS: Field[] = ["name", "email", "message", "sender", "consent", "guard
 
 // Consent wording — sent with every submission as the consent record (DPDP Act s.6; Rules r.3).
 // If you change these texts, also bump PRIVACY_POLICY_VERSION to the Privacy Policy's "updated" date.
-const PRIVACY_POLICY_VERSION = "2026-11-05";
+const PRIVACY_POLICY_VERSION = "2026-11-08";
 const CONSENT_TEXT = `I agree that ${site.legal.name} may use my name, email address and message to reply to this enquiry, as described in the Privacy Policy. I can withdraw my consent at any time.`;
 const GUARDIAN_CONSENT_TEXT =
     "I am the parent or legal guardian of the person under 18 I am writing about. I consent to Manthanam using any details about them that I include in this message to reply to me, and I understand Manthanam will verify my identity before acting on them.";

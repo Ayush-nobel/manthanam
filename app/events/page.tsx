@@ -52,8 +52,11 @@ export default function EventsPage() {
                                                 {e.title}
                                             </h3>
                                             <p className="mt-4 max-w-[36rem] text-lg text-muted-ink">{e.body}</p>
-                                            <Link href="/#contact" className="link-draw mt-6 inline-block font-display text-base font-semibold text-ink [font-stretch:112%]">
-                                                Write to us about the conference
+                                            <Link
+                                                href="/register"
+                                                className="mt-7 inline-flex min-h-12 items-center bg-ink px-7 py-3 font-display text-base font-semibold text-paper [font-stretch:112%] transition-colors hover:bg-signal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal"
+                                            >
+                                                Register for the conference
                                             </Link>
                                         </div>
                                     </article>

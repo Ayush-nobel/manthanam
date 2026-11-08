@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { conference } from "@/lib/conference";
 import { site } from "@/lib/site";
 import wordmark from "@/public/logo-wordmark-ink.png";
 
@@ -22,6 +23,15 @@ export default function SiteHeader() {
 
     return (
         <header className="relative z-10 border-b border-line">
+            {conference.registrationOpen && pathname !== "/register" && (
+                // Announcement strip, as on conference sites: the one time-bound thing a visitor can act on.
+                <p className="bg-ink px-4 py-2.5 text-center text-sm text-on-ink-muted sm:px-7">
+                    {conference.title}, 20 December, New Delhi. Registration is open.{" "}
+                    <Link href="/register" className="link-draw-on-ink whitespace-nowrap font-display font-semibold text-paper [font-stretch:112%]">
+                        Register
+                    </Link>
+                </p>
+            )}
             <div className="px-4 sm:px-7 lg:pl-[4.5rem] lg:pr-6">
                 <div className="flex items-center justify-between gap-6 py-5">
                     <Link href="/" className="inline-flex focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-signal">

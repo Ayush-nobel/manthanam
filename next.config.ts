@@ -39,17 +39,20 @@ const securityHeaders = [
 ];
 
 /**
- * Zoho Sheet settings for the registration gateway, baked in at build time. AWS Amplify only
- * exposes environment variables to the build, not to the running server, so without this the
- * live site can't see them. They are only referenced from lib/zoho-sheet.ts (server-only), so
- * they end up in the server bundle, never in the browser's JavaScript.
+ * Server settings baked in at build time. AWS Amplify only exposes environment variables to the
+ * build, not to the running server, so without this the live site can't see them. Each is only
+ * referenced from server-only modules (lib/db.ts, lib/auth.ts, lib/proxy-admin.ts, lib/zoho-*.ts),
+ * so they end up in the server bundle, never in the browser's JavaScript.
  */
-const ZOHO_KEYS = [
-  "ZOHO_DC", "ZOHO_CLIENT_ID", "ZOHO_CLIENT_SECRET", "ZOHO_REFRESH_TOKEN", "ZOHO_SHEET_RESOURCE_ID", "ZOHO_SHEET_WORKSHEET",
-  // Confirmation emails (optional overrides; default to the sheet credentials and ayush.shukla@manthanam.in).
-  "ZOHO_MAIL_FROM", "ZOHO_MAIL_ACCOUNT_ID", "ZOHO_MAIL_CLIENT_ID", "ZOHO_MAIL_CLIENT_SECRET", "ZOHO_MAIL_REFRESH_TOKEN",
+const SERVER_KEYS = [
+    // Database and admin sign-in (docs/backend.md).
+    "SUPABASE_URL", "SUPABASE_PUBLISHABLE_KEY", "SUPABASE_SECRET_KEY",
+    // Zoho Sheet copy of registrations (docs/registration-sheet.md).
+    "ZOHO_DC", "ZOHO_CLIENT_ID", "ZOHO_CLIENT_SECRET", "ZOHO_REFRESH_TOKEN", "ZOHO_SHEET_RESOURCE_ID", "ZOHO_SHEET_WORKSHEET",
+    // Emails (optional overrides; default to the sheet credentials and ayush.shukla@manthanam.in).
+    "ZOHO_MAIL_FROM", "ZOHO_MAIL_ACCOUNT_ID", "CONTACT_NOTIFY_TO", "ZOHO_MAIL_CLIENT_ID", "ZOHO_MAIL_CLIENT_SECRET", "ZOHO_MAIL_REFRESH_TOKEN",
 ];
-const buildEnv = Object.fromEntries(ZOHO_KEYS.flatMap((k) => (process.env[k] ? [[k, process.env[k]!]] : [])));
+const buildEnv = Object.fromEntries(SERVER_KEYS.flatMap((k) => (process.env[k] ? [[k, process.env[k]!]] : [])));
 
 const nextConfig: NextConfig = {
   env: buildEnv,

@@ -8,7 +8,7 @@ import { site } from "@/lib/site";
 
 // Consent wording is stored with every registration as the consent record (DPDP Act s.6, s.9).
 // If you change these texts, also bump PRIVACY_POLICY_VERSION to the Privacy Policy's "updated" date.
-export const PRIVACY_POLICY_VERSION = "2026-11-08";
+export const PRIVACY_POLICY_VERSION = "2026-11-10";
 export const CONSENT_TEXT = `I agree that ${site.legal.name} may use the details in this form to process my registration for the ${conference.title} and to contact me about it, as described in the Privacy Policy. I can withdraw my consent at any time.`;
 export const GUARDIAN_CONSENT_TEXT =
     "I am the parent or legal guardian of the person registering, who is under 18. I consent to Manthanam using their details to process this registration, and I understand Manthanam will contact me to verify my identity before confirming their place.";

@@ -1,6 +1,6 @@
 ---
 title: "Privacy Policy"
-updated: 2026-11-08
+updated: 2026-11-10
 summary: "What personal data this website collects, why, who handles it, how long we keep it, and how you can access, correct or delete it."
 ---
 
@@ -36,9 +36,10 @@ We use a small number of service providers ("Data Processors") who handle data o
 
 | Provider | What they do for us | Where |
 | --- | --- | --- |
-| **Formspree** | Receives contact-form submissions and forwards them to us | United States |
-| **Zoho Sheet** | Stores event registrations in a private spreadsheet that only Manthanam can open | Zoho's data centres for our account |
-| **Zoho Mail** (sending) | Sends the email confirming your registration, with your registration number, from a manthanam.in address | Zoho's data centres for our account |
+| **Supabase** | Hosts our private database, which stores contact-form messages and event registrations; only Manthanam's signed-in team can see them | India (Mumbai) |
+| **Formspree** | Receives contact-form submissions only if our own system is temporarily unavailable, and forwards them to us | United States |
+| **Zoho Sheet** | Keeps a copy of event registrations in a private spreadsheet that only Manthanam can open | Zoho's data centres for our account |
+| **Zoho Mail** (sending) | Sends the email confirming your registration, with your registration number, from a manthanam.in address, and forwards contact-form messages to our team | Zoho's data centres for our account |
 | **Zoho Mail** | Hosts our email inbox, where enquiries and replies are kept | Zoho's data centres for our account |
 | **Amazon Web Services** (Amazon CloudFront) | Hosts and delivers this website | Global network of servers |
 
@@ -48,7 +49,7 @@ We do not sell, rent or trade personal data, and we do not share it with anyone 
 
 ## How long we keep it
 
-We keep your enquiry and our correspondence **only as long as we need to deal with it**, and **no longer than 12 months after our last exchange** — unless you ask us to keep in touch or the law requires us to keep it longer. After that we delete it from Formspree and from our inbox.
+We keep your enquiry and our correspondence **only as long as we need to deal with it**, and **no longer than 12 months after our last exchange** — unless you ask us to keep in touch or the law requires us to keep it longer. After that we delete it from our database, from Formspree (if it went through Formspree) and from our inbox.
 
 We keep **event registrations** until the event and its follow-up are finished, and **delete them within 12 months after the event** (for the BRICS India Youth Conference 2026, by 20 December 2027), unless the law requires us to keep something longer, for example a record of a payment. If you ask us to delete it sooner, we will (see below).
 

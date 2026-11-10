@@ -1,10 +1,10 @@
 import type { MetadataRoute } from "next";
 import { site } from "@/lib/site";
 
-// Everything is crawlable; the sitemap lists the pages worth indexing.
+// Everything is crawlable except the admin dashboard; the sitemap lists the pages worth indexing.
 export default function robots(): MetadataRoute.Robots {
     return {
-        rules: { userAgent: "*", allow: "/" },
+        rules: { userAgent: "*", allow: "/", disallow: ["/admin", "/api/"] },
         sitemap: `${site.url}/sitemap.xml`,
         host: site.url,
     };

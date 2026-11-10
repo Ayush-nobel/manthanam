@@ -1,6 +1,6 @@
 ---
 title: "Cookie Policy"
-updated: 2026-11-05
+updated: 2026-11-10
 summary: "manthanam.in uses no cookies, no local storage and no analytics or tracking, so there is nothing to accept or reject."
 ---
 
@@ -14,7 +14,11 @@ We last checked this on 5 November 2026 by loading every page of the website in 
 
 ## The contact form
 
-When you send a message, the form sends it to our form-handling provider, Formspree, over an encrypted connection. The form does not set cookies or store your message in your browser. See our [Privacy Policy](/privacy) for how your message is handled.
+When you send a message, the form sends it to manthanam.in over an encrypted connection. The form does not set cookies or store your message in your browser.
+
+## Manthanam's own staff
+
+The private admin area (manthanam.in/admin), used only by Manthanam's team, sets **strictly necessary sign-in cookies** when a team member signs in, to keep them signed in. Visitors to the public website never receive them. See our [Privacy Policy](/privacy) for how your message is handled.
 
 ## Links to other websites
 

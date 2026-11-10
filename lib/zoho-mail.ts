@@ -15,6 +15,8 @@ const v = (s: string | undefined) => s?.trim() || undefined;
 // Literal process.env.NAME references, so next.config.ts can bake them in at build time.
 const FROM = v(process.env.ZOHO_MAIL_FROM) ?? "ayush.shukla@manthanam.in";
 const ACCOUNT_ID = v(process.env.ZOHO_MAIL_ACCOUNT_ID);
+// Where contact-form messages are emailed (comma-separated for several). Defaults to the From mailbox.
+const CONTACT_TO = v(process.env.CONTACT_NOTIFY_TO) ?? FROM;
 const CREDS: Partial<ZohoCredentials> = {
     clientId: v(process.env.ZOHO_MAIL_CLIENT_ID) ?? v(process.env.ZOHO_CLIENT_ID),
     clientSecret: v(process.env.ZOHO_MAIL_CLIENT_SECRET) ?? v(process.env.ZOHO_CLIENT_SECRET),
@@ -90,6 +92,22 @@ async function send(to: string, cc: string | undefined, subject: string, content
 export async function sendRegistrationEmail(r: { name: string; email: string; reference: string; guardianEmail?: string }) {
     const html = registrationEmailHtml({ name: r.name, reference: r.reference, minor: !!r.guardianEmail });
     await send(r.email, r.guardianEmail, registrationEmailSubject(r), html);
+}
+
+const esc = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+
+/** Tells the team a contact message arrived. Reply with the button: replying to this email would go to ourselves. */
+export async function sendContactNotification(m: { name: string; email: string; topic: string; message: string; guardian: boolean; adminUrl?: string }) {
+    const reply = `mailto:${encodeURIComponent(m.email)}?subject=${encodeURIComponent(`Re: ${m.topic}`)}`;
+    const html = `<div style="font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:1.6;color:#10264a;max-width:600px">
+<p style="margin:0 0 4px;font-size:13px;color:#53627a">New message via manthanam.in · ${esc(m.topic)}</p>
+${m.guardian ? `<p style="margin:0 0 12px;padding:8px 12px;border-left:3px solid #a0145c;background:#f5f7f6">A parent or guardian writing about someone under 18: verify who they are before acting on any details.</p>` : ""}
+<p style="margin:12px 0 0"><strong>${esc(m.name)}</strong><br><a href="${esc(reply)}" style="color:#10264a">${esc(m.email)}</a></p>
+<div style="margin:16px 0;padding:16px;border:1px solid #d9e8ec;white-space:pre-wrap">${esc(m.message)}</div>
+<p style="margin:0"><a href="${esc(reply)}" style="display:inline-block;background:#10264a;color:#ffffff;text-decoration:none;padding:10px 18px;font-weight:bold">Reply to ${esc(m.name)}</a>${m.adminUrl ? ` &nbsp; <a href="${esc(m.adminUrl)}" style="color:#10264a">Open in the admin dashboard</a>` : ""}</p>
+</div>`;
+    const subject = `[${m.topic}]${m.guardian ? " [Guardian: verify identity]" : ""} ${m.name} via manthanam.in`;
+    await send(CONTACT_TO, undefined, subject.replace(/[\r\n]+/g, " ").slice(0, 200), html);
 }
 
 /** Setup check: can these credentials find a mailbox that sends as FROM? (Sends nothing.) */

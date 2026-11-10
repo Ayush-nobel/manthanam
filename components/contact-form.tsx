@@ -4,27 +4,31 @@ import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } fr
 import Link from "next/link";
 import { LoaderCircle } from "lucide-react";
 import { site } from "@/lib/site";
+import {
+    cleanContact,
+    CONSENT_TEXT,
+    GUARDIAN_CONSENT_TEXT,
+    PRIVACY_POLICY_VERSION,
+    TOPICS,
+    validateContact,
+    type ContactErrors,
+    type ContactField,
+} from "@/lib/contact";
 
+// Messages go to our own server (/api/contact). Formspree is only a fallback for while that isn't set up.
 // Must be referenced literally so Next.js inlines it into the browser bundle at build time.
 const RAW_FORMSPREE_URL = process.env.NEXT_PUBLIC_FORMSPREE_URL?.trim();
 // Submissions contain names, emails and messages: only ever send them over HTTPS.
 const FORMSPREE_URL = RAW_FORMSPREE_URL?.startsWith("https://") ? RAW_FORMSPREE_URL : undefined;
 
-const topics = ["General enquiry", "Joining Manthanam", "Research collaboration", "Media & speaking"] as const;
+const topics = TOPICS;
 
-type Field = "name" | "email" | "message" | "sender" | "consent" | "guardianConsent";
-type Errors = Partial<Record<Field, string>>;
+type Field = ContactField;
+type Errors = ContactErrors;
 type Status = "idle" | "submitting" | "success" | "error";
 type Sender = "adult" | "guardian";
 /** Order used to move focus to the first problem. */
 const FIELDS: Field[] = ["name", "email", "message", "sender", "consent", "guardianConsent"];
-
-// Consent wording — sent with every submission as the consent record (DPDP Act s.6; Rules r.3).
-// If you change these texts, also bump PRIVACY_POLICY_VERSION to the Privacy Policy's "updated" date.
-const PRIVACY_POLICY_VERSION = "2026-11-08";
-const CONSENT_TEXT = `I agree that ${site.legal.name} may use my name, email address and message to reply to this enquiry, as described in the Privacy Policy. I can withdraw my consent at any time.`;
-const GUARDIAN_CONSENT_TEXT =
-    "I am the parent or legal guardian of the person under 18 I am writing about. I consent to Manthanam using any details about them that I include in this message to reply to me, and I understand Manthanam will verify my identity before acting on them.";
 
 /** Formspree's JSON error shape: { errors: [{ field?, code?, message }] } */
 interface FormspreeError {
@@ -33,25 +37,7 @@ interface FormspreeError {
     message: string;
 }
 
-function validate(data: FormData): Errors {
-    const errors: Errors = {};
-    const sender = data.get("sender");
-    const name = String(data.get("name") ?? "").trim();
-    const email = String(data.get("email") ?? "").trim();
-    const message = String(data.get("message") ?? "").trim();
-    if (!name) errors.name = "Please enter your name.";
-    if (!email) errors.email = "Please enter your email address.";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = "Enter an email address like name@example.com.";
-    if (name.length > 100) errors.name = "Please keep your name under 100 characters.";
-    if (email.length > 254) errors.email = "That email address is too long.";
-    if (message.length < 10) errors.message = "Please write a short message (at least 10 characters).";
-    else if (message.length > 5000) errors.message = "Please keep your message under 5,000 characters.";
-    if (sender !== "adult" && sender !== "guardian") errors.sender = "Please tell us who is writing.";
-    if (data.get("consent") !== "yes") errors.consent = "Please tick this box so we can use your details to reply.";
-    if (sender === "guardian" && data.get("guardianConsent") !== "yes")
-        errors.guardianConsent = "Please confirm you are the parent or legal guardian and give consent.";
-    return errors;
-}
+const validate = (data: FormData): Errors => validateContact(cleanContact(Object.fromEntries(data)));
 
 const inputBase =
     // Ruled fields: a single underline that darkens on focus, like writing on a printed form.
@@ -97,52 +83,66 @@ export default function ContactForm() {
 
         // Honeypot: real people never see or fill this field, so a value means a bot.
         // Pretend it worked and send nothing.
-        if (String(data.get("company_website") ?? "") !== "") {
+        if (String(data.get("x_hp_7") ?? "") !== "") {
             setStatus("success");
             return;
         }
 
-        if (!FORMSPREE_URL) {
-            console.error(
-                RAW_FORMSPREE_URL
-                    ? "NEXT_PUBLIC_FORMSPREE_URL must start with https:// — refusing to send the form over an insecure connection."
-                    : "NEXT_PUBLIC_FORMSPREE_URL is not set — add it to .env.local (see .env.example).",
-            );
-            setFailure("The contact form isn’t connected yet.");
+        const who = data.get("sender") === "guardian" ? "guardian" : "adult";
+        const values = cleanContact(Object.fromEntries(data));
+
+        setStatus("submitting");
+        try {
+            const res = await fetch("/api/contact", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", Accept: "application/json" },
+                body: JSON.stringify(values),
+            });
+            const body = (await res.json().catch(() => null)) as { ok?: boolean; error?: string; errors?: Errors; fallback?: boolean } | null;
+            if (res.ok && body?.ok) return sent();
+            if (body?.errors && Object.keys(body.errors).length) {
+                setErrors(body.errors);
+                setStatus("idle");
+                focusFirst(body.errors);
+                return;
+            }
+            if (!body?.fallback) {
+                setFailure(body?.error ?? "We couldn’t send your message right now.");
+                setStatus("error");
+                return;
+            }
+        } catch {
+            setFailure("We couldn’t send your message. Please check your connection and try again.");
             setStatus("error");
             return;
         }
 
-        const topic = String(data.get("topic"));
-        const who = data.get("sender") === "guardian" ? "guardian" : "adult";
+        // Our server isn't set up to receive messages yet: send through Formspree instead.
+        if (!FORMSPREE_URL) {
+            setFailure("The contact form isn’t connected yet.");
+            setStatus("error");
+            return;
+        }
         const payload = {
-            name: String(data.get("name")).trim(),
-            email: String(data.get("email")).trim(), // Formspree uses this as the reply-to address
-            topic,
-            message: String(data.get("message")).trim(),
+            name: values.name,
+            email: values.email, // Formspree uses this as the reply-to address
+            topic: values.topic,
+            message: values.message,
             sender: who === "guardian" ? "Parent or legal guardian writing for someone under 18" : "Adult (18 or older)",
             // Consent record: exactly what was agreed, to which policy version, and when.
             consent: CONSENT_TEXT,
             ...(who === "guardian" ? { guardianConsent: GUARDIAN_CONSENT_TEXT } : {}),
             privacyPolicyVersion: PRIVACY_POLICY_VERSION,
             consentedAt: new Date().toISOString(),
-            _subject: `[${topic}]${who === "guardian" ? " [Guardian — verify identity]" : ""} New message via manthanam.in`,
+            _subject: `[${values.topic}]${who === "guardian" ? " [Guardian — verify identity]" : ""} New message via manthanam.in`,
         };
-
-        setStatus("submitting");
         try {
             const res = await fetch(FORMSPREE_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json", Accept: "application/json" },
                 body: JSON.stringify(payload),
             });
-            if (res.ok) {
-                formRef.current?.reset();
-                setSender(null);
-                setStatus("success");
-                return;
-            }
-
+            if (res.ok) return sent();
             const body = (await res.json().catch(() => null)) as { errors?: FormspreeError[] } | null;
             const list = body?.errors ?? [];
             const fieldErrors: Errors = {};
@@ -155,13 +155,18 @@ export default function ContactForm() {
                 focusFirst(fieldErrors);
                 return;
             }
-            const formLevel = list.filter((err) => !err.field).map((err) => err.message).join(" ");
-            setFailure(formLevel || "We couldn’t send your message right now.");
+            setFailure(list.filter((err) => !err.field).map((err) => err.message).join(" ") || "We couldn’t send your message right now.");
             setStatus("error");
         } catch {
-            setFailure("We couldn’t send your message — please check your connection and try again.");
+            setFailure("We couldn’t send your message. Please check your connection and try again.");
             setStatus("error");
         }
+    }
+
+    function sent() {
+        formRef.current?.reset();
+        setSender(null);
+        setStatus("success");
     }
 
     function clearError(f: Field) {
@@ -208,9 +213,9 @@ export default function ContactForm() {
             className="relative grid gap-x-10 gap-y-9 sm:grid-cols-2"
         >
             {/* Honeypot: hidden from people and assistive tech; bots that fill every field reveal themselves. */}
-            <div aria-hidden="true" className="absolute left-0 top-0 h-px w-px overflow-hidden opacity-0 pointer-events-none">
+            <div hidden>
                 <label htmlFor={id("hp")}>Company website (leave blank)</label>
-                <input id={id("hp")} type="text" name="company_website" tabIndex={-1} autoComplete="off" />
+                <input id={id("hp")} type="text" name="x_hp_7" tabIndex={-1} autoComplete="off" />
             </div>
 
             <div>

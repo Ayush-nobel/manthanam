@@ -1,6 +1,5 @@
 import { randomInt } from "node:crypto";
 import { conference } from "@/lib/conference";
-import { site } from "@/lib/site";
 import {
     clean,
     CONSENT_TEXT,
@@ -12,6 +11,8 @@ import {
     type Values,
 } from "@/lib/registration";
 import { connection } from "next/server";
+import { clientIp, fromThisSite, rateLimiter } from "@/lib/request-guard";
+import { audit, db, dbConfigured, dbMissing } from "@/lib/db";
 import { diagnoseMail, mailConfigured, sendRegistrationEmail } from "@/lib/zoho-mail";
 import { addRow, diagnose, hasValue, zohoConfigured, zohoDataCentre, zohoMissing } from "@/lib/zoho-sheet";
 
@@ -19,48 +20,13 @@ import { addRow, diagnose, hasValue, zohoConfigured, zohoDataCentre, zohoMissing
  * Registration gateway for the BRICS India Youth Conference 2026.
  *
  * The browser posts here (same origin, so no third party sees the form); this route validates
- * everything again, then appends one row to Manthanam's Zoho Sheet (see docs/registration-sheet.md).
- * The Zoho credentials are server-only environment variables: they never reach the browser.
+ * everything again, then saves it in the website's database (docs/backend.md), where the admin
+ * dashboard shows it. If Zoho Sheet is set up, a copy also goes there (docs/registration-sheet.md);
+ * without a database, Zoho Sheet is the only store. All credentials are server-only.
  */
 
 // Best-effort limit per IP: 5 registrations per 10 minutes on each server instance.
-const WINDOW_MS = 10 * 60 * 1000;
-const MAX_PER_WINDOW = 5;
-const hits = new Map<string, number[]>();
-function limited(ip: string) {
-    const now = Date.now();
-    const recent = (hits.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
-    recent.push(now);
-    hits.set(ip, recent);
-    if (hits.size > 5000) hits.clear();
-    return recent.length > MAX_PER_WINDOW;
-}
-
-/**
- * Only accept posts made by this site's own pages. Browsers mark every request with
- * Sec-Fetch-Site, which a web page cannot forge: "same-origin" means our own form sent it.
- * Older browsers that don't send it fall back to comparing the Origin header with our domains.
- */
-function fromThisSite(request: Request) {
-    const fetchSite = request.headers.get("sec-fetch-site");
-    if (fetchSite) return fetchSite === "same-origin";
-    const origin = request.headers.get("origin");
-    if (!origin) return false;
-    let host: string;
-    try {
-        host = new URL(origin).host.replace(/\.$/, "").replace(/\.:/, ":");
-    } catch {
-        return false;
-    }
-    const allowed = new Set([new URL(site.url).host, "manthanam.in"]);
-    // "www.manthanam.in." (trailing dot) is the same host written as a fully qualified name.
-    for (const h of [request.headers.get("host"), request.headers.get("x-forwarded-host")]) if (h) allowed.add(h.replace(/\.$/, "").replace(/\.:/, ":"));
-    try {
-        allowed.add(new URL(request.url).host);
-    } catch {}
-    if (!allowed.has(host)) console.warn("Registration refused: origin", origin, "host", request.headers.get("host"), "x-forwarded-host", request.headers.get("x-forwarded-host"));
-    return allowed.has(host);
-}
+const limited = rateLimiter(5, 10 * 60 * 1000);
 
 /** Unambiguous characters only (no 0/O, 1/I/L), e.g. BIYC26-7KQ3XM. */
 function reference() {
@@ -80,8 +46,7 @@ export async function POST(request: Request) {
     // Only accept posts from this site's own pages.
     if (!fromThisSite(request)) return json({ error: "This form can only be sent from manthanam.in." }, 403);
 
-    const ip = (request.headers.get("x-forwarded-for") ?? "").split(",")[0].trim() || "unknown";
-    if (limited(ip)) return json({ error: "Too many registrations from this connection. Please wait ten minutes and try again." }, 429);
+    if (limited(clientIp(request))) return json({ error: "Too many registrations from this connection. Please wait ten minutes and try again." }, 429);
 
     if (!conference.registrationOpen) return json({ error: "Registration is closed." }, 403);
 
@@ -105,14 +70,65 @@ export async function POST(request: Request) {
     const errors = validate(v);
     if (Object.keys(errors).length) return json({ errors }, 422);
 
-    if (!zohoConfigured()) {
-        console.error("Zoho Sheet settings missing:", zohoMissing().join(", "), "— see docs/registration-sheet.md.");
+    const useDb = dbConfigured();
+    if (!useDb && !zohoConfigured()) {
+        console.error("No registration store: database missing", dbMissing().join(", "), "and Zoho missing", zohoMissing().join(", "));
         return json({ error: "Registration isn’t connected yet." }, 503);
     }
 
     const minor = isMinor(v.dateOfBirth!);
     const email = v.email!.toLowerCase();
-    const ref = reference();
+    let ref = reference();
+    const duplicate = () => json({ errors: { email: "This email address is already registered. To change your registration, email us." } }, 409);
+
+    let id: string | undefined;
+    if (useDb) {
+        const record = {
+            full_name: v.fullName!,
+            email,
+            phone: v.phone!,
+            date_of_birth: v.dateOfBirth!,
+            minor,
+            participant_type: v.status!,
+            institution: v.institution ?? "",
+            city: v.city!,
+            state: v.state ?? "",
+            country: v.country!,
+            motivation: v.motivation ?? "",
+            heard_from: v.heardFrom ?? "",
+            access_needs: v.accessNeeds ?? "",
+            guardian_name: minor ? (v.guardianName ?? "") : "",
+            guardian_relation: minor ? (v.guardianRelation ?? "") : "",
+            guardian_email: minor ? (v.guardianEmail?.toLowerCase() ?? "") : "",
+            guardian_phone: minor ? (v.guardianPhone ?? "") : "",
+            consent_text: CONSENT_TEXT,
+            guardian_consent_text: minor ? GUARDIAN_CONSENT_TEXT : "",
+            place_terms_text: PLACE_TEXT,
+            privacy_policy_version: PRIVACY_POLICY_VERSION,
+        };
+        try {
+            // A clash on the reference (1 in ~900 million) just gets a new number.
+            for (let attempt = 0; ; attempt++) {
+                const { data, error } = await db().from("registrations").insert({ ...record, reference: ref }).select("id").single();
+                if (!error) {
+                    id = data.id as string;
+                    break;
+                }
+                if (error.code === "23505" && /email/.test(error.message + (error.details ?? ""))) return duplicate();
+                if (error.code === "23505" && attempt < 2) {
+                    ref = reference();
+                    continue;
+                }
+                throw new Error(`${error.code} ${error.message}`);
+            }
+            console.info("Registration saved:", ref);
+            await audit(null, "registration.create", "registration", id!, { reference: ref });
+        } catch (err) {
+            console.error("Registration not saved:", err);
+            return json({ error: "We couldn’t save your registration right now." }, 502);
+        }
+    }
+
     // Keys are the worksheet's header row, exactly (docs/registration-sheet.md lists them in order).
     const row: Record<string, string> = {
         Reference: ref,
@@ -141,14 +157,25 @@ export async function POST(request: Request) {
         "Registration status": "New",
     };
 
-    try {
-        if (await hasValue("Email", email))
-            return json({ errors: { email: "This email address is already registered. To change your registration, email us." } }, 409);
-        await addRow(row);
-        console.info("Registration saved:", ref);
-    } catch (err) {
-        console.error("Registration not saved:", err);
-        return json({ error: "We couldn’t save your registration right now." }, 502);
+    if (useDb) {
+        // The database has it; the sheet copy is a convenience, so a failure is logged, not shown.
+        if (zohoConfigured()) {
+            try {
+                await addRow(row);
+                await db().from("registrations").update({ sheet_synced_at: new Date().toISOString() }).eq("id", id!);
+            } catch (err) {
+                console.error("Zoho Sheet copy failed for", ref, err);
+            }
+        }
+    } else {
+        try {
+            if (await hasValue("Email", email)) return duplicate();
+            await addRow(row);
+            console.info("Registration saved:", ref);
+        } catch (err) {
+            console.error("Registration not saved:", err);
+            return json({ error: "We couldn’t save your registration right now." }, 502);
+        }
     }
 
     // The registration is saved; a failed email must not undo that, so it's reported, not thrown.
@@ -157,6 +184,7 @@ export async function POST(request: Request) {
         try {
             await sendRegistrationEmail({ name: v.fullName!, email, reference: ref, guardianEmail: minor ? v.guardianEmail?.toLowerCase() : undefined });
             emailed = true;
+            if (id) await db().from("registrations").update({ email_sent_at: new Date().toISOString() }).eq("id", id);
         } catch (err) {
             console.error("Confirmation email not sent for", ref, err);
         }
@@ -167,7 +195,12 @@ export async function POST(request: Request) {
 /** Setup check: says whether the Zoho settings reached the server, naming (never showing) any that are missing. */
 export async function GET(request: Request) {
     await connection();
-    const status = { connected: zohoConfigured(), dataCentre: zohoDataCentre(), missing: zohoMissing() };
+    const status = {
+        database: dbConfigured() ? "connected" : `not set up (missing ${dbMissing().join(", ")})`,
+        connected: zohoConfigured(),
+        dataCentre: zohoDataCentre(),
+        missing: zohoMissing(),
+    };
     // ?check=zoho also tries each step against Zoho (sign in, spreadsheet, worksheet, header row).
     if (status.connected && new URL(request.url).searchParams.get("check") === "zoho") return json({ ...status, ...(await diagnose()), email: await diagnoseMail() });
     return json(status);

@@ -60,6 +60,18 @@ const nextConfig: NextConfig = {
   partialPrefetching: true,
   // Don't advertise the framework in an X-Powered-By header.
   poweredByHeader: false,
+  // "www.manthanam.in." (with the trailing dot) is the same site, but browsers treat it as a different
+  // origin, so forms and admin sign-in sent from it fail Next.js's same-origin check. Send it to the real address.
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "(?:www\\.)?manthanam\\.in\\." }],
+        destination: "https://www.manthanam.in/:path*",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

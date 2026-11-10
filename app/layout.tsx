@@ -53,6 +53,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en-IN"
       className={`${archivo.variable} ${sourceSerif.variable} ${notoDeva.variable} h-full antialiased`}
     >
+      <head>
+        {/* "www.manthanam.in." (trailing dot) is the same site under an address browsers treat as different;
+            the host strips the dot before our redirect can see it, so move the browser to the real address here. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `if(location.hostname.slice(-1)===".")location.replace("${site.url}"+location.pathname+location.search+location.hash)`,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );

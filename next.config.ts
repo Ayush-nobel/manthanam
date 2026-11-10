@@ -57,6 +57,12 @@ const buildEnv = Object.fromEntries(SERVER_KEYS.flatMap((k) => (process.env[k] ?
 const nextConfig: NextConfig = {
   env: buildEnv,
   cacheComponents: true,
+  experimental: {
+    // Amplify/CloudFront strips the trailing dot from "www.manthanam.in." before the request reaches the
+    // server, but the browser's Origin header keeps it, so the same-origin check on admin sign-in and other
+    // server actions would reject a visitor on the dotted address. These are our own hosts, so allow them.
+    serverActions: { allowedOrigins: ["www.manthanam.in.", "manthanam.in."] },
+  },
   partialPrefetching: true,
   // Don't advertise the framework in an X-Powered-By header.
   poweredByHeader: false,

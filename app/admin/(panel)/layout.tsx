@@ -18,6 +18,7 @@ async function Shell({ children }: { children: React.ReactNode }) {
     const links = [
         { href: "/admin", label: "Overview" },
         ...(can(admin.role, "registrations.view") ? [{ href: "/admin/registrations", label: "Registrations" }] : []),
+        ...(can(admin.role, "applications.view") ? [{ href: "/admin/applications", label: "Applications" }] : []),
         ...(can(admin.role, "messages.view") ? [{ href: "/admin/messages", label: "Messages" }] : []),
         ...(can(admin.role, "team.manage") ? [{ href: "/admin/team", label: "Team" }] : []),
         { href: "/admin/account", label: "Account" },

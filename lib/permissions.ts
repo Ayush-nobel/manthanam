@@ -8,25 +8,28 @@ export type Role = (typeof ROLES)[number];
 
 export const ROLE_LABELS: Record<Role, { name: string; description: string }> = {
     owner: { name: "Owner", description: "Everything, including adding and removing admins." },
-    registrations: { name: "Registrations", description: "Sees and updates registrations and contact messages." },
+    registrations: { name: "Registrations", description: "Sees and updates registrations, internship applications and contact messages." },
     content: { name: "Content", description: "Edits the website’s content." },
-    viewer: { name: "Viewer", description: "Can look at registrations and messages, but not change them." },
+    viewer: { name: "Viewer", description: "Can look at registrations, applications and messages, but not change them." },
 };
 
 export type Permission =
     | "registrations.view"
     | "registrations.edit"
     | "registrations.export"
+    | "applications.view"
+    | "applications.edit"
+    | "applications.export"
     | "messages.view"
     | "messages.edit"
     | "content.edit"
     | "team.manage";
 
 const GRANTS: Record<Role, readonly Permission[]> = {
-    owner: ["registrations.view", "registrations.edit", "registrations.export", "messages.view", "messages.edit", "content.edit", "team.manage"],
-    registrations: ["registrations.view", "registrations.edit", "registrations.export", "messages.view", "messages.edit"],
+    owner: ["registrations.view", "registrations.edit", "registrations.export", "applications.view", "applications.edit", "applications.export", "messages.view", "messages.edit", "content.edit", "team.manage"],
+    registrations: ["registrations.view", "registrations.edit", "registrations.export", "applications.view", "applications.edit", "applications.export", "messages.view", "messages.edit"],
     content: ["content.edit"],
-    viewer: ["registrations.view", "messages.view"],
+    viewer: ["registrations.view", "applications.view", "messages.view"],
 };
 
 export const can = (role: Role | undefined | null, p: Permission) => !!role && GRANTS[role].includes(p);
@@ -46,3 +49,14 @@ export const REGISTRATION_STATUS_LABELS: Record<RegistrationStatus, string> = {
 export const MESSAGE_STATUSES = ["new", "replied", "archived", "spam"] as const;
 export type MessageStatus = (typeof MESSAGE_STATUSES)[number];
 export const MESSAGE_STATUS_LABELS: Record<MessageStatus, string> = { new: "New", replied: "Replied", archived: "Archived", spam: "Spam" };
+
+export const APPLICATION_STATUSES = ["new", "shortlisted", "interview", "selected", "not_selected", "withdrawn"] as const;
+export type ApplicationStatus = (typeof APPLICATION_STATUSES)[number];
+export const APPLICATION_STATUS_LABELS: Record<ApplicationStatus, string> = {
+    new: "New",
+    shortlisted: "Shortlisted",
+    interview: "Interview",
+    selected: "Selected",
+    not_selected: "Not selected",
+    withdrawn: "Withdrawn",
+};

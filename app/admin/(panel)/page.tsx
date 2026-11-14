@@ -23,13 +23,14 @@ export default async function OverviewPage() {
         { label: "Registrations", value: o.total, href: "/admin/registrations" },
         { label: "In the last 24 hours", value: o.today, href: "/admin/registrations" },
         { label: "Under 18, guardian not yet verified", value: o.guardianPending, href: "/admin/registrations?minor=pending" },
+        { label: "New internship applications", value: o.newApplications, href: "/admin/applications?status=new" },
         { label: "Unread contact messages", value: o.newMessages, href: "/admin/messages?status=new" },
     ];
 
     return (
         <>
             <PageTitle>{conference.title}</PageTitle>
-            <dl className="grid gap-px border border-ink bg-ink sm:grid-cols-2 lg:grid-cols-4">
+            <dl className="grid gap-px border border-ink bg-ink sm:grid-cols-2 lg:grid-cols-5">
                 {figures.map((f) => (
                     <Link key={f.label} href={f.href} className="group bg-white px-5 py-5 hover:bg-paper focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-signal">
                         <dt className="text-sm text-muted-ink">{f.label}</dt>

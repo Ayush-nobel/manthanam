@@ -1,4 +1,4 @@
-import { MESSAGE_STATUS_LABELS, REGISTRATION_STATUS_LABELS, type MessageStatus, type RegistrationStatus } from "@/lib/permissions";
+import { APPLICATION_STATUS_LABELS, MESSAGE_STATUS_LABELS, REGISTRATION_STATUS_LABELS, type ApplicationStatus, type MessageStatus, type RegistrationStatus } from "@/lib/permissions";
 
 /** Times are shown in India time, which is what the team works in. */
 export const when = (iso: string) =>
@@ -15,10 +15,20 @@ const TONE: Record<string, string> = {
     replied: "border-ink bg-paper-2 text-ink",
     archived: "border-line-strong text-faint",
     spam: "border-line-strong text-faint line-through",
+    shortlisted: "border-signal text-signal",
+    interview: "border-ink bg-paper-2 text-ink",
+    selected: "border-ink bg-ink text-paper",
+    not_selected: "border-line-strong text-faint",
+    withdrawn: "border-line-strong text-faint line-through",
 };
 
-export function StatusBadge({ status, kind = "registration" }: { status: string; kind?: "registration" | "message" }) {
-    const label = kind === "registration" ? REGISTRATION_STATUS_LABELS[status as RegistrationStatus] : MESSAGE_STATUS_LABELS[status as MessageStatus];
+export function StatusBadge({ status, kind = "registration" }: { status: string; kind?: "registration" | "message" | "application" }) {
+    const label =
+        kind === "registration"
+            ? REGISTRATION_STATUS_LABELS[status as RegistrationStatus]
+            : kind === "application"
+              ? APPLICATION_STATUS_LABELS[status as ApplicationStatus]
+              : MESSAGE_STATUS_LABELS[status as MessageStatus];
     return <span className={`inline-block whitespace-nowrap border px-2 py-0.5 text-xs font-semibold ${TONE[status] ?? "border-line-strong"}`}>{label ?? status}</span>;
 }
 
@@ -60,6 +70,16 @@ export function describe(action: string, detail: Record<string, unknown>) {
             return `Confirmation email resent (${d.reference})`;
         case "registration.export":
             return `Downloaded ${d.rows} registration${d.rows === 1 ? "" : "s"}`;
+        case "application.create":
+            return "Applied on the website";
+        case "application.update": {
+            const parts: string[] = [];
+            if (d.status) parts.push(`status ${APPLICATION_STATUS_LABELS[d.status[0] as ApplicationStatus] ?? d.status[0]} → ${APPLICATION_STATUS_LABELS[d.status[1] as ApplicationStatus] ?? d.status[1]}`);
+            if (d.notes) parts.push("notes edited");
+            return `Application: ${parts.join(", ")}`;
+        }
+        case "application.export":
+            return `Downloaded ${d.rows} application${d.rows === 1 ? "" : "s"}`;
         case "message.create":
             return "Contact message received";
         case "message.update":

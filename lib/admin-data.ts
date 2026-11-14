@@ -1,6 +1,6 @@
 import "server-only";
-import { db, type AdminRow, type AuditRow, type ContactMessageRow, type RegistrationRow } from "@/lib/db";
-import { MESSAGE_STATUSES, REGISTRATION_STATUSES } from "@/lib/permissions";
+import { db, type AdminRow, type ApplicationRow, type AuditRow, type ContactMessageRow, type RegistrationRow } from "@/lib/db";
+import { APPLICATION_STATUSES, MESSAGE_STATUSES, REGISTRATION_STATUSES } from "@/lib/permissions";
 
 /**
  * Reads for the admin dashboard. Pages call requireAdmin() and check can(...) before calling these;
@@ -25,15 +25,16 @@ async function count(table: string, filter?: (q: Query) => Query) {
 
 export async function overview() {
     const since = new Date(Date.now() - 24 * 3600_000).toISOString();
-    const [total, today, guardianPending, newMessages, byStatus, recent] = await Promise.all([
+    const [total, today, guardianPending, newMessages, byStatus, recent, newApplications] = await Promise.all([
         count("registrations"),
         count("registrations", (q) => q.gte("created_at", since)),
         count("registrations", (q) => q.eq("minor", true).is("guardian_verified_at", null).not("status", "in", "(cancelled,refunded)")),
         count("contact_messages", (q) => q.eq("status", "new")),
         Promise.all(REGISTRATION_STATUSES.map(async (s) => [s, await count("registrations", (q) => q.eq("status", s))] as const)),
         db().from("registrations").select("id, reference, full_name, city, created_at, status, minor").order("created_at", { ascending: false }).limit(8),
+        count("applications", (q) => q.eq("status", "new")).catch(() => 0),
     ]);
-    return { total, today, guardianPending, newMessages, byStatus, recent: (recent.data ?? []) as Pick<RegistrationRow, "id" | "reference" | "full_name" | "city" | "created_at" | "status" | "minor">[] };
+    return { total, today, guardianPending, newMessages, newApplications, byStatus, recent: (recent.data ?? []) as Pick<RegistrationRow, "id" | "reference" | "full_name" | "city" | "created_at" | "status" | "minor">[] };
 }
 
 export interface RegistrationFilters {
@@ -76,6 +77,43 @@ export async function getRegistration(id: string) {
         data.guardian_verified_by ? db().from("admin_users").select("email, name").eq("user_id", data.guardian_verified_by).maybeSingle() : Promise.resolve({ data: null }),
     ]);
     return { registration: data, history: (history ?? []) as AuditRow[], verifiedBy: (verifier.data as { email: string; name: string } | null) ?? null };
+}
+
+export interface ApplicationFilters {
+    q?: string;
+    status?: string;
+    role?: string;
+    page?: number;
+}
+
+export async function listApplications(f: ApplicationFilters, opts: { all?: boolean } = {}) {
+    let q = db().from("applications").select("*", { count: "exact" }).order("created_at", { ascending: false });
+    const text = searchable(f.q ?? "");
+    if (text) q = q.or(["full_name", "email", "phone", "organisation", "city", "motivation"].map((c) => `${c}.ilike.*${text}*`).join(","));
+    if (f.status && (APPLICATION_STATUSES as readonly string[]).includes(f.status)) q = q.eq("status", f.status);
+    if (f.role && /^[a-z]+$/.test(f.role)) q = q.eq("role", f.role);
+    if (opts.all) {
+        const rows: ApplicationRow[] = [];
+        for (let from = 0; ; from += 1000) {
+            const { data, error } = await q.range(from, from + 999);
+            if (error) throw new Error(error.message);
+            rows.push(...((data ?? []) as ApplicationRow[]));
+            if (!data || data.length < 1000) break;
+        }
+        return { rows, total: rows.length };
+    }
+    const page = Math.max(1, f.page ?? 1);
+    const { data, count: total, error } = await q.range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
+    if (error) throw new Error(error.message);
+    return { rows: (data ?? []) as ApplicationRow[], total: total ?? 0 };
+}
+
+export async function getApplication(id: string) {
+    if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
+    const { data } = await db().from("applications").select("*").eq("id", id).maybeSingle<ApplicationRow>();
+    if (!data) return null;
+    const { data: history } = await db().from("audit_log").select("id, at, actor_email, action, entity, entity_id, detail").eq("entity", "application").eq("entity_id", id).order("at", { ascending: false }).limit(50);
+    return { application: data, history: (history ?? []) as AuditRow[] };
 }
 
 export async function listMessages(f: { q?: string; status?: string; page?: number }) {

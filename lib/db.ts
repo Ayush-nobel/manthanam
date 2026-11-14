@@ -96,6 +96,26 @@ export interface ContactMessageRow {
     notes: string;
 }
 
+export interface ApplicationRow {
+    id: string;
+    created_at: string;
+    updated_at: string;
+    full_name: string;
+    email: string;
+    phone: string;
+    city: string;
+    organisation: string;
+    role: string;
+    motivation: string;
+    portfolio: string;
+    adult_confirmed: boolean;
+    consent_text: string;
+    privacy_policy_version: string;
+    status: string;
+    notes: string;
+    email_sent_at: string | null;
+}
+
 export interface AdminRow {
     user_id: string;
     email: string;

@@ -1,3 +1,4 @@
+import Link from "next/link";
 const paths = [
     {
         title: "Write",
@@ -29,9 +30,17 @@ export default function Join() {
                         Manthanam is built by students and young professionals who want to think seriously about India.
                         If you would rather shape the debate than follow it, there is a place for you here.
                     </p>
-                    <a href="#contact" className="link-draw-on-ink mt-10 inline-block font-display text-lg font-semibold text-paper [font-stretch:112%]">
-                        Tell us how you&rsquo;d like to help
-                    </a>
+                    <div className="mt-10 flex flex-wrap items-center gap-x-10 gap-y-5">
+                        <Link
+                            href="/join"
+                            className="inline-flex min-h-12 items-center bg-paper px-7 font-display text-base font-semibold text-ink [font-stretch:112%] transition-colors hover:bg-signal hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-paper"
+                        >
+                            Apply for a marketing internship
+                        </Link>
+                        <a href="#contact" className="link-draw-on-ink inline-block font-display text-lg font-semibold text-paper [font-stretch:112%]">
+                            Tell us how you&rsquo;d like to help
+                        </a>
+                    </div>
                 </div>
 
                 <dl className="grid gap-10 lg:col-span-5 lg:col-start-8 lg:self-end">

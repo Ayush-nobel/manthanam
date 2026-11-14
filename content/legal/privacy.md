@@ -1,6 +1,6 @@
 ---
 title: "Privacy Policy"
-updated: 2026-11-10
+updated: 2026-11-14
 summary: "What personal data this website collects, why, who handles it, how long we keep it, and how you can access, correct or delete it."
 ---
 
@@ -21,6 +21,7 @@ This policy explains how **Manthanam Research Foundation** ("Manthanam", "we", "
 | --- | --- | --- |
 | You use the contact form | Your name, your email address, the topic you choose, your message, whether you are writing as an adult (18+) or as a parent/guardian of someone under 18, and a record of your consent (the wording you agreed to, this policy's version and the time) | To read and reply to your enquiry, and to be able to show that you consented |
 | You register for the BRICS India Youth Conference 2026 | Your name, email address, phone number, date of birth, city, state and country, your school, college or organisation, what best describes you, and anything you choose to add (why you want to attend, how you heard about it, access needs). If you are under 18: your parent or guardian's name, relation to you, email address and phone number. A record of the consents given (the wording, this policy's version and the time), and a reference number we assign | To process your registration, confirm your place, contact you about the conference, verify a parent or guardian's consent for anyone under 18, and arrange any access needs you tell us about. Your date of birth tells us whether parental consent is needed |
+| You apply for an internship | Your name, email address, phone number, city, college, university or workplace, the role you apply for, what you tell us about why you want it, and a link to your work if you give one. Your confirmation that you are 18 or older, and a record of the consent given (the wording, this policy's version and the time) | To consider your application, contact you about it and, if you are selected, arrange the internship |
 | You email us directly | Your email address, name (as shown by your email provider) and whatever you include in your email | To reply to you |
 | You visit any page | Technical data our hosting provider's servers receive with every web request: your IP address, browser type, the page requested and the time | To deliver the page to you and keep the site secure. We do not use this data to identify or profile you |
 
@@ -28,7 +29,7 @@ We ask only for what we need. Access needs are optional: tell us only what you a
 
 ## Our legal basis
 
-We process the personal data you send us on the basis of your **consent** (section 6 of the DPDP Act), which you give by ticking the consent box on the contact form or registration form, or by writing to us. For a registrant under 18, we rely on the **verifiable consent of their parent or legal guardian** (section 9). You can **withdraw your consent at any time** by emailing [contact@manthanam.in](mailto:contact@manthanam.in); withdrawing is as easy as giving consent. Withdrawal does not affect processing already done, but we will stop using your data and delete it as described below.
+We process the personal data you send us on the basis of your **consent** (section 6 of the DPDP Act), which you give by ticking the consent box on the contact form, registration form or internship application form, or by writing to us. For a registrant under 18, we rely on the **verifiable consent of their parent or legal guardian** (section 9). You can **withdraw your consent at any time** by emailing [contact@manthanam.in](mailto:contact@manthanam.in); withdrawing is as easy as giving consent. Withdrawal does not affect processing already done, but we will stop using your data and delete it as described below.
 
 ## Who handles your data
 
@@ -36,10 +37,10 @@ We use a small number of service providers ("Data Processors") who handle data o
 
 | Provider | What they do for us | Where |
 | --- | --- | --- |
-| **Supabase** | Hosts our private database, which stores contact-form messages and event registrations; only Manthanam's signed-in team can see them | India (Mumbai) |
+| **Supabase** | Hosts our private database, which stores contact-form messages, event registrations and internship applications; only Manthanam's signed-in team can see them | India (Mumbai) |
 | **Formspree** | Receives contact-form submissions only if our own system is temporarily unavailable, and forwards them to us | United States |
 | **Zoho Sheet** | Keeps a copy of event registrations in a private spreadsheet that only Manthanam can open | Zoho's data centres for our account |
-| **Zoho Mail** (sending) | Sends the email confirming your registration, with your registration number, from a manthanam.in address, and forwards contact-form messages to our team | Zoho's data centres for our account |
+| **Zoho Mail** (sending) | Sends the email confirming your registration, with your registration number, and the email confirming an internship application, from a manthanam.in address, and forwards contact-form messages to our team | Zoho's data centres for our account |
 | **Zoho Mail** | Hosts our email inbox, where enquiries and replies are kept | Zoho's data centres for our account |
 | **Amazon Web Services** (Amazon CloudFront) | Hosts and delivers this website | Global network of servers |
 
@@ -52,6 +53,8 @@ We do not sell, rent or trade personal data, and we do not share it with anyone 
 We keep your enquiry and our correspondence **only as long as we need to deal with it**, and **no longer than 12 months after our last exchange** — unless you ask us to keep in touch or the law requires us to keep it longer. After that we delete it from our database, from Formspree (if it went through Formspree) and from our inbox.
 
 We keep **event registrations** until the event and its follow-up are finished, and **delete them within 12 months after the event** (for the BRICS India Youth Conference 2026, by 20 December 2027), unless the law requires us to keep something longer, for example a record of a payment. If you ask us to delete it sooner, we will (see below).
+
+We keep **internship applications** for **12 months after we decide on them**, so we can contact you about a later opening, and then delete them. If you become an intern, we keep what we need to run the internship and to issue your certificate and letter of recommendation. Ask us at any time to delete your application sooner.
 
 ## Your rights
 

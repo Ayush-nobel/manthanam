@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { refresh } from "next/cache";
 import { authClient, authorise, getAdmin } from "@/lib/auth";
 import { audit, db, dbConfigured, type RegistrationRow } from "@/lib/db";
-import { isRole, MESSAGE_STATUSES, REGISTRATION_STATUSES, ROLE_LABELS } from "@/lib/permissions";
+import { APPLICATION_STATUSES, isRole, MESSAGE_STATUSES, REGISTRATION_STATUSES, ROLE_LABELS } from "@/lib/permissions";
 import { mailConfigured, sendRegistrationEmail } from "@/lib/zoho-mail";
 
 /**
@@ -140,6 +140,28 @@ export async function resendRegistrationEmail(_: FormState, form: FormData): Pro
     await audit(admin, "registration.email_resent", "registration", id, { reference: r.reference });
     refresh();
     return { ok: `Confirmation sent to ${r.email}${r.minor && r.guardian_email ? ` (copy to ${r.guardian_email})` : ""}.` };
+}
+
+// Internship applications ---------------------------------------------------------------------
+
+export async function updateApplication(_: FormState, form: FormData): Promise<FormState> {
+    const auth = await authorise("applications.edit");
+    if (auth.error !== undefined) return { error: auth.error };
+    const admin = auth.admin;
+    const id = str(form, "id", 64);
+    const status = str(form, "status", 40);
+    const notes = str(form, "notes", 5000);
+    if (!(APPLICATION_STATUSES as readonly string[]).includes(status)) return { error: "Choose a status." };
+    const { data: before } = await db().from("applications").select("status, notes").eq("id", id).maybeSingle();
+    if (!before) return { error: "That application no longer exists." };
+    const { error: dbError } = await db().from("applications").update({ status, notes }).eq("id", id);
+    if (dbError) return { error: `Not saved: ${dbError.message}` };
+    const changes: Record<string, unknown> = {};
+    if (before.status !== status) changes.status = [before.status, status];
+    if (before.notes !== notes) changes.notes = "edited";
+    if (Object.keys(changes).length) await audit(admin, "application.update", "application", id, changes);
+    refresh();
+    return { ok: "Saved." };
 }
 
 // Contact messages ------------------------------------------------------------------------------

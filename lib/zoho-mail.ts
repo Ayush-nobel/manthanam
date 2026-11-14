@@ -1,4 +1,5 @@
 import "server-only";
+import { applicationEmailHtml, applicationEmailSubject } from "@/lib/application-email";
 import { registrationEmailHtml, registrationEmailSubject } from "@/lib/registration-email";
 import { accessToken, forgetToken, zohoDataCentre, type ZohoCredentials } from "@/lib/zoho-sheet";
 
@@ -92,6 +93,11 @@ async function send(to: string, cc: string | undefined, subject: string, content
 export async function sendRegistrationEmail(r: { name: string; email: string; reference: string; guardianEmail?: string }) {
     const html = registrationEmailHtml({ name: r.name, reference: r.reference, minor: !!r.guardianEmail });
     await send(r.email, r.guardianEmail, registrationEmailSubject(r), html);
+}
+
+/** "We've received your application" email to an internship applicant. */
+export async function sendApplicationEmail(a: { name: string; email: string; role: string }) {
+    await send(a.email, undefined, applicationEmailSubject(a.role), applicationEmailHtml(a));
 }
 
 const esc = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");

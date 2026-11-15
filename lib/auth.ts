@@ -17,6 +17,8 @@ export interface Admin {
     email: string;
     name: string;
     role: Role;
+    /** Signed in with a one-time password from an owner: must set their own before doing anything else. */
+    mustChangePassword: boolean;
 }
 
 /** Supabase client bound to this request's cookies. Setting cookies only works in actions and route handlers. */
@@ -44,7 +46,9 @@ export const getAdmin = cache(async (): Promise<Admin | null> => {
     if (error || !data.user) return null;
     const { data: row } = await db().from("admin_users").select("email, name, role").eq("user_id", data.user.id).maybeSingle();
     if (!row || !isRole(row.role)) return null;
-    return { id: data.user.id, email: row.email, name: row.name, role: row.role };
+    // app_metadata can only be set with the secret key (lib/admin actions), never by the user themselves.
+    const mustChangePassword = data.user.app_metadata?.must_change_password === true;
+    return { id: data.user.id, email: row.email, name: row.name, role: row.role, mustChangePassword };
 });
 
 /** For admin pages and actions: the admin, or off to the sign-in page. */
@@ -58,6 +62,13 @@ export async function requireAdmin(): Promise<Admin> {
 export async function authorise(p: Permission): Promise<{ admin: Admin; error?: undefined } | { admin?: undefined; error: string }> {
     const admin = await getAdmin();
     if (!admin) return { error: "Your session has ended. Sign in again." };
+    if (admin.mustChangePassword) return { error: "Set your own password under Account first." };
     if (!can(admin.role, p)) return { error: "Your role doesn’t allow this." };
     return { admin };
+}
+
+/** For route handlers (downloads, setup check): the admin if they hold this permission and have set their own password. */
+export async function adminWith(p: Permission): Promise<Admin | null> {
+    const admin = await getAdmin();
+    return admin && !admin.mustChangePassword && can(admin.role, p) ? admin : null;
 }

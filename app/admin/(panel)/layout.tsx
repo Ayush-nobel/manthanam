@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { signOut } from "@/app/admin/actions";
 import { NavLinks } from "@/components/admin/nav-links";
+import { FirstPassword } from "@/components/admin/first-password";
 import { requireAdmin } from "@/lib/auth";
 import { can, ROLE_LABELS } from "@/lib/permissions";
 
@@ -15,7 +16,7 @@ export default function PanelLayout({ children }: LayoutProps<"/admin">) {
 
 async function Shell({ children }: { children: React.ReactNode }) {
     const admin = await requireAdmin();
-    const links = [
+    const links = admin.mustChangePassword ? [] : [
         { href: "/admin", label: "Overview" },
         ...(can(admin.role, "registrations.view") ? [{ href: "/admin/registrations", label: "Registrations" }] : []),
         ...(can(admin.role, "applications.view") ? [{ href: "/admin/applications", label: "Applications" }] : []),
@@ -45,7 +46,9 @@ async function Shell({ children }: { children: React.ReactNode }) {
                     <NavLinks links={links} />
                 </nav>
             </header>
-            <main className="mx-auto w-full max-w-[84rem] flex-1 px-6 py-10 sm:px-10">{children}</main>
+            <main className="mx-auto w-full max-w-[84rem] flex-1 px-6 py-10 sm:px-10">
+                {admin.mustChangePassword ? <FirstPassword /> : children}
+            </main>
         </>
     );
 }

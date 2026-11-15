@@ -19,6 +19,10 @@ export default async function RegistrationPage({ params }: PageProps<"/admin/reg
     if (!found) notFound();
     const { registration: r, history, verifiedBy } = found;
     const edit = can(admin.role, "registrations.edit");
+    // Data minimisation for children's data (DPDP Act s.9): view-only admins don't need an under-18's exact
+    // date of birth or their parent's phone number to do their job, so those never leave the server for them.
+    const restricted = r.minor && admin.role === "viewer";
+    const hidden = <span className="text-faint">Hidden for your role (under 18)</span>;
 
     const sections: [string, [string, React.ReactNode][]][] = [
         [
@@ -26,7 +30,7 @@ export default async function RegistrationPage({ params }: PageProps<"/admin/reg
             [
                 ["Email", <a key="e" href={`mailto:${r.email}?subject=${encodeURIComponent(`Your registration ${r.reference}`)}`} className="underline underline-offset-4">{r.email}</a>],
                 ["Phone", <a key="p" href={`tel:${r.phone.replace(/[^\d+]/g, "")}`} className="underline underline-offset-4">{r.phone}</a>],
-                ["Date of birth", `${day(r.date_of_birth)} (${ageOnConferenceDay(r.date_of_birth)} on the conference day)`],
+                ["Date of birth", restricted ? hidden : `${day(r.date_of_birth)} (${ageOnConferenceDay(r.date_of_birth)} on the conference day)`],
                 ["Participant", r.participant_type],
                 ["Institution", r.institution || "—"],
                 ["Lives in", [r.city, r.state, r.country].filter(Boolean).join(", ")],
@@ -47,7 +51,7 @@ export default async function RegistrationPage({ params }: PageProps<"/admin/reg
                       [
                           ["Name", `${r.guardian_name} (${r.guardian_relation})`],
                           ["Email", <a key="ge" href={`mailto:${r.guardian_email}`} className="underline underline-offset-4">{r.guardian_email}</a>],
-                          ["Phone", <a key="gp" href={`tel:${r.guardian_phone.replace(/[^\d+]/g, "")}`} className="underline underline-offset-4">{r.guardian_phone}</a>],
+                          ["Phone", restricted ? hidden : <a key="gp" href={`tel:${r.guardian_phone.replace(/[^\d+]/g, "")}`} className="underline underline-offset-4">{r.guardian_phone}</a>],
                           ["Verified", r.guardian_verified_at ? `Yes, ${when(r.guardian_verified_at)}${verifiedBy ? ` by ${verifiedBy.name || verifiedBy.email}` : ""}` : "Not yet"],
                       ],
                   ],

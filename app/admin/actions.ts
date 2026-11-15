@@ -23,6 +23,17 @@ export interface FormState {
     secret?: string;
 }
 
+/**
+ * What the admin sees when the database or Supabase refuses something: a plain sentence. The detail goes
+ * to the server log only. The "last owner" database rule is the one message worth passing on.
+ */
+function failed(what: string, err: { message?: string } | null | undefined): FormState {
+    const detail = err?.message ?? "unknown error";
+    console.error(`${what} failed:`, detail);
+    if (/at least one owner/i.test(detail)) return { error: "There must always be at least one owner." };
+    return { error: `${what} didn’t work. Try again in a minute; if it keeps failing, tell the website’s maintainer.` };
+}
+
 const str = (f: FormData, k: string, max = 2000) => String(f.get(k) ?? "").trim().slice(0, max);
 const EMAIL = EMAIL_ADDRESS;
 
@@ -86,9 +97,16 @@ export async function changeOwnPassword(_: FormState, form: FormData): Promise<F
     const { error: wrong } = await supabase.auth.signInWithPassword({ email: admin.email, password: current });
     if (wrong) return { error: "Your current password isn’t right." };
     const { error } = await supabase.auth.updateUser({ password: next });
-    if (error) return { error: error.message };
+    if (error) {
+        console.error("Password change failed:", error.message);
+        return { error: "Your password couldn’t be changed. If it’s a common or very simple password, try a different one." };
+    }
+    // Sign out every other browser and device that was signed in as this admin, and lift the one-time flag.
+    await supabase.auth.signOut({ scope: "others" });
+    if (admin.mustChangePassword) await db().auth.admin.updateUserById(admin.id, { app_metadata: { must_change_password: false } });
     await audit(admin, "admin.password_change", "admin", admin.id);
-    return { ok: "Password changed." };
+    refresh();
+    return { ok: "Password changed. Any other devices signed in to your account have been signed out." };
 }
 
 // Registrations ---------------------------------------------------------------------------------
@@ -112,7 +130,7 @@ export async function updateRegistration(_: FormState, form: FormData): Promise<
         patch.guardian_verified_by = guardianVerified ? admin.id : null;
     }
     const { error: dbError } = await db().from("registrations").update(patch).eq("id", id);
-    if (dbError) return { error: `Not saved: ${dbError.message}` };
+    if (dbError) return failed("Save", dbError);
 
     const changes: Record<string, unknown> = {};
     if (before.status !== status) changes.status = [before.status, status];
@@ -156,7 +174,7 @@ export async function updateApplication(_: FormState, form: FormData): Promise<F
     const { data: before } = await db().from("applications").select("status, notes").eq("id", id).maybeSingle();
     if (!before) return { error: "That application no longer exists." };
     const { error: dbError } = await db().from("applications").update({ status, notes }).eq("id", id);
-    if (dbError) return { error: `Not saved: ${dbError.message}` };
+    if (dbError) return failed("Save", dbError);
     const changes: Record<string, unknown> = {};
     if (before.status !== status) changes.status = [before.status, status];
     if (before.notes !== notes) changes.notes = "edited";
@@ -178,7 +196,7 @@ export async function updateMessage(_: FormState, form: FormData): Promise<FormS
     const { data: before } = await db().from("contact_messages").select("status").eq("id", id).maybeSingle();
     if (!before) return { error: "That message no longer exists." };
     const { error: dbError } = await db().from("contact_messages").update({ status, notes }).eq("id", id);
-    if (dbError) return { error: `Not saved: ${dbError.message}` };
+    if (dbError) return failed("Save", dbError);
     await audit(admin, "message.update", "contact_message", id, before.status !== status ? { status: [before.status, status] } : { notes: "edited" });
     refresh();
     return { ok: "Saved." };
@@ -202,7 +220,7 @@ export async function addAdmin(_: FormState, form: FormData): Promise<FormState>
 
     const password = tempPassword();
     let userId: string | undefined;
-    const created = await db().auth.admin.createUser({ email, password, email_confirm: true, user_metadata: { name } });
+    const created = await db().auth.admin.createUser({ email, password, email_confirm: true, user_metadata: { name }, app_metadata: { must_change_password: true } });
     if (created.data.user) userId = created.data.user.id;
     else if (/already|registered|exists/i.test(created.error?.message ?? "")) {
         // A sign-in account with no admin role (e.g. someone removed earlier): reuse it with a new password.
@@ -210,16 +228,16 @@ export async function addAdmin(_: FormState, form: FormData): Promise<FormState>
         if (!found) return { error: "That email has an account that couldn’t be found. Try again." };
         const { data: isAdmin } = await db().from("admin_users").select("user_id").eq("user_id", found).maybeSingle();
         if (isAdmin) return { error: "That person is already an admin. Use Change role or Reset password on their row instead." };
-        const { error: e } = await db().auth.admin.updateUserById(found, { password });
-        if (e) return { error: e.message };
+        const { error: e } = await db().auth.admin.updateUserById(found, { password, app_metadata: { must_change_password: true } });
+        if (e) return failed("Reusing that account", e);
         userId = found;
-    } else return { error: created.error?.message ?? "Couldn’t create the account." };
+    } else return failed("Creating the account", created.error);
 
     const { error: dbError } = await db().from("admin_users").insert({ user_id: userId, email, name, role, created_by: admin.id });
-    if (dbError) return { error: `Not saved: ${dbError.message}` };
+    if (dbError) return failed("Save", dbError);
     await audit(admin, "admin.add", "admin", userId!, { email, role });
     refresh();
-    return { ok: `${name || email} can now sign in as ${ROLE_LABELS[role].name}. Give them this one-time password privately (not by email to a shared inbox); they should change it under Account after signing in.`, secret: password };
+    return { ok: `${name || email} can now sign in as ${ROLE_LABELS[role].name}. Give them this one-time password privately (not by email to a shared inbox). They’ll be asked to set their own the first time they sign in.`, secret: password };
 }
 
 async function findUserByEmail(email: string): Promise<string | undefined> {
@@ -253,7 +271,7 @@ export async function changeAdminRole(_: FormState, form: FormData): Promise<For
     const { data: before } = await db().from("admin_users").select("email, role").eq("user_id", id).maybeSingle();
     if (!before) return { error: "That admin no longer exists." };
     const { error: dbError } = await db().from("admin_users").update({ role }).eq("user_id", id);
-    if (dbError) return { error: `Not saved: ${dbError.message}` };
+    if (dbError) return failed("Save", dbError);
     await audit(admin, "admin.role", "admin", id, { email: before.email, role: [before.role, role] });
     refresh();
     return { ok: `${before.email} is now ${ROLE_LABELS[role].name}.` };
@@ -270,7 +288,7 @@ export async function removeAdmin(_: FormState, form: FormData): Promise<FormSta
     if (!before) return { error: "That admin no longer exists." };
     // Delete the sign-in account too, which also ends any session they have open.
     const { error: e } = await db().auth.admin.deleteUser(id);
-    if (e) return { error: e.message };
+    if (e) return failed("Removing the admin", e);
     await db().from("admin_users").delete().eq("user_id", id);
     await audit(admin, "admin.remove", "admin", id, { email: before.email });
     refresh();
@@ -286,8 +304,8 @@ export async function resetAdminPassword(_: FormState, form: FormData): Promise<
     const { data: target } = await db().from("admin_users").select("email").eq("user_id", id).maybeSingle();
     if (!target) return { error: "That admin no longer exists." };
     const password = tempPassword();
-    const { error: e } = await db().auth.admin.updateUserById(id, { password });
-    if (e) return { error: e.message };
+    const { error: e } = await db().auth.admin.updateUserById(id, { password, app_metadata: { must_change_password: true } });
+    if (e) return failed("Resetting the password", e);
     await audit(admin, "admin.password_reset", "admin", id, { email: target.email });
-    return { ok: `New one-time password for ${target.email}. Give it to them privately.`, secret: password };
+    return { ok: `New one-time password for ${target.email}. Give it to them privately; they’ll be asked to set their own when they sign in.`, secret: password };
 }

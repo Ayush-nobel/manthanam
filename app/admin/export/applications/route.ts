@@ -1,14 +1,13 @@
 import { listApplications } from "@/lib/admin-data";
 import { roleName } from "@/lib/application";
-import { getAdmin } from "@/lib/auth";
+import { adminWith } from "@/lib/auth";
 import { audit } from "@/lib/db";
-import { APPLICATION_STATUS_LABELS, can, type ApplicationStatus } from "@/lib/permissions";
+import { APPLICATION_STATUS_LABELS, type ApplicationStatus } from "@/lib/permissions";
 
 /** Internship applications as a CSV that opens in Excel (same safeguards as the registrations download). */
 export async function GET(request: Request) {
-    const admin = await getAdmin();
-    if (!admin) return new Response("Sign in first.", { status: 401 });
-    if (!can(admin.role, "applications.export")) return new Response("Your role doesn’t allow downloads.", { status: 403 });
+    const admin = await adminWith("applications.export");
+    if (!admin) return new Response("Sign in as an admin whose role allows downloads.", { status: 403 });
 
     const sp = new URL(request.url).searchParams;
     const { rows } = await listApplications({ q: sp.get("q") ?? "", status: sp.get("status") ?? "", role: sp.get("role") ?? "" }, { all: true });

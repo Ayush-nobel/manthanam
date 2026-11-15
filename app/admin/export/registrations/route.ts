@@ -1,7 +1,7 @@
 import { listRegistrations } from "@/lib/admin-data";
-import { getAdmin } from "@/lib/auth";
+import { adminWith } from "@/lib/auth";
 import { audit } from "@/lib/db";
-import { can, REGISTRATION_STATUS_LABELS, type RegistrationStatus } from "@/lib/permissions";
+import { REGISTRATION_STATUS_LABELS, type RegistrationStatus } from "@/lib/permissions";
 
 /**
  * Registrations as a CSV file that opens straight in Excel (UTF-8 with a byte-order mark, so names in
@@ -9,9 +9,8 @@ import { can, REGISTRATION_STATUS_LABELS, type RegistrationStatus } from "@/lib/
  * as text instead of running them.
  */
 export async function GET(request: Request) {
-    const admin = await getAdmin();
-    if (!admin) return new Response("Sign in first.", { status: 401 });
-    if (!can(admin.role, "registrations.export")) return new Response("Your role doesn’t allow downloads.", { status: 403 });
+    const admin = await adminWith("registrations.export");
+    if (!admin) return new Response("Sign in as an admin whose role allows downloads.", { status: 403 });
 
     const sp = new URL(request.url).searchParams;
     const { rows } = await listRegistrations({ q: sp.get("q") ?? "", status: sp.get("status") ?? "", minor: sp.get("minor") ?? "" }, { all: true });

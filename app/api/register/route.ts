@@ -12,9 +12,8 @@ import {
 } from "@/lib/registration";
 import { connection } from "next/server";
 import { clientIp, fromThisSite, rateLimiter } from "@/lib/request-guard";
-import { getAdmin } from "@/lib/auth";
+import { adminWith } from "@/lib/auth";
 import { audit, db, dbConfigured, dbMissing } from "@/lib/db";
-import { can } from "@/lib/permissions";
 import { diagnoseMail, mailConfigured, sendRegistrationEmail } from "@/lib/zoho-mail";
 import { addRow, diagnose, hasValue, zohoConfigured, zohoDataCentre, zohoMissing } from "@/lib/zoho-sheet";
 
@@ -201,8 +200,8 @@ export async function POST(request: Request) {
  */
 export async function GET(request: Request) {
     await connection();
-    const admin = await getAdmin();
-    if (!admin || !can(admin.role, "team.manage")) return new Response("Not found", { status: 404, headers: { "Cache-Control": "no-store" } });
+    const admin = await adminWith("team.manage");
+    if (!admin) return new Response("Not found", { status: 404, headers: { "Cache-Control": "no-store" } });
     const status = {
         database: dbConfigured() ? "connected" : `not set up (missing ${dbMissing().join(", ")})`,
         connected: zohoConfigured(),

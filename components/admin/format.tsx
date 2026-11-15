@@ -1,4 +1,4 @@
-import { APPLICATION_STATUS_LABELS, MESSAGE_STATUS_LABELS, REGISTRATION_STATUS_LABELS, type ApplicationStatus, type MessageStatus, type RegistrationStatus } from "@/lib/permissions";
+import { APPLICATION_STATUS_LABELS, INSIGHT_STATUS_LABELS, type InsightStatus, MESSAGE_STATUS_LABELS, REGISTRATION_STATUS_LABELS, type ApplicationStatus, type MessageStatus, type RegistrationStatus } from "@/lib/permissions";
 
 /** Times are shown in India time, which is what the team works in. */
 export const when = (iso: string) =>
@@ -20,11 +20,16 @@ const TONE: Record<string, string> = {
     selected: "border-ink bg-ink text-paper",
     not_selected: "border-line-strong text-faint",
     withdrawn: "border-line-strong text-faint line-through",
+    draft: "border-line-strong text-muted-ink",
+    in_review: "border-signal text-signal",
+    published: "border-ink bg-ink text-paper",
 };
 
-export function StatusBadge({ status, kind = "registration" }: { status: string; kind?: "registration" | "message" | "application" }) {
+export function StatusBadge({ status, kind = "registration" }: { status: string; kind?: "registration" | "message" | "application" | "insight" }) {
     const label =
-        kind === "registration"
+        kind === "insight"
+            ? INSIGHT_STATUS_LABELS[status as InsightStatus]
+            : kind === "registration"
             ? REGISTRATION_STATUS_LABELS[status as RegistrationStatus]
             : kind === "application"
               ? APPLICATION_STATUS_LABELS[status as ApplicationStatus]
@@ -55,6 +60,9 @@ export function describe(action: string, detail: Record<string, unknown>) {
         rows?: number;
         email?: string;
         role?: string | [string, string];
+        title?: string;
+        note?: string;
+        to?: string;
     };
     switch (action) {
         case "registration.create":
@@ -80,8 +88,26 @@ export function describe(action: string, detail: Record<string, unknown>) {
         }
         case "application.export":
             return `Downloaded ${d.rows} application${d.rows === 1 ? "" : "s"}`;
+        case "insight.create":
+            return `Started “${d.title}”`;
+        case "insight.edit":
+            return `Edited “${d.title}”`;
+        case "insight.submit":
+            return `Submitted “${d.title}” for review`;
+        case "insight.publish":
+            return `Published “${d.title}”`;
+        case "insight.send_back":
+            return `Sent “${d.title}” back: ${d.note}`;
+        case "insight.unpublish":
+            return `Unpublished “${d.title}”`;
+        case "insight.delete":
+            return `Deleted “${d.title}”`;
+        case "conference.update":
+            return "Updated the conference details";
         case "message.create":
             return "Contact message received";
+        case "message.reply":
+            return `Replied by email to ${d.to}`;
         case "message.update":
             return d.status ? `Message marked ${MESSAGE_STATUS_LABELS[d.status[1] as MessageStatus] ?? d.status[1]}` : "Message notes edited";
         case "admin.add":

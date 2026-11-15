@@ -13,6 +13,7 @@ import {
 import { connection } from "next/server";
 import { clientIp, fromThisSite, rateLimiter } from "@/lib/request-guard";
 import { adminWith } from "@/lib/auth";
+import { getConference } from "@/lib/site-content";
 import { audit, db, dbConfigured, dbMissing } from "@/lib/db";
 import { diagnoseMail, mailConfigured, sendRegistrationEmail } from "@/lib/zoho-mail";
 import { addRow, diagnose, hasValue, zohoConfigured, zohoDataCentre, zohoMissing } from "@/lib/zoho-sheet";
@@ -49,7 +50,7 @@ export async function POST(request: Request) {
 
     if (limited(clientIp(request))) return json({ error: "Too many registrations from this connection. Please wait ten minutes and try again." }, 429);
 
-    if (!conference.registrationOpen) return json({ error: "Registration is closed." }, 403);
+    if (!(await getConference()).registrationOpen) return json({ error: "Registration is closed." }, 403);
 
     let raw: Record<string, unknown>;
     try {

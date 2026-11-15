@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { updateMessage } from "@/app/admin/actions";
 import { ActionForm, Submit } from "@/components/admin/action-form";
+import { ReplyForm } from "@/components/admin/reply-form";
 import { NoAccess, PageTitle, StatusBadge, when } from "@/components/admin/format";
 import { listMessages, PAGE_SIZE } from "@/lib/admin-data";
 import { requireAdmin } from "@/lib/auth";
 import { can, MESSAGE_STATUSES, MESSAGE_STATUS_LABELS } from "@/lib/permissions";
+import { mailConfigured, mailFrom } from "@/lib/zoho-mail";
 
 export const metadata: Metadata = { title: "Messages" };
 
@@ -16,9 +18,10 @@ export default async function MessagesPage({ searchParams }: PageProps<"/admin/m
     if (!can(admin.role, "messages.view")) return <NoAccess />;
     const sp = await searchParams;
     const f = { q: one(sp.q), status: one(sp.status), page: Math.max(1, Number(one(sp.page)) || 1) };
-    const { rows, total } = await listMessages(f);
+    const { rows, total, replies } = await listMessages(f);
     const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
     const edit = can(admin.role, "messages.edit");
+    const canReply = edit && mailConfigured();
     const qs = (page: number) => "?" + new URLSearchParams({ ...(f.q && { q: f.q }), ...(f.status && { status: f.status }), page: String(page) });
 
     return (
@@ -63,6 +66,15 @@ export default async function MessagesPage({ searchParams }: PageProps<"/admin/m
                                 {m.topic && `. About: ${m.topic}`}
                             </p>
                             <p className="mt-3 max-w-[65ch] text-base whitespace-pre-line break-words">{m.message}</p>
+                            {(replies[m.id] ?? []).map((r) => (
+                                <div key={r.id} className="mt-4 max-w-[65ch] border-l-2 border-ink pl-4">
+                                    <p className="text-sm text-muted-ink">
+                                        Reply from {r.sent_by_name || r.sent_by_email} to {r.sent_to}, {when(r.created_at)}
+                                    </p>
+                                    <p className="mt-1 text-base whitespace-pre-line break-words">{r.body}</p>
+                                </div>
+                            ))}
+                            {canReply && m.status !== "spam" && <ReplyForm id={m.id} to={m.email} from={mailFrom()} open={m.status === "new" && rows.length === 1} />}
                         </article>
                         {edit && (
                             <ActionForm action={updateMessage} className="grid content-start gap-3">

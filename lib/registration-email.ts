@@ -28,6 +28,9 @@ export interface RegistrationEmail {
     name: string;
     reference: string;
     minor: boolean;
+    /** From the editable conference details (lib/site-content.ts). */
+    venue: string | null;
+    paymentDetailsBy: string | null;
 }
 
 export function registrationEmailSubject(r: { reference: string }) {
@@ -38,7 +41,7 @@ export function registrationEmailHtml(r: RegistrationEmail): string {
     const name = esc(r.name);
     const ref = esc(r.reference);
     const date = longDate(conference.date);
-    const payment = conference.paymentDetailsBy ? longDate(conference.paymentDetailsBy) : null;
+    const payment = r.paymentDetailsBy ? longDate(r.paymentDetailsBy) : null;
     const preheader = `Your registration number is ${ref}.${payment ? ` Payment details will be shared by ${payment}.` : ""}`;
 
     const row = (label: string, value: string) => `
@@ -114,7 +117,7 @@ export function registrationEmailHtml(r: RegistrationEmail): string {
                   <td>
                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-top:2px solid ${C.ink};">
                       ${row("Date", date)}
-                      ${row("Place", `${esc(conference.place)}${conference.venue ? `<br><span style="font-weight:normal;color:${C.muted};">${esc(conference.venue)}</span>` : `<br><span style="font-weight:normal;font-size:14px;color:${C.muted};">Venue to be announced</span>`}`)}
+                      ${row("Place", `${esc(conference.place)}${r.venue ? `<br><span style="font-weight:normal;color:${C.muted};">${esc(r.venue)}</span>` : `<br><span style="font-weight:normal;font-size:14px;color:${C.muted};">Venue to be announced</span>`}`)}
                       ${row("Payment details", payment ? `Shared by email by ${payment}` : "Shared by email")}
                     </table>
                   </td>

@@ -14,7 +14,17 @@ export default async function OverviewPage() {
         return (
             <>
                 <PageTitle>Welcome, {admin.name || admin.email}</PageTitle>
-                {can(admin.role, "content.edit") ? <p className="text-lg text-muted-ink">Content editing arrives in the next update.</p> : <NoAccess />}
+                {can(admin.role, "content.edit") ? (
+                    <p className="text-lg text-muted-ink">
+                        Write and manage Insights articles under{" "}
+                        <Link href="/admin/content" className="font-semibold text-ink underline underline-offset-4">
+                            Content
+                        </Link>
+                        .
+                    </p>
+                ) : (
+                    <NoAccess />
+                )}
             </>
         );
     }

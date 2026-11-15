@@ -3,13 +3,14 @@
  * on the server, so a hidden button is never the only thing standing in the way.
  */
 
-export const ROLES = ["owner", "registrations", "content", "viewer"] as const;
+export const ROLES = ["owner", "editor", "content", "registrations", "viewer"] as const;
 export type Role = (typeof ROLES)[number];
 
 export const ROLE_LABELS: Record<Role, { name: string; description: string }> = {
     owner: { name: "Owner", description: "Everything, including adding and removing admins." },
     registrations: { name: "Registrations", description: "Sees and updates registrations, internship applications and contact messages." },
-    content: { name: "Content", description: "Edits the website’s content." },
+    editor: { name: "Editor", description: "Reviews and publishes Insights, and edits the conference details." },
+    content: { name: "Writer", description: "Writes Insights drafts and submits them for review." },
     viewer: { name: "Viewer", description: "Can look at registrations, applications and messages, but not change them." },
 };
 
@@ -23,10 +24,12 @@ export type Permission =
     | "messages.view"
     | "messages.edit"
     | "content.edit"
+    | "content.publish"
     | "team.manage";
 
 const GRANTS: Record<Role, readonly Permission[]> = {
-    owner: ["registrations.view", "registrations.edit", "registrations.export", "applications.view", "applications.edit", "applications.export", "messages.view", "messages.edit", "content.edit", "team.manage"],
+    owner: ["registrations.view", "registrations.edit", "registrations.export", "applications.view", "applications.edit", "applications.export", "messages.view", "messages.edit", "content.edit", "content.publish", "team.manage"],
+    editor: ["content.edit", "content.publish"],
     registrations: ["registrations.view", "registrations.edit", "registrations.export", "applications.view", "applications.edit", "applications.export", "messages.view", "messages.edit"],
     content: ["content.edit"],
     viewer: ["registrations.view", "applications.view", "messages.view"],
@@ -59,4 +62,13 @@ export const APPLICATION_STATUS_LABELS: Record<ApplicationStatus, string> = {
     selected: "Selected",
     not_selected: "Not selected",
     withdrawn: "Withdrawn",
+};
+
+export const INSIGHT_STATUSES = ["draft", "in_review", "published", "archived"] as const;
+export type InsightStatus = (typeof INSIGHT_STATUSES)[number];
+export const INSIGHT_STATUS_LABELS: Record<InsightStatus, string> = {
+    draft: "Draft",
+    in_review: "In review",
+    published: "Published",
+    archived: "Unpublished",
 };

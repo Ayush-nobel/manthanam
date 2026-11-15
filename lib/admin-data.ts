@@ -1,5 +1,5 @@
 import "server-only";
-import { db, type AdminRow, type ApplicationRow, type AuditRow, type ContactMessageRow, type RegistrationRow } from "@/lib/db";
+import { db, type AdminRow, type ApplicationRow, type AuditRow, type ContactMessageRow, type MessageReplyRow, type RegistrationRow } from "@/lib/db";
 import { APPLICATION_STATUSES, MESSAGE_STATUSES, REGISTRATION_STATUSES } from "@/lib/permissions";
 
 /**
@@ -124,7 +124,21 @@ export async function listMessages(f: { q?: string; status?: string; page?: numb
     const page = Math.max(1, f.page ?? 1);
     const { data, count: total, error } = await q.range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
     if (error) throw new Error(error.message);
-    return { rows: (data ?? []) as ContactMessageRow[], total: total ?? 0 };
+    const rows = (data ?? []) as ContactMessageRow[];
+    return { rows, total: total ?? 0, replies: await repliesFor(rows.map((r) => r.id)) };
+}
+
+/** Replies sent from the dashboard, oldest first, by message. Empty if the table isn't there yet (migration 0005). */
+async function repliesFor(ids: string[]): Promise<Record<string, MessageReplyRow[]>> {
+    if (!ids.length) return {};
+    const { data, error } = await db().from("message_replies").select("id, message_id, created_at, body, sent_to, sent_from, sent_by_name, sent_by_email").in("message_id", ids).order("created_at");
+    if (error) {
+        console.error("Message replies unavailable:", error.message);
+        return {};
+    }
+    const out: Record<string, MessageReplyRow[]> = {};
+    for (const r of (data ?? []) as MessageReplyRow[]) (out[r.message_id] ??= []).push(r);
+    return out;
 }
 
 export async function listAdmins() {
@@ -136,4 +150,39 @@ export async function listAdmins() {
 export async function recentActivity(limit = 30) {
     const { data } = await db().from("audit_log").select("id, at, actor_email, action, entity, entity_id, detail").order("at", { ascending: false }).limit(limit);
     return (data ?? []) as AuditRow[];
+}
+
+export interface InsightRow {
+    id: string;
+    slug: string;
+    title: string;
+    summary: string;
+    body: string;
+    category: string;
+    author_name: string;
+    author_bio: string;
+    display_date: string | null;
+    status: string;
+    review_note: string;
+    created_at: string;
+    updated_at: string;
+    published_at: string | null;
+}
+
+export async function listInsightRows(status?: string) {
+    let q = db().from("insights").select("id, slug, title, category, author_name, status, updated_at, published_at, display_date").order("updated_at", { ascending: false }).limit(200);
+    if (status) q = q.eq("status", status);
+    const [{ data, error }, counts] = await Promise.all([q, db().from("insights").select("status")]);
+    if (error) throw new Error(error.message);
+    const byStatus: Record<string, number> = {};
+    for (const r of counts.data ?? []) byStatus[r.status as string] = (byStatus[r.status as string] ?? 0) + 1;
+    return { rows: (data ?? []) as Omit<InsightRow, "summary" | "body" | "author_bio" | "review_note" | "created_at">[], byStatus };
+}
+
+export async function getInsightRow(id: string) {
+    if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
+    const { data } = await db().from("insights").select("*").eq("id", id).maybeSingle<InsightRow>();
+    if (!data) return null;
+    const { data: history } = await db().from("audit_log").select("id, at, actor_email, action, entity, entity_id, detail").eq("entity", "insight").eq("entity_id", id).order("at", { ascending: false }).limit(30);
+    return { insight: data, history: (history ?? []) as AuditRow[] };
 }

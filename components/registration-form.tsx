@@ -51,7 +51,7 @@ const today = () => new Date().toISOString().slice(0, 10);
 const formatDate = (iso: string) =>
     new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 
-export default function RegistrationForm() {
+export default function RegistrationForm({ paymentDetailsBy }: { paymentDetailsBy: string | null }) {
     const uid = useId();
     const id = (f: string) => `${uid}-${f}`;
     const [errors, setErrors] = useState<Errors>({});
@@ -137,7 +137,7 @@ export default function RegistrationForm() {
                     </p>
                     <p className="mt-6 max-w-[34rem] text-lg text-ink">
                         Thank you for registering. Payment details will be shared by{" "}
-                        {conference.paymentDetailsBy ? formatDate(conference.paymentDetailsBy) : "email"}, and your place is confirmed once
+                        {paymentDetailsBy ? formatDate(paymentDetailsBy) : "email"}, and your place is confirmed once
                         payment is received.
                     </p>
                     <p className="mt-4 max-w-[34rem] text-base text-muted-ink">

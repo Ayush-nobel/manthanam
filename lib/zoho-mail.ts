@@ -2,6 +2,7 @@ import "server-only";
 import { applicationEmailHtml, applicationEmailSubject } from "@/lib/application-email";
 import { registrationEmailHtml, registrationEmailSubject } from "@/lib/registration-email";
 import { rateLimiter } from "@/lib/request-guard";
+import { getConference } from "@/lib/site-content";
 import { accessToken, forgetToken, zohoDataCentre, type ZohoCredentials } from "@/lib/zoho-sheet";
 
 /**
@@ -102,7 +103,8 @@ async function send(to: string, cc: string | undefined, subject: string, content
 
 /** Thank-you email with the registration number (HTML, see lib/registration-email.ts). A parent or guardian, if given, is copied in. */
 export async function sendRegistrationEmail(r: { name: string; email: string; reference: string; guardianEmail?: string }) {
-    const html = registrationEmailHtml({ name: r.name, reference: r.reference, minor: !!r.guardianEmail });
+    const c = await getConference();
+    const html = registrationEmailHtml({ name: r.name, reference: r.reference, minor: !!r.guardianEmail, venue: c.venue, paymentDetailsBy: c.paymentDetailsBy });
     await send(r.email, r.guardianEmail, registrationEmailSubject(r), html);
 }
 
@@ -125,6 +127,25 @@ ${m.guardian ? `<p style="margin:0 0 12px;padding:8px 12px;border-left:3px solid
 </div>`;
     const subject = `[${m.topic}]${m.guardian ? " [Guardian: verify identity]" : ""} ${m.name} via manthanam.in`;
     await send(CONTACT_TO, undefined, subject.replace(/[\r\n]+/g, " ").slice(0, 200), html);
+}
+
+/**
+ * A reply written in the admin dashboard to someone who used the contact form. Sent from FROM, so when they
+ * answer, it lands in that mailbox. Their original message is quoted underneath, like an ordinary email reply.
+ */
+export async function sendMessageReply(r: { to: string; name: string; topic: string; body: string; signedBy: string; original: string; originalAt: string }) {
+    const para = (t: string) => esc(t).replace(/\r?\n/g, "<br>");
+    const date = new Date(r.originalAt).toLocaleString("en-IN", { dateStyle: "long", timeStyle: "short", timeZone: "Asia/Kolkata" });
+    const html = `<div style="font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:1.6;color:#10264a;max-width:600px">
+<div>${para(r.body)}</div>
+<p style="margin:20px 0 0">${esc(r.signedBy)}<br>Manthanam Research Foundation<br><a href="https://www.manthanam.in" style="color:#10264a">manthanam.in</a></p>
+<div style="margin:28px 0 0;padding:0 0 0 12px;border-left:3px solid #d9e8ec;color:#53627a;font-size:14px">
+<p style="margin:0 0 6px">On ${esc(date)}, ${esc(r.name)} wrote via manthanam.in:</p>
+<div>${para(r.original)}</div>
+</div>
+</div>`;
+    const subject = `Re: ${r.topic || "your message to Manthanam"}`.replace(/[\r\n]+/g, " ").slice(0, 200);
+    await send(r.to, undefined, subject, html);
 }
 
 /** Setup check: can these credentials find a mailbox that sends as FROM? (Sends nothing.) */

@@ -96,6 +96,17 @@ export interface ContactMessageRow {
     notes: string;
 }
 
+export interface MessageReplyRow {
+    id: string;
+    message_id: string;
+    created_at: string;
+    body: string;
+    sent_to: string;
+    sent_from: string;
+    sent_by_name: string;
+    sent_by_email: string;
+}
+
 export interface ApplicationRow {
     id: string;
     created_at: string;

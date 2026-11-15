@@ -21,12 +21,39 @@ function isSample(file: string): boolean {
     return !!frontmatter && /^sample:\s*true\s*$/m.test(frontmatter[1]);
 }
 
-export function insightsProxy(request: NextRequest) {
+// Pieces written in the admin dashboard live in the database. Look a slug up there (the secret key never
+// leaves the server), remembering answers for a minute so most requests don't wait on it.
+const known = new Map<string, { ok: boolean; at: number }>();
+async function publishedInDatabase(slug: string): Promise<boolean | null> {
+    const hit = known.get(slug);
+    if (hit && Date.now() - hit.at < 60_000) return hit.ok;
+    let base: string | undefined;
+    try {
+        base = process.env.SUPABASE_URL?.trim() ? new URL(process.env.SUPABASE_URL.trim()).origin : undefined;
+    } catch {}
+    const key = process.env.SUPABASE_SECRET_KEY?.trim();
+    if (!base || !key) return null;
+    try {
+        const res = await fetch(`${base}/rest/v1/insights?select=slug&status=eq.published&slug=eq.${encodeURIComponent(slug)}`, {
+            headers: { apikey: key, Authorization: `Bearer ${key}` },
+            signal: AbortSignal.timeout(3000),
+        });
+        if (!res.ok) return null;
+        const ok = ((await res.json()) as unknown[]).length > 0;
+        if (known.size > 2000) known.clear();
+        known.set(slug, { ok, at: Date.now() });
+        return ok;
+    } catch {
+        return null; // unknown: let the page decide
+    }
+}
+
+export async function insightsProxy(request: NextRequest) {
     const parts = request.nextUrl.pathname.split("/").filter(Boolean); // ["insights", ...]
 
     if (parts[1] === "category") {
-        const known = parts.length === 3 && CATEGORIES.some((c) => c.slug === parts[2]);
-        return known ? NextResponse.next() : NextResponse.rewrite(new URL(NOT_FOUND, request.url));
+        const isKnown = parts.length === 3 && CATEGORIES.some((c) => c.slug === parts[2]);
+        return isKnown ? NextResponse.next() : NextResponse.rewrite(new URL(NOT_FOUND, request.url));
     }
 
     if (parts.length === 2) {
@@ -35,8 +62,10 @@ export function insightsProxy(request: NextRequest) {
         if (!existsSync(CONTENT_DIR)) return NextResponse.next();
         const slug = parts[1];
         const file = path.join(CONTENT_DIR, `${slug}.md`);
-        const known = /^[a-z0-9-]+$/.test(slug) && existsSync(file) && (SHOW_SAMPLES || !isSample(file));
-        return known ? NextResponse.next() : NextResponse.rewrite(new URL(NOT_FOUND, request.url));
+        if (!/^[a-z0-9-]+$/.test(slug)) return NextResponse.rewrite(new URL(NOT_FOUND, request.url));
+        if (existsSync(file) && (SHOW_SAMPLES || !isSample(file))) return NextResponse.next();
+        const stored = await publishedInDatabase(slug);
+        return stored === false ? NextResponse.rewrite(new URL(NOT_FOUND, request.url)) : NextResponse.next();
     }
 
     if (parts.length > 2) return NextResponse.rewrite(new URL(NOT_FOUND, request.url));

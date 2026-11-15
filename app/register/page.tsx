@@ -7,13 +7,14 @@ import JsonLd from "@/components/json-ld";
 import RegistrationForm from "@/components/registration-form";
 import SiteFooter from "@/components/site-footer";
 import SiteHeader from "@/components/site-header";
-import { AGENDA, conference, FAQS, SPEAKERS } from "@/lib/conference";
+import { conference as fixed } from "@/lib/conference";
+import { getConference } from "@/lib/site-content";
 import { site } from "@/lib/site";
 import conferenceLogo from "@/public/events/biyc-2026-logo.png";
 
 export const metadata: Metadata = {
-    title: `Register — ${conference.title}`,
-    description: `Register for the ${conference.title}, organised by Manthanam in New Delhi on 20 December 2026.`,
+    title: `Register — ${fixed.title}`,
+    description: `Register for the ${fixed.title}, organised by Manthanam in New Delhi on 20 December 2026.`,
     alternates: { canonical: "/register" },
 };
 
@@ -22,14 +23,20 @@ const formatDate = (iso: string) =>
 const rupees = (n: number) => `₹${n.toLocaleString("en-IN")}`;
 const TBA = "To be announced";
 
-// The real order of events for a registrant: a sequence, so it is numbered.
-const STEPS = [
-    { title: "Register here", body: "Fill in the form. You get a registration number straight away, on screen and by email." },
-    { title: "Payment details by email", body: "We email payment details to everyone registered by 25 November 2026. For anyone under 18, we also check with their parent or guardian." },
-    { title: "Pay and you’re in", body: "Your place is confirmed once payment is received." },
-];
-
-export default function RegisterPage() {
+export default async function RegisterPage() {
+    // Editable in /admin/content/conference; title, date and place stay fixed in lib/conference.ts.
+    const c = await getConference();
+    const conference = { ...fixed, ...c };
+    const paymentBy = c.paymentDetailsBy ? formatDate(c.paymentDetailsBy) : null;
+    // The real order of events for a registrant: a sequence, so it is numbered.
+    const STEPS = [
+        { title: "Register here", body: "Fill in the form. You get a registration number straight away, on screen and by email." },
+        {
+            title: "Payment details by email",
+            body: `We email payment details to everyone registered${paymentBy ? ` by ${paymentBy}` : ""}. For anyone under 18, we also check with their parent or guardian.`,
+        },
+        { title: "Pay and you’re in", body: "Your place is confirmed once payment is received." },
+    ];
     const facts: [string, ReactNode][] = [
         ["Date", <><time dateTime={conference.date}>{formatDate(conference.date)}</time><span className="block text-base text-muted-ink">First planned for {formatDate(conference.previousDate)}</span></>],
         ["Place", <>{conference.place}<span className="block text-base text-muted-ink">{conference.venue ?? "Venue to be announced"}</span></>],
@@ -93,7 +100,7 @@ export default function RegisterPage() {
                                 </table>
                             ) : (
                                 <p className="mt-3 text-base text-muted-ink">
-                                    To be announced. You can register now; payment details will be emailed to you by 25 November 2026.
+                                    To be announced. You can register now; payment details will be emailed to you{paymentBy ? ` by ${paymentBy}` : ""}.
                                 </p>
                             )}
                             {conference.fees.length > 0 && (
@@ -108,7 +115,7 @@ export default function RegisterPage() {
                                         ))}
                                     </ul>
                                     <p className="mt-4 text-base text-muted-ink">
-                                        Register now; payment details are emailed to everyone registered by 25 November 2026.
+                                        Register now; payment details are emailed to everyone registered{paymentBy ? ` by ${paymentBy}` : ""}.
                                     </p>
                                 </>
                             )}
@@ -146,7 +153,7 @@ export default function RegisterPage() {
                                 <p className="mb-12 max-w-[36rem] text-lg text-muted-ink">
                                     It takes about five minutes. Everything is required unless it says optional.
                                 </p>
-                                <RegistrationForm />
+                                <RegistrationForm paymentDetailsBy={c.paymentDetailsBy} />
                             </>
                         ) : (
                             <p className="text-lg text-muted-ink">
@@ -169,7 +176,7 @@ export default function RegisterPage() {
                             <p className="mt-6 max-w-[24rem] text-lg text-muted-ink">Announced so far. More will be added before 20 December.</p>
                         </div>
                         <ul className="grid border-t border-ink sm:grid-cols-2 lg:col-span-7 lg:col-start-6">
-                            {SPEAKERS.map((sp) => (
+                            {c.speakers.map((sp) => (
                                 <li key={sp.name} className="border-b border-line py-4 sm:pr-6">
                                     <p className="font-display text-lg font-semibold text-ink [font-stretch:112%]">{sp.name}</p>
                                     <p className="mt-0.5 text-base text-muted-ink">{sp.role}</p>
@@ -191,7 +198,7 @@ export default function RegisterPage() {
                             </p>
                         </div>
                         <ol className="border-t border-ink lg:col-span-7 lg:col-start-6">
-                            {AGENDA.map((a) => (
+                            {c.agenda.map((a) => (
                                 <li key={a.time + a.title} className="grid gap-x-6 border-b border-line py-4 sm:grid-cols-[6rem_1fr]">
                                     <span className="text-base tabular-nums text-faint">{a.time}</span>
                                     <span>
@@ -219,7 +226,7 @@ export default function RegisterPage() {
                             </p>
                         </div>
                         <div className="border-t border-ink lg:col-span-7 lg:col-start-6">
-                            {FAQS.map((f) => (
+                            {c.faqs.map((f) => (
                                 <details key={f.q} className="group border-b border-line-strong">
                                     <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-6 py-4 font-display text-lg font-semibold text-ink [font-stretch:112%] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal [&::-webkit-details-marker]:hidden">
                                         {f.q}
@@ -240,7 +247,7 @@ export default function RegisterPage() {
                 data={{
                     "@context": "https://schema.org",
                     "@type": "FAQPage",
-                    mainEntity: FAQS.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
+                    mainEntity: c.faqs.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
                 }}
             />
         </>

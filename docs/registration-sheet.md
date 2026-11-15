@@ -73,7 +73,7 @@ code at build time, because AWS Amplify only gives environment variables to the 
 running site. So after adding or changing any of them, **redeploy** for them to take effect. They
 never appear in the JavaScript sent to visitors' browsers.
 
-To check the settings reached the live site, open **https://www.manthanam.in/api/register**. It
+To check the settings reached the live site, sign in at /admin as an owner and then open **https://www.manthanam.in/api/register** (everyone else gets a 404). It
 shows `"connected": true` and the data centre, or lists the names (never the values) of any
 setting that is missing.
 
@@ -112,7 +112,7 @@ ZOHO_MAIL_REFRESH_TOKEN=…
 
 Optional: `ZOHO_MAIL_FROM` (default `ayush.shukla@manthanam.in`).
 
-**Check it:** https://www.manthanam.in/api/register?check=zoho shows `"email": "ok (sends as
+**Check it** (signed in as an owner): https://www.manthanam.in/api/register?check=zoho shows `"email": "ok (sends as
 ayush.shukla@manthanam.in)"` when it's ready. It looks up the mailbox but sends nothing.
 
 The email text is in `lib/zoho-mail.ts`; the payment-details date is `paymentDetailsBy` in

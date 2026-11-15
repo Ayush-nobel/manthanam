@@ -108,7 +108,7 @@ server code.
 
 ### 6. Check
 
-- **https://www.manthanam.in/api/register** shows `"database": "connected"`.
+- Sign in at /admin as an owner, then open **https://www.manthanam.in/api/register**. It shows `"database": "connected"`. (For anyone not signed in as an owner it answers 404, so the public can't read the setup.)
 - **https://www.manthanam.in/admin** asks you to sign in, and then shows the Overview.
 
 ## Day to day

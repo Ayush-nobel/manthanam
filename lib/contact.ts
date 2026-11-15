@@ -1,3 +1,4 @@
+import { EMAIL_ADDRESS } from "@/lib/email-address";
 import { site } from "@/lib/site";
 
 /**
@@ -45,7 +46,7 @@ export function validateContact(v: ContactValues): ContactErrors {
     else if (v.name.length > 100) errors.name = "Please keep your name under 100 characters.";
     if (!v.email) errors.email = "Please enter your email address.";
     else if (v.email.length > 254) errors.email = "That email address is too long.";
-    else if (!/^[^\s@"\\]+@[^\s@"\\]+\.[^\s@"\\]+$/.test(v.email)) errors.email = "Enter an email address like name@example.com.";
+    else if (!EMAIL_ADDRESS.test(v.email)) errors.email = "Enter an email address like name@example.com.";
     if (v.message.length < 10) errors.message = "Please write a short message (at least 10 characters).";
     else if (v.message.length > 5000) errors.message = "Please keep your message under 5,000 characters.";
     if (v.sender !== "adult" && v.sender !== "guardian") errors.sender = "Please tell us who is writing.";

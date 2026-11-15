@@ -12,7 +12,9 @@ import {
 } from "@/lib/registration";
 import { connection } from "next/server";
 import { clientIp, fromThisSite, rateLimiter } from "@/lib/request-guard";
+import { getAdmin } from "@/lib/auth";
 import { audit, db, dbConfigured, dbMissing } from "@/lib/db";
+import { can } from "@/lib/permissions";
 import { diagnoseMail, mailConfigured, sendRegistrationEmail } from "@/lib/zoho-mail";
 import { addRow, diagnose, hasValue, zohoConfigured, zohoDataCentre, zohoMissing } from "@/lib/zoho-sheet";
 
@@ -192,16 +194,21 @@ export async function POST(request: Request) {
     return json({ ok: true, reference: ref, emailed });
 }
 
-/** Setup check: says whether the Zoho settings reached the server, naming (never showing) any that are missing. */
+/**
+ * Setup check, for owners only (sign in at /admin first). Says whether the database and Zoho settings
+ * reached the server, naming (never showing) any that are missing; ?check=zoho also tries each Zoho step.
+ * Everyone else gets a plain 404, so the public can't read configuration or spend Zoho API quota.
+ */
 export async function GET(request: Request) {
     await connection();
+    const admin = await getAdmin();
+    if (!admin || !can(admin.role, "team.manage")) return new Response("Not found", { status: 404, headers: { "Cache-Control": "no-store" } });
     const status = {
         database: dbConfigured() ? "connected" : `not set up (missing ${dbMissing().join(", ")})`,
         connected: zohoConfigured(),
         dataCentre: zohoDataCentre(),
         missing: zohoMissing(),
     };
-    // ?check=zoho also tries each step against Zoho (sign in, spreadsheet, worksheet, header row).
     if (status.connected && new URL(request.url).searchParams.get("check") === "zoho") return json({ ...status, ...(await diagnose()), email: await diagnoseMail() });
     return json(status);
 }

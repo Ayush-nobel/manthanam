@@ -1,6 +1,7 @@
 import "server-only";
 import { applicationEmailHtml, applicationEmailSubject } from "@/lib/application-email";
 import { registrationEmailHtml, registrationEmailSubject } from "@/lib/registration-email";
+import { rateLimiter } from "@/lib/request-guard";
 import { accessToken, forgetToken, zohoDataCentre, type ZohoCredentials } from "@/lib/zoho-sheet";
 
 /**
@@ -72,7 +73,17 @@ async function account(): Promise<string> {
     return accountId;
 }
 
+// Ceiling on emails this server sends, so a flood of fake form posts can't turn Manthanam's mailbox into a
+// spam cannon: 150 an hour per server instance in all, and 3 a day to any one address. Over the limit the
+// email is skipped (the form entry is still saved) and the reason logged.
+const allMail = rateLimiter(150, 60 * 60_000);
+const perRecipient = rateLimiter(3, 24 * 60 * 60_000);
+
 async function send(to: string, cc: string | undefined, subject: string, content: string, mailFormat: "html" | "plaintext" = "html") {
+    if (to !== CONTACT_TO) {
+        if (allMail("all")) throw new Error("Hourly email limit reached; email skipped.");
+        for (const addr of [to, cc].filter((x): x is string => !!x)) if (perRecipient(addr.toLowerCase())) throw new Error("Daily limit for this recipient reached; email skipped.");
+    }
     const id = await account();
     const token = await accessToken(creds());
     const res = await fetch(`${base()}/accounts/${encodeURIComponent(id)}/messages`, {

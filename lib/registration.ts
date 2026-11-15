@@ -1,3 +1,4 @@
+import { EMAIL_ADDRESS } from "@/lib/email-address";
 import { conference, HEARD_FROM, STATUSES } from "@/lib/conference";
 import { site } from "@/lib/site";
 
@@ -59,7 +60,7 @@ const LIMITS: Partial<Record<Field, number>> = {
 export const limit = (f: Field) => LIMITS[f];
 
 // No quotes or backslashes: real addresses don't need them, and the sheet lookup quotes the value.
-const EMAIL = /^[^\s@"\\]+@[^\s@"\\]+\.[^\s@"\\]+$/;
+const EMAIL = EMAIL_ADDRESS;
 /** Digits with an optional leading +, spaces, hyphens or brackets; 7–15 digits in all (ITU E.164). */
 function validPhone(v: string) {
     if (!/^\+?[\d\s()-]+$/.test(v)) return false;

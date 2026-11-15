@@ -1,5 +1,6 @@
 "use server";
 
+import { EMAIL_ADDRESS } from "@/lib/email-address";
 import { randomInt } from "node:crypto";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -7,6 +8,7 @@ import { refresh } from "next/cache";
 import { authClient, authorise, getAdmin } from "@/lib/auth";
 import { audit, db, dbConfigured, type RegistrationRow } from "@/lib/db";
 import { APPLICATION_STATUSES, isRole, MESSAGE_STATUSES, REGISTRATION_STATUSES, ROLE_LABELS } from "@/lib/permissions";
+import { clientIpFrom, rateLimiter } from "@/lib/request-guard";
 import { mailConfigured, sendRegistrationEmail } from "@/lib/zoho-mail";
 
 /**
@@ -22,18 +24,17 @@ export interface FormState {
 }
 
 const str = (f: FormData, k: string, max = 2000) => String(f.get(k) ?? "").trim().slice(0, max);
-const EMAIL = /^[^\s@"\\]+@[^\s@"\\]+\.[^\s@"\\]+$/;
+const EMAIL = EMAIL_ADDRESS;
 
-// Sign-in attempts per IP: 10 per 15 minutes on each server instance (Supabase adds its own limits).
-const attempts = new Map<string, number[]>();
-async function tooManyAttempts() {
-    const ip = ((await headers()).get("x-forwarded-for") ?? "").split(",")[0].trim() || "unknown";
-    const now = Date.now();
-    const recent = (attempts.get(ip) ?? []).filter((t) => now - t < 15 * 60_000);
-    recent.push(now);
-    attempts.set(ip, recent);
-    if (attempts.size > 5000) attempts.clear();
-    return recent.length > 10;
+// Sign-in attempts: 10 per 15 minutes per connection, and 10 per 15 minutes per account (the second can't be
+// dodged by faking addresses). Per server instance; Supabase adds its own limits on top.
+const perIp = rateLimiter(10, 15 * 60_000);
+const perAccount = rateLimiter(10, 15 * 60_000);
+async function tooManyAttempts(email: string) {
+    const ip = clientIpFrom(await headers());
+    const a = perIp(ip);
+    const b = perAccount(email);
+    return a || b;
 }
 
 /** A readable one-time password, e.g. "mango-7Kq3-river-x9Pz". */
@@ -48,8 +49,8 @@ function tempPassword() {
 
 export async function signIn(_: FormState, form: FormData): Promise<FormState> {
     if (!dbConfigured()) return { error: "The admin dashboard isn’t connected to its database yet." };
-    if (await tooManyAttempts()) return { error: "Too many attempts. Wait 15 minutes and try again." };
     const email = str(form, "email", 254).toLowerCase();
+    if (await tooManyAttempts(email)) return { error: "Too many attempts. Wait 15 minutes and try again." };
     const password = String(form.get("password") ?? "");
     if (!EMAIL.test(email) || !password) return { error: "Enter your email address and password." };
 
@@ -195,20 +196,26 @@ export async function addAdmin(_: FormState, form: FormData): Promise<FormState>
     if (!EMAIL.test(email)) return { error: "Enter a valid email address." };
     if (!isRole(role)) return { error: "Choose a role." };
 
+    // Never touch an existing admin from here: changing their role or password has its own guarded actions.
+    const { data: existing } = await db().from("admin_users").select("user_id").eq("email", email).maybeSingle();
+    if (existing) return { error: "That person is already an admin. Use Change role or Reset password on their row instead." };
+
     const password = tempPassword();
     let userId: string | undefined;
     const created = await db().auth.admin.createUser({ email, password, email_confirm: true, user_metadata: { name } });
     if (created.data.user) userId = created.data.user.id;
     else if (/already|registered|exists/i.test(created.error?.message ?? "")) {
-        // They have a Supabase account already (e.g. removed earlier): find it and reset its password.
+        // A sign-in account with no admin role (e.g. someone removed earlier): reuse it with a new password.
         const found = await findUserByEmail(email);
         if (!found) return { error: "That email has an account that couldn’t be found. Try again." };
+        const { data: isAdmin } = await db().from("admin_users").select("user_id").eq("user_id", found).maybeSingle();
+        if (isAdmin) return { error: "That person is already an admin. Use Change role or Reset password on their row instead." };
         const { error: e } = await db().auth.admin.updateUserById(found, { password });
         if (e) return { error: e.message };
         userId = found;
     } else return { error: created.error?.message ?? "Couldn’t create the account." };
 
-    const { error: dbError } = await db().from("admin_users").upsert({ user_id: userId, email, name, role, created_by: admin.id });
+    const { error: dbError } = await db().from("admin_users").insert({ user_id: userId, email, name, role, created_by: admin.id });
     if (dbError) return { error: `Not saved: ${dbError.message}` };
     await audit(admin, "admin.add", "admin", userId!, { email, role });
     refresh();

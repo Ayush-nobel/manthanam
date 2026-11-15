@@ -1,3 +1,4 @@
+import { EMAIL_ADDRESS } from "@/lib/email-address";
 import { site } from "@/lib/site";
 
 /**
@@ -47,7 +48,7 @@ export function validateApplication(v: ApplicationValues): ApplicationErrors {
     const e: ApplicationErrors = {};
     if (!v.fullName) e.fullName = "Enter your full name.";
     if (!v.email) e.email = "Enter your email address.";
-    else if (!/^[^\s@"\\]+@[^\s@"\\]+\.[^\s@"\\]+$/.test(v.email)) e.email = "Enter an email address like name@example.com.";
+    else if (!EMAIL_ADDRESS.test(v.email)) e.email = "Enter an email address like name@example.com.";
     const digits = v.phone.replace(/\D/g, "").length;
     if (!v.phone) e.phone = "Enter your phone number.";
     else if (!/^\+?[\d\s()-]+$/.test(v.phone) || digits < 7 || digits > 15) e.phone = "Enter a phone number like +91 98765 43210.";

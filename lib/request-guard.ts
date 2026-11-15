@@ -3,7 +3,17 @@ import { site } from "@/lib/site";
 
 /** Shared protections for the public form endpoints (registrations, contact messages). */
 
-export const clientIp = (request: Request) => (request.headers.get("x-forwarded-for") ?? "").split(",")[0].trim() || "unknown";
+/**
+ * The visitor's IP for rate limiting. CloudFront-Viewer-Address is set by CloudFront itself and can't be
+ * faked; the first X-Forwarded-For entry can (a client may send its own), so it is only the fallback,
+ * and every limit that matters also has a key the visitor can't change (account, recipient address).
+ */
+export function clientIpFrom(headers: Headers): string {
+    const viewer = headers.get("cloudfront-viewer-address");
+    if (viewer) return viewer.replace(/:\d+$/, "");
+    return (headers.get("x-forwarded-for") ?? "").split(",")[0].trim() || "unknown";
+}
+export const clientIp = (request: Request) => clientIpFrom(request.headers);
 
 /** Best-effort limit per key (IP), per server instance: at most `max` calls in each `windowMs`. */
 export function rateLimiter(max: number, windowMs: number) {

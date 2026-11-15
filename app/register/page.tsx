@@ -7,7 +7,7 @@ import JsonLd from "@/components/json-ld";
 import RegistrationForm from "@/components/registration-form";
 import SiteFooter from "@/components/site-footer";
 import SiteHeader from "@/components/site-header";
-import { conference, FAQS } from "@/lib/conference";
+import { AGENDA, conference, FAQS, SPEAKERS } from "@/lib/conference";
 import { site } from "@/lib/site";
 import conferenceLogo from "@/public/events/biyc-2026-logo.png";
 
@@ -35,6 +35,7 @@ export default function RegisterPage() {
         ["Place", <>{conference.place}<span className="block text-base text-muted-ink">{conference.venue ?? "Venue to be announced"}</span></>],
         ["Register by", conference.deadline ? <time dateTime={conference.deadline}>{formatDate(conference.deadline)}</time> : TBA],
         ["Organised by", site.legal.name],
+        ["Delegates", conference.expected],
     ];
 
     return (
@@ -49,6 +50,7 @@ export default function RegisterPage() {
                             <h1 className="mt-3 max-w-[18ch] font-display text-[clamp(2.25rem,6vw,4.5rem)] font-[650] leading-[1.02] tracking-[-0.015em] text-ink [font-stretch:120%]">
                                 Register for the {conference.title}.
                             </h1>
+                            <p className="mt-5 max-w-[34rem] text-lg italic text-muted-ink">{conference.theme}</p>
                         </div>
                         <Image
                             src={conferenceLogo}
@@ -93,6 +95,22 @@ export default function RegisterPage() {
                                 <p className="mt-3 text-base text-muted-ink">
                                     To be announced. You can register now; payment details will be emailed to you by 25 November 2026.
                                 </p>
+                            )}
+                            {conference.fees.length > 0 && (
+                                <>
+                                    <p className="mt-5 text-sm font-semibold text-ink">Your fee includes</p>
+                                    <ul className="mt-2 grid gap-1.5 text-base text-muted-ink">
+                                        {conference.included.map((i) => (
+                                            <li key={i} className="grid grid-cols-[0.75rem_1fr] gap-2">
+                                                <span aria-hidden="true" className="mt-[0.6em] size-1.5 bg-signal" />
+                                                {i}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                    <p className="mt-4 text-base text-muted-ink">
+                                        Register now; payment details are emailed to everyone registered by 25 November 2026.
+                                    </p>
+                                </>
                             )}
                             <p className="mt-3 text-sm text-faint">
                                 Nothing is paid on this website. Refunds follow our{" "}
@@ -142,6 +160,50 @@ export default function RegisterPage() {
                     </div>
                 </section>
 
+                <section aria-labelledby="speakers-title" className="border-t border-line">
+                    <div className="mx-auto grid max-w-[84rem] gap-10 px-6 py-20 sm:px-10 sm:py-28 lg:grid-cols-12">
+                        <div className="lg:col-span-4">
+                            <h2 id="speakers-title" className="font-display text-[clamp(1.875rem,3.6vw,3.125rem)] font-[620] leading-[1.06] tracking-[-0.015em] text-ink [font-stretch:118%]">
+                                Speakers.
+                            </h2>
+                            <p className="mt-6 max-w-[24rem] text-lg text-muted-ink">Announced so far. More will be added before 20 December.</p>
+                        </div>
+                        <ul className="grid border-t border-ink sm:grid-cols-2 lg:col-span-7 lg:col-start-6">
+                            {SPEAKERS.map((sp) => (
+                                <li key={sp.name} className="border-b border-line py-4 sm:pr-6">
+                                    <p className="font-display text-lg font-semibold text-ink [font-stretch:112%]">{sp.name}</p>
+                                    <p className="mt-0.5 text-base text-muted-ink">{sp.role}</p>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                </section>
+
+                <section aria-labelledby="day-title" className="border-t border-line">
+                    <div className="mx-auto grid max-w-[84rem] gap-10 px-6 py-20 sm:px-10 sm:py-28 lg:grid-cols-12">
+                        <div className="lg:col-span-4">
+                            <h2 id="day-title" className="font-display text-[clamp(1.875rem,3.6vw,3.125rem)] font-[620] leading-[1.06] tracking-[-0.015em] text-ink [font-stretch:118%]">
+                                The day.
+                            </h2>
+                            <p className="mt-6 max-w-[24rem] text-lg text-muted-ink">
+                                Sunday, 20 December. Five panels, then the Youth Roundtable, where delegates draft the BIYC 2026 Youth Declaration. Timings are
+                                indicative.
+                            </p>
+                        </div>
+                        <ol className="border-t border-ink lg:col-span-7 lg:col-start-6">
+                            {AGENDA.map((a) => (
+                                <li key={a.time + a.title} className="grid gap-x-6 border-b border-line py-4 sm:grid-cols-[6rem_1fr]">
+                                    <span className="text-base tabular-nums text-faint">{a.time}</span>
+                                    <span>
+                                        <span className="block font-display text-lg font-semibold text-ink [font-stretch:112%]">{a.title}</span>
+                                        {a.detail && <span className="mt-0.5 block text-base text-muted-ink">{a.detail}</span>}
+                                    </span>
+                                </li>
+                            ))}
+                        </ol>
+                    </div>
+                </section>
+
                 <section aria-labelledby="faq-title" className="bg-paper-2">
                     <div className="mx-auto grid max-w-[84rem] gap-10 px-6 py-20 sm:px-10 sm:py-28 lg:grid-cols-12">
                         <div className="lg:col-span-4">
@@ -168,6 +230,7 @@ export default function RegisterPage() {
                                     <p className="max-w-[38rem] pb-6 text-lg text-muted-ink">{f.a}</p>
                                 </details>
                             ))}
+                            <p className="mt-8 max-w-[38rem] text-sm text-faint">{conference.independence}</p>
                         </div>
                     </div>
                 </section>

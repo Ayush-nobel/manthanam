@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { updateApplication } from "@/app/admin/actions";
+import { replyToApplication, updateApplication } from "@/app/admin/actions";
 import { ActionForm, Submit } from "@/components/admin/action-form";
 import { Select, TextArea } from "@/components/admin/fields";
+import { ReplyForm } from "@/components/admin/reply-form";
 import { describe, NoAccess, StatusBadge, when } from "@/components/admin/format";
 import { getApplication } from "@/lib/admin-data";
 import { roleName } from "@/lib/application";
 import { requireAdmin } from "@/lib/auth";
 import { APPLICATION_STATUSES, APPLICATION_STATUS_LABELS, can } from "@/lib/permissions";
+import { mailConfigured, mailFrom } from "@/lib/zoho-mail";
 
 export const metadata: Metadata = { title: "Application" };
 
@@ -17,7 +19,8 @@ export default async function ApplicationPage({ params }: PageProps<"/admin/appl
     if (!can(admin.role, "applications.view")) return <NoAccess />;
     const found = await getApplication((await params).id);
     if (!found) notFound();
-    const { application: a, history } = found;
+    const { application: a, history, replies } = found;
+    const canReply = can(admin.role, "applications.edit") && mailConfigured();
     const safeLink = /^https?:\/\//i.test(a.portfolio) ? a.portfolio : "";
 
     const rows: [string, React.ReactNode][] = [
@@ -49,6 +52,23 @@ export default async function ApplicationPage({ params }: PageProps<"/admin/appl
                         <h2 id="why" className="font-display text-lg font-[650]">Why them, in their words</h2>
                         <p className="mt-2 max-w-[65ch] border-t border-ink pt-3 text-base whitespace-pre-line break-words">{a.motivation}</p>
                     </section>
+                    {(replies.length > 0 || canReply) && (
+                        <section aria-labelledby="replies">
+                            <h2 id="replies" className="font-display text-lg font-[650]">Emails to {a.full_name}</h2>
+                            <div className="mt-2 border-t border-ink pt-1">
+                                {replies.map((r) => (
+                                    <div key={r.id} className="mt-4 max-w-[65ch] border-l-2 border-ink pl-4">
+                                        <p className="text-sm text-muted-ink">
+                                            From {r.sent_by_name || r.sent_by_email} to {r.sent_to}, {when(r.created_at)}
+                                        </p>
+                                        <p className="mt-1 text-base whitespace-pre-line break-words">{r.body}</p>
+                                    </div>
+                                ))}
+                                {replies.length === 0 && <p className="mt-3 text-sm text-muted-ink">None sent from here yet.</p>}
+                                {canReply && <ReplyForm action={replyToApplication} id={a.id} to={a.email} from={mailFrom()} open={false} quoted="The email says which internship it’s about." />}
+                            </div>
+                        </section>
+                    )}
                     <section aria-labelledby="details">
                         <h2 id="details" className="font-display text-lg font-[650]">Details</h2>
                         <dl className="mt-2 border-t border-ink">
@@ -77,7 +97,7 @@ export default async function ApplicationPage({ params }: PageProps<"/admin/appl
                                     <Submit>Save</Submit>
                                 </div>
                             </ActionForm>
-                            <p className="mt-5 border-t border-line pt-4 text-sm text-faint">Changing the status doesn’t email the applicant. Write to them from your own mailbox.</p>
+                            <p className="mt-5 border-t border-line pt-4 text-sm text-faint">Changing the status doesn’t email the applicant. To write to them, use Reply by email under “Emails to” on this page.</p>
                         </section>
                     ) : (
                         <p className="text-base text-muted-ink">Your role can view this application but not change it.</p>

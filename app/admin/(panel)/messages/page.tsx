@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { updateMessage } from "@/app/admin/actions";
+import { replyToMessage, updateMessage } from "@/app/admin/actions";
 import { ActionForm, Submit } from "@/components/admin/action-form";
 import { ReplyForm } from "@/components/admin/reply-form";
 import { NoAccess, PageTitle, StatusBadge, when } from "@/components/admin/format";
@@ -74,7 +74,7 @@ export default async function MessagesPage({ searchParams }: PageProps<"/admin/m
                                     <p className="mt-1 text-base whitespace-pre-line break-words">{r.body}</p>
                                 </div>
                             ))}
-                            {canReply && m.status !== "spam" && <ReplyForm id={m.id} to={m.email} from={mailFrom()} open={m.status === "new" && rows.length === 1} />}
+                            {canReply && m.status !== "spam" && <ReplyForm action={replyToMessage} id={m.id} to={m.email} from={mailFrom()} open={m.status === "new" && rows.length === 1} quoted="Their message is quoted under your reply." />}
                         </article>
                         {edit && (
                             <ActionForm action={updateMessage} className="grid content-start gap-3">

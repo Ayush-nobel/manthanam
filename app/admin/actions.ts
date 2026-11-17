@@ -9,7 +9,7 @@ import { authClient, authorise, getAdmin } from "@/lib/auth";
 import { audit, db, dbConfigured, type RegistrationRow } from "@/lib/db";
 import { APPLICATION_STATUSES, isRole, MESSAGE_STATUSES, REGISTRATION_STATUSES, ROLE_LABELS } from "@/lib/permissions";
 import { clientIpFrom, rateLimiter } from "@/lib/request-guard";
-import { mailConfigured, mailFrom, sendMessageReply, sendRegistrationEmail } from "@/lib/zoho-mail";
+import { mailConfigured, mailFrom, sendApplicationReply, sendMessageReply, sendRegistrationEmail } from "@/lib/zoho-mail";
 
 /**
  * Every change the admin dashboard can make. Each action checks the session and the role itself:
@@ -183,6 +183,36 @@ export async function updateApplication(_: FormState, form: FormData): Promise<F
     return { ok: "Saved." };
 }
 
+/** Emails a reply to an internship applicant and keeps a copy. The status is left as it is: set it separately. */
+export async function replyToApplication(_: FormState, form: FormData): Promise<FormState> {
+    const auth = await authorise("applications.edit");
+    if (auth.error !== undefined) return { error: auth.error };
+    const admin = auth.admin;
+    const id = str(form, "id", 64);
+    const body = String(form.get("body") ?? "").trim();
+    const invalid = replyProblem(body);
+    if (invalid) return { error: invalid };
+
+    const { data: a } = await db().from("applications").select("id, email, role, created_at").eq("id", id).maybeSingle();
+    if (!a) return { error: "That application no longer exists." };
+    const to = String(a.email).trim();
+    if (!EMAIL.test(to)) return { error: "This application’s email address isn’t valid, so it can’t be replied to." };
+    if (repliesPerAdmin(admin.id)) return { error: "You’ve sent a lot of replies in the last hour. Try again later." };
+
+    try {
+        await sendApplicationReply({ to, role: a.role, body, signedBy: admin.name || admin.email, appliedAt: a.created_at });
+    } catch (err) {
+        return sendFailed(err);
+    }
+
+    // The email has gone; from here on, failures only affect the record of it.
+    const { error: saveError } = await db().from("application_replies").insert({ application_id: id, body, sent_to: to, sent_from: mailFrom(), sent_by: admin.id, sent_by_name: admin.name, sent_by_email: admin.email });
+    if (saveError) console.error("Saving the reply failed:", saveError.message);
+    await audit(admin, "application.reply", "application", id, { to });
+    refresh();
+    return { ok: saveError ? `Sent to ${to}. (A copy couldn’t be kept here.)` : `Sent to ${to}.` };
+}
+
 // Contact messages ------------------------------------------------------------------------------
 
 export async function updateMessage(_: FormState, form: FormData): Promise<FormState> {
@@ -202,6 +232,20 @@ export async function updateMessage(_: FormState, form: FormData): Promise<FormS
     return { ok: "Saved." };
 }
 
+/** Why a reply can't be sent as written, or null. */
+function replyProblem(body: string): string | null {
+    if (!body) return "Write a reply first.";
+    if (body.length > 10000) return "Keep the reply under 10,000 characters.";
+    if (!mailConfigured()) return "Email isn’t set up on this server, so replies can’t be sent. Reply from your mailbox instead.";
+    return null;
+}
+
+function sendFailed(err: unknown): FormState {
+    console.error("Reply email failed:", (err as Error).message);
+    const limit = /limit/i.test((err as Error).message);
+    return { error: limit ? "The email limit for this address or this hour has been reached. Try again later, or reply from your mailbox." : "The email couldn’t be sent. Nothing went out; try again in a minute." };
+}
+
 // Up to 40 replies an hour per admin (per server instance), on top of the mail limits in lib/zoho-mail.ts.
 const repliesPerAdmin = rateLimiter(40, 60 * 60_000);
 
@@ -212,9 +256,8 @@ export async function replyToMessage(_: FormState, form: FormData): Promise<Form
     const admin = auth.admin;
     const id = str(form, "id", 64);
     const body = String(form.get("body") ?? "").trim();
-    if (!body) return { error: "Write a reply first." };
-    if (body.length > 10000) return { error: "Keep the reply under 10,000 characters." };
-    if (!mailConfigured()) return { error: "Email isn’t set up on this server, so replies can’t be sent. Reply from your mailbox instead." };
+    const invalid = replyProblem(body);
+    if (invalid) return { error: invalid };
 
     const { data: m } = await db().from("contact_messages").select("id, name, email, topic, message, created_at, status").eq("id", id).maybeSingle();
     if (!m) return { error: "That message no longer exists." };
@@ -224,11 +267,9 @@ export async function replyToMessage(_: FormState, form: FormData): Promise<Form
     if (repliesPerAdmin(admin.id)) return { error: "You’ve sent a lot of replies in the last hour. Try again later." };
 
     try {
-        await sendMessageReply({ to, name: m.name, topic: m.topic, body, signedBy: admin.name || admin.email, original: m.message, originalAt: m.created_at });
+        await sendMessageReply({ to, topic: m.topic, body, signedBy: admin.name || admin.email, original: m.message, originalAt: m.created_at });
     } catch (err) {
-        console.error("Reply email failed:", (err as Error).message);
-        const limit = /limit/i.test((err as Error).message);
-        return { error: limit ? "The email limit for this address or this hour has been reached. Try again later, or reply from your mailbox." : "The email couldn’t be sent. Nothing went out; try again in a minute." };
+        return sendFailed(err);
     }
 
     // The email has gone; from here on, failures only affect the record of it.

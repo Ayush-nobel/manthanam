@@ -96,15 +96,18 @@ export interface ContactMessageRow {
     notes: string;
 }
 
-export interface MessageReplyRow {
+/** One reply emailed from the dashboard (message_replies and application_replies). */
+export interface ReplyRow {
     id: string;
-    message_id: string;
     created_at: string;
     body: string;
     sent_to: string;
     sent_from: string;
     sent_by_name: string;
     sent_by_email: string;
+}
+export interface MessageReplyRow extends ReplyRow {
+    message_id: string;
 }
 
 export interface ApplicationRow {

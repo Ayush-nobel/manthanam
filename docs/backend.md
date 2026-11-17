@@ -8,6 +8,7 @@ members can:
   confirmation email;
 - read contact-form messages, reply to them by email from the dashboard (sent from the Zoho Mail
   mailbox, with the reply kept under the message), and mark them replied, archived or spam;
+- reply by email to internship applicants from their application page;
 - add and remove admins and choose each person's role (Owner only).
 
 Every change is recorded with who made it and when, and shows in the registration's History and
@@ -16,7 +17,8 @@ on the Overview page.
 ## How it fits together
 
 - **Database:** Supabase (hosted Postgres) in the Mumbai region. Tables: `registrations`,
-  `contact_messages`, `message_replies`, `admin_users`, `audit_log`
+  `contact_messages`, `message_replies`, `applications`, `application_replies`,
+  `admin_users`, `audit_log`
   (`supabase/migrations/0001_admin_backend.sql`).
 - **Locked down by default:** every table has Row Level Security on and no policies, so Supabase's
   public key can't read or write anything. Only the website's server can, using the secret key, and

@@ -1,6 +1,8 @@
 import "server-only";
 import { applicationEmailHtml, applicationEmailSubject } from "@/lib/application-email";
+import { roleName } from "@/lib/application";
 import { registrationEmailHtml, registrationEmailSubject } from "@/lib/registration-email";
+import { longDate, replyEmailHtml } from "@/lib/reply-email";
 import { rateLimiter } from "@/lib/request-guard";
 import { getConference } from "@/lib/site-content";
 import { accessToken, forgetToken, zohoDataCentre, type ZohoCredentials } from "@/lib/zoho-sheet";
@@ -129,22 +131,37 @@ ${m.guardian ? `<p style="margin:0 0 12px;padding:8px 12px;border-left:3px solid
     await send(CONTACT_TO, undefined, subject.replace(/[\r\n]+/g, " ").slice(0, 200), html);
 }
 
+const oneLine = (t: string) => t.replace(/[\r\n]+/g, " ").slice(0, 200);
+
 /**
- * A reply written in the admin dashboard to someone who used the contact form. Sent from FROM, so when they
- * answer, it lands in that mailbox. Their original message is quoted underneath, like an ordinary email reply.
+ * A reply written in the admin dashboard to someone who used the contact form, in the registration
+ * email's design (lib/reply-email.ts). Sent from FROM, so their answer lands in that mailbox.
  */
-export async function sendMessageReply(r: { to: string; name: string; topic: string; body: string; signedBy: string; original: string; originalAt: string }) {
-    const para = (t: string) => esc(t).replace(/\r?\n/g, "<br>");
-    const date = new Date(r.originalAt).toLocaleString("en-IN", { dateStyle: "long", timeStyle: "short", timeZone: "Asia/Kolkata" });
-    const html = `<div style="font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:1.6;color:#10264a;max-width:600px">
-<div>${para(r.body)}</div>
-<p style="margin:20px 0 0">${esc(r.signedBy)}<br>Manthanam Research Foundation<br><a href="https://www.manthanam.in" style="color:#10264a">manthanam.in</a></p>
-<div style="margin:28px 0 0;padding:0 0 0 12px;border-left:3px solid #d9e8ec;color:#53627a;font-size:14px">
-<p style="margin:0 0 6px">On ${esc(date)}, ${esc(r.name)} wrote via manthanam.in:</p>
-<div>${para(r.original)}</div>
-</div>
-</div>`;
-    const subject = `Re: ${r.topic || "your message to Manthanam"}`.replace(/[\r\n]+/g, " ").slice(0, 200);
+export async function sendMessageReply(r: { to: string; topic: string; body: string; signedBy: string; original: string; originalAt: string }) {
+    const subject = oneLine(`Re: ${r.topic || "your message to Manthanam"}`);
+    const html = replyEmailHtml({
+        subject,
+        band: "Manthanam Research Foundation, New Delhi",
+        context: `Your message to us on ${longDate(r.originalAt)}${r.topic ? `, about ${r.topic}` : ""}:`,
+        quote: r.original,
+        body: r.body,
+        signedBy: r.signedBy,
+        reason: "You received this email because you wrote to us through the contact form on manthanam.in.",
+    });
+    await send(r.to, undefined, subject, html);
+}
+
+/** A reply to an internship applicant, written in the admin dashboard. Same design; their application isn't quoted back. */
+export async function sendApplicationReply(r: { to: string; role: string; body: string; signedBy: string; appliedAt: string }) {
+    const subject = oneLine(`Re: Your application for the ${roleName(r.role)} internship at Manthanam`);
+    const html = replyEmailHtml({
+        subject,
+        band: "Manthanam internships, remote",
+        context: `About your application for the ${roleName(r.role)} internship, sent on ${longDate(r.appliedAt)}.`,
+        body: r.body,
+        signedBy: r.signedBy,
+        reason: "You received this email because you applied for an internship on manthanam.in.",
+    });
     await send(r.to, undefined, subject, html);
 }
 

@@ -1,5 +1,5 @@
 import "server-only";
-import { db, type AdminRow, type ApplicationRow, type AuditRow, type ContactMessageRow, type MessageReplyRow, type RegistrationRow } from "@/lib/db";
+import { db, type AdminRow, type ApplicationRow, type AuditRow, type ContactMessageRow, type MessageReplyRow, type RegistrationRow, type ReplyRow } from "@/lib/db";
 import { APPLICATION_STATUSES, MESSAGE_STATUSES, REGISTRATION_STATUSES } from "@/lib/permissions";
 
 /**
@@ -113,7 +113,10 @@ export async function getApplication(id: string) {
     const { data } = await db().from("applications").select("*").eq("id", id).maybeSingle<ApplicationRow>();
     if (!data) return null;
     const { data: history } = await db().from("audit_log").select("id, at, actor_email, action, entity, entity_id, detail").eq("entity", "application").eq("entity_id", id).order("at", { ascending: false }).limit(50);
-    return { application: data, history: (history ?? []) as AuditRow[] };
+    // Empty if the table isn't there yet (migration 0006).
+    const { data: replies, error: repliesError } = await db().from("application_replies").select("id, created_at, body, sent_to, sent_from, sent_by_name, sent_by_email").eq("application_id", id).order("created_at");
+    if (repliesError) console.error("Application replies unavailable:", repliesError.message);
+    return { application: data, history: (history ?? []) as AuditRow[], replies: (replies ?? []) as ReplyRow[] };
 }
 
 export async function listMessages(f: { q?: string; status?: string; page?: number }) {

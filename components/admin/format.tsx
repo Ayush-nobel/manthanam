@@ -106,6 +106,8 @@ export function describe(action: string, detail: Record<string, unknown>) {
             return "Updated the conference details";
         case "message.create":
             return "Contact message received";
+        case "application.reply":
+            return `Replied by email to ${d.to}`;
         case "message.reply":
             return `Replied by email to ${d.to}`;
         case "message.update":

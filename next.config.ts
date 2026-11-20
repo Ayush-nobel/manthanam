@@ -64,6 +64,10 @@ const nextConfig: NextConfig = {
     serverActions: { allowedOrigins: ["www.manthanam.in.", "manthanam.in."] },
   },
   partialPrefetching: true,
+  // The offer-letter PDF (lib/letters/pdf.tsx) reads its fonts and logo from disk at run time.
+  outputFileTracingIncludes: {
+    "/admin/letters/**": ["./assets/fonts/*.ttf", "./public/logo-wordmark-ink.png"],
+  },
   // Don't advertise the framework in an X-Powered-By header.
   poweredByHeader: false,
   // "www.manthanam.in." (with the trailing dot) is the same site, but browsers treat it as a different

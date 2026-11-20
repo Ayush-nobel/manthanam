@@ -45,6 +45,13 @@ export default async function ApplicationPage({ params }: PageProps<"/admin/appl
                 <StatusBadge status={a.status} kind="application" />
             </div>
             <p className="mt-1 text-base text-muted-ink">{roleName(a.role)} internship</p>
+            {can(admin.role, "letters.manage") && (
+                <p className="mt-4">
+                    <Link href={`/admin/letters/new?application=${a.id}`} className="inline-flex min-h-10 items-center border border-ink px-4 text-sm font-semibold text-ink hover:bg-white">
+                        Send offer letter
+                    </Link>
+                </p>
+            )}
 
             <div className="mt-10 grid gap-12 lg:grid-cols-12">
                 <div className="grid content-start gap-10 lg:col-span-7">

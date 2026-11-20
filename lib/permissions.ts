@@ -7,7 +7,7 @@ export const ROLES = ["owner", "editor", "content", "registrations", "viewer"] a
 export type Role = (typeof ROLES)[number];
 
 export const ROLE_LABELS: Record<Role, { name: string; description: string }> = {
-    owner: { name: "Owner", description: "Everything, including adding and removing admins." },
+    owner: { name: "Owner", description: "Everything, including offer letters and adding and removing admins." },
     registrations: { name: "Registrations", description: "Sees and updates registrations, internship applications and contact messages." },
     editor: { name: "Editor", description: "Reviews and publishes Insights, and edits the conference details." },
     content: { name: "Writer", description: "Writes Insights drafts and submits them for review." },
@@ -25,10 +25,11 @@ export type Permission =
     | "messages.edit"
     | "content.edit"
     | "content.publish"
+    | "letters.manage"
     | "team.manage";
 
 const GRANTS: Record<Role, readonly Permission[]> = {
-    owner: ["registrations.view", "registrations.edit", "registrations.export", "applications.view", "applications.edit", "applications.export", "messages.view", "messages.edit", "content.edit", "content.publish", "team.manage"],
+    owner: ["registrations.view", "registrations.edit", "registrations.export", "applications.view", "applications.edit", "applications.export", "messages.view", "messages.edit", "content.edit", "content.publish", "letters.manage", "team.manage"],
     editor: ["content.edit", "content.publish"],
     registrations: ["registrations.view", "registrations.edit", "registrations.export", "applications.view", "applications.edit", "applications.export", "messages.view", "messages.edit"],
     content: ["content.edit"],

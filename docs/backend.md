@@ -9,6 +9,8 @@ members can:
 - read contact-form messages, reply to them by email from the dashboard (sent from the Zoho Mail
   mailbox, with the reply kept under the message), and mark them replied, archived or spam;
 - reply by email to internship applicants from their application page;
+- issue internship and job offer letters (Owner only): fill in the person and the offer, and the site
+  numbers the letter, builds a PDF and emails it; anyone can check a letter at manthanam.in/verify;
 - add and remove admins and choose each person's role (Owner only).
 
 Every change is recorded with who made it and when, and shows in the registration's History and
@@ -18,7 +20,7 @@ on the Overview page.
 
 - **Database:** Supabase (hosted Postgres) in the Mumbai region. Tables: `registrations`,
   `contact_messages`, `message_replies`, `applications`, `application_replies`,
-  `admin_users`, `audit_log`
+  `offer_letters`, `admin_users`, `audit_log`
   (`supabase/migrations/0001_admin_backend.sql`).
 - **Locked down by default:** every table has Row Level Security on and no policies, so Supabase's
   public key can't read or write anything. Only the website's server can, using the secret key, and
@@ -129,3 +131,24 @@ server code.
   registrations first.
 - **Free plan pause:** a free project that gets no traffic for a week is paused. Registrations keep
   it active, but consider the Pro plan for the weeks around the conference.
+
+## Offer letters
+
+**Offer letters** in the dashboard (Owners). **New offer letter** asks for the person, the position,
+the department, the dates and terms, and when they must reply by. **Preview PDF** shows the letter
+without sending it. **Send offer letter**:
+
+1. numbers it (MRF/OL/2026/0001, …) and gives it a random verification code;
+2. builds the PDF (`lib/letters/pdf.tsx`, fonts in `assets/fonts`, SIL Open Font License);
+3. emails it as an attachment through Zoho Mail, from the same mailbox as the other emails.
+
+The person accepts by replying to that email; record their answer on the letter's page. A letter can be
+sent again, downloaded, or withdrawn (the public check then says so).
+
+- **Who signs:** Offer letters → **Letter settings**: name, title and, optionally, a signature image.
+- **Checking a letter:** the QR code on each letter opens manthanam.in/verify with its code filled in,
+  and shows the name, offer, department and dates, never the email address or notes.
+- **Starting from an application:** an internship application's page has **Send offer letter**, which
+  fills in the form from the application.
+- **Wording:** the standard terms are in `lib/letters/pdf.tsx` (`standardTerms`). Have someone qualified
+  read them before relying on them; extra terms can be added per letter.

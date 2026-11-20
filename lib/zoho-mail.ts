@@ -82,7 +82,31 @@ async function account(): Promise<string> {
 const allMail = rateLimiter(150, 60 * 60_000);
 const perRecipient = rateLimiter(3, 24 * 60 * 60_000);
 
-async function send(to: string, cc: string | undefined, subject: string, content: string, mailFormat: "html" | "plaintext" = "html") {
+interface Attachment {
+    storeName: string;
+    attachmentPath: string;
+    attachmentName: string;
+}
+
+/** Uploads a file to Zoho Mail so the next email can carry it (Upload Attachment API, raw body). */
+async function uploadAttachment(fileName: string, bytes: Uint8Array): Promise<Attachment> {
+    const id = await account();
+    const token = await accessToken(creds());
+    const res = await fetch(`${base()}/accounts/${encodeURIComponent(id)}/messages/attachments?fileName=${encodeURIComponent(fileName)}`, {
+        method: "POST",
+        headers: { Authorization: `Zoho-oauthtoken ${token}`, Accept: "application/json", "Content-Type": "application/octet-stream" },
+        body: bytes as BodyInit,
+        signal: AbortSignal.timeout(30_000),
+        cache: "no-store",
+    });
+    if (res.status === 401) forgetToken(creds());
+    const body = (await res.json().catch(() => null)) as { status?: { description?: string }; data?: Attachment | Attachment[] } | null;
+    const data = Array.isArray(body?.data) ? body.data[0] : body?.data;
+    if (!res.ok || !data?.storeName || !data.attachmentPath) throw new Error(`Zoho Mail attachment upload failed: ${res.status} ${body?.status?.description ?? ""}`.trim());
+    return { storeName: data.storeName, attachmentPath: data.attachmentPath, attachmentName: data.attachmentName || fileName };
+}
+
+async function send(to: string, cc: string | undefined, subject: string, content: string, mailFormat: "html" | "plaintext" = "html", attachments: Attachment[] = []) {
     if (to !== CONTACT_TO) {
         if (allMail("all")) throw new Error("Hourly email limit reached; email skipped.");
         for (const addr of [to, cc].filter((x): x is string => !!x)) if (perRecipient(addr.toLowerCase())) throw new Error("Daily limit for this recipient reached; email skipped.");
@@ -92,7 +116,7 @@ async function send(to: string, cc: string | undefined, subject: string, content
     const res = await fetch(`${base()}/accounts/${encodeURIComponent(id)}/messages`, {
         method: "POST",
         headers: { Authorization: `Zoho-oauthtoken ${token}`, Accept: "application/json", "Content-Type": "application/json" },
-        body: JSON.stringify({ fromAddress: FROM, toAddress: to, ...(cc ? { ccAddress: cc } : {}), subject, content, mailFormat, encoding: "UTF-8" }),
+        body: JSON.stringify({ fromAddress: FROM, toAddress: to, ...(cc ? { ccAddress: cc } : {}), subject, content, mailFormat, encoding: "UTF-8", ...(attachments.length ? { attachments } : {}) }),
         signal: AbortSignal.timeout(15_000),
         cache: "no-store",
     });
@@ -163,6 +187,12 @@ export async function sendApplicationReply(r: { to: string; role: string; body: 
         reason: "You received this email because you applied for an internship on manthanam.in.",
     });
     await send(r.to, undefined, subject, html);
+}
+
+/** An offer letter: the designed email (lib/letters/email.ts) with the PDF attached. */
+export async function sendOfferLetterEmail(r: { to: string; subject: string; html: string; fileName: string; pdf: Uint8Array }) {
+    const file = await uploadAttachment(r.fileName, r.pdf);
+    await send(r.to, undefined, oneLine(r.subject), r.html, "html", [file]);
 }
 
 /** Setup check: can these credentials find a mailbox that sends as FROM? (Sends nothing.) */

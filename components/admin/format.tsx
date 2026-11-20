@@ -108,6 +108,16 @@ export function describe(action: string, detail: Record<string, unknown>) {
             return "Contact message received";
         case "application.reply":
             return `Replied by email to ${d.to}`;
+        case "letter.send":
+            return `Offer letter ${d.reference} sent to ${d.to}`;
+        case "letter.resend":
+            return `Offer letter ${d.reference} sent again to ${d.to}`;
+        case "letter.unsent":
+            return `Offer letter ${d.reference} issued, but the email failed`;
+        case "letter.status":
+            return `Offer letter ${d.reference} marked ${d.status?.[1] ?? ""}`;
+        case "letters.settings":
+            return "Updated the offer-letter signatory";
         case "message.reply":
             return `Replied by email to ${d.to}`;
         case "message.update":

@@ -105,7 +105,7 @@ export default async function ConferenceContentPage() {
                     </label>
                     <label className="block">
                         <span className={small}>Delegates line</span>
-                        <input name="expected" defaultValue={c.expected} maxLength={80} placeholder="e.g. 1,000+ delegates expected" className={`${control} mt-1 min-h-11`} />
+                        <input name="expected" defaultValue={c.expected} maxLength={80} placeholder="e.g. 3,000+ delegates expected" className={`${control} mt-1 min-h-11`} />
                     </label>
                     <label className="block">
                         <span className={small}>Payment details sent by</span>

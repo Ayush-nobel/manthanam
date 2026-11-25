@@ -34,7 +34,7 @@ export const conference = {
     fees: [{ category: "Delegate", amount: 2000, note: "One fee for every delegate" }] as FeeRow[],
     theme: "From Strength to Strength: Youth Shaping the Future of BRICS",
     /** Public expectation agreed with Manthanam (the sponsorship brochure's 5,000+ is not used publicly). */
-    expected: "1,000+ delegates expected",
+    expected: "3,000+ delegates expected",
     /** What the delegate fee covers, as confirmed by Manthanam. */
     included: [
         "Full-day access to all five panels and the Youth Roundtable",

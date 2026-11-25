@@ -14,7 +14,7 @@ import conferenceLogo from "@/public/events/biyc-2026-logo.png";
 
 export const metadata: Metadata = {
     title: `Register — ${fixed.title}`,
-    description: `Register for the ${fixed.title}, organised by Manthanam in New Delhi on 20 December 2026.`,
+    description: `Register for the ${fixed.title}, organised by Manthanam in New Delhi on 19 December 2026.`,
     alternates: { canonical: "/register" },
 };
 
@@ -173,7 +173,7 @@ export default async function RegisterPage() {
                             <h2 id="speakers-title" className="font-display text-[clamp(1.875rem,3.6vw,3.125rem)] font-[620] leading-[1.06] tracking-[-0.015em] text-ink [font-stretch:118%]">
                                 Speakers.
                             </h2>
-                            <p className="mt-6 max-w-[24rem] text-lg text-muted-ink">Announced so far. More will be added before 20 December.</p>
+                            <p className="mt-6 max-w-[24rem] text-lg text-muted-ink">Announced so far. More will be added before 19 December.</p>
                         </div>
                         <ul className="grid border-t border-ink sm:grid-cols-2 lg:col-span-7 lg:col-start-6">
                             {c.speakers.map((sp) => (
@@ -193,7 +193,7 @@ export default async function RegisterPage() {
                                 The day.
                             </h2>
                             <p className="mt-6 max-w-[24rem] text-lg text-muted-ink">
-                                Sunday, 20 December. Five panels, then the Youth Roundtable, where delegates draft the BIYC 2026 Youth Declaration. Timings are
+                                Saturday, 19 December. Five panels, then the Youth Roundtable, where delegates draft the BIYC 2026 Youth Declaration. Timings are
                                 indicative.
                             </p>
                         </div>

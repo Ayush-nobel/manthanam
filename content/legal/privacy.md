@@ -52,7 +52,7 @@ We do not sell, rent or trade personal data, and we do not share it with anyone 
 
 We keep your enquiry and our correspondence **only as long as we need to deal with it**, and **no longer than 12 months after our last exchange** — unless you ask us to keep in touch or the law requires us to keep it longer. After that we delete it from our database, from Formspree (if it went through Formspree) and from our inbox.
 
-We keep **event registrations** until the event and its follow-up are finished, and **delete them within 12 months after the event** (for the BRICS India Youth Conference 2026, by 20 December 2027), unless the law requires us to keep something longer, for example a record of a payment. If you ask us to delete it sooner, we will (see below).
+We keep **event registrations** until the event and its follow-up are finished, and **delete them within 12 months after the event** (for the BRICS India Youth Conference 2026, by 19 December 2027), unless the law requires us to keep something longer, for example a record of a payment. If you ask us to delete it sooner, we will (see below).
 
 We keep **internship applications** for **12 months after we decide on them**, so we can contact you about a later opening, and then delete them. If you become an intern, we keep what we need to run the internship and to issue your certificate and letter of recommendation. Ask us at any time to delete your application sooner.
 

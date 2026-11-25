@@ -50,11 +50,11 @@ export interface PastEvent {
 export const upcoming: UpcomingEvent[] = [
     {
         title: "BRICS India Youth Conference 2026",
-        date: "2026-12-20",
+        date: "2026-12-19",
         previousDate: "2026-11-03",
         place: "New Delhi",
         logo: biycLogo,
-        body: "Organised by Manthanam. The conference was first planned for 3 November and now takes place on 20 December 2026.",
+        body: "Organised by Manthanam. The conference was first planned for 3 November and now takes place on 19 December 2026.",
     },
 ];
 

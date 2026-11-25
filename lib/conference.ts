@@ -18,7 +18,7 @@ export const conference = {
     shortTitle: "BRICS India Youth Conference",
     /** Registration reference prefix, e.g. BIYC26-7KQ3XM. */
     refPrefix: "BIYC26",
-    date: "2026-12-20",
+    date: "2026-12-19",
     previousDate: "2026-11-03",
     place: "New Delhi",
     /** Venue name and address — not yet announced. */
@@ -57,7 +57,7 @@ export const PILLARS = [
     { name: "Youth diplomacy", body: "The next generation of BRICS diplomats, cultural diplomacy and people-to-people ties." },
 ] as const;
 
-/** Indicative timings for Sunday 20 December (brochure). The final run-of-show may change. */
+/** Indicative timings for Saturday 19 December (brochure). The final run-of-show may change. */
 export const AGENDA: { time: string; title: string; detail?: string }[] = [
     { time: "8:30 am", title: "Registration and welcome networking" },
     { time: "9:30 am", title: "Inaugural ceremony" },
@@ -136,7 +136,7 @@ export const FAQS: { q: string; a: string }[] = [
     },
     {
         q: "When and where is it?",
-        a: "On 20 December 2026 in New Delhi. It was first planned for 3 November. We will announce the venue on this page and email everyone who has registered.",
+        a: "On 19 December 2026 in New Delhi. It was first planned for 3 November. We will announce the venue on this page and email everyone who has registered.",
     },
     {
         q: "I made a mistake in my form.",

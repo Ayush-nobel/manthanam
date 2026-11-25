@@ -312,7 +312,7 @@ export default function RegistrationForm({ paymentDetailsBy }: { paymentDetailsB
                         className={`${inputBase} ${border("dateOfBirth")} [color-scheme:light]`}
                     />
                     <p id={id("dateOfBirth-hint")} className="mt-2 text-sm text-faint">
-                        If you will be under 18 on 20 December, we will also ask for a parent or guardian.
+                        If you will be under 18 on 19 December, we will also ask for a parent or guardian.
                     </p>
                     {errText("dateOfBirth")}
                 </div>

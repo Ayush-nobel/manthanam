@@ -151,7 +151,7 @@ for (const r of sheet) {
         continue;
     }
     const under18 = text(r["Under 18"]);
-    const minor = under18 ? /^yes/i.test(under18) : ageOn(dob, "2026-12-20") < 18;
+    const minor = under18 ? /^yes/i.test(under18) : ageOn(dob, "2026-12-19") < 18;
     const sheetStatus = text(r["Registration status"]);
     const status = STATUS[sheetStatus.toLowerCase()] ?? "new";
     const notes = [

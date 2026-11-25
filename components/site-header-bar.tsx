@@ -26,7 +26,7 @@ export default function SiteHeaderBar({ registrationOpen }: { registrationOpen: 
             {registrationOpen && pathname !== "/register" && (
                 // Announcement strip, as on conference sites: the one time-bound thing a visitor can act on.
                 <p className="bg-ink px-4 py-2.5 text-center text-sm text-on-ink-muted sm:px-7">
-                    {conference.title}, 20 December, New Delhi. Registration is open.{" "}
+                    {conference.title}, 19 December, New Delhi. Registration is open.{" "}
                     <Link href="/register" className="link-draw-on-ink whitespace-nowrap font-display font-semibold text-paper [font-stretch:112%]">
                         Register
                     </Link>

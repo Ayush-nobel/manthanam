@@ -126,5 +126,5 @@ The email text is in `lib/zoho-mail.ts`; the payment-details date is `paymentDet
 - **Under-18 rows** ("Under 18: Yes - verify guardian") need a check before you confirm the place:
   contact the guardian on the email/phone given and confirm they are the parent or guardian.
 - **Deleting data:** the Privacy Policy promises to delete registrations **within 12 months after
-  the conference** (by 20 December 2027). Put a reminder in the calendar, and delete any downloaded
+  the conference** (by 19 December 2027). Put a reminder in the calendar, and delete any downloaded
   Excel copies too.

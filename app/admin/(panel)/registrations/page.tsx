@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { sendPaymentRequests } from "@/app/admin/actions";
-import { ActionForm, Submit } from "@/components/admin/action-form";
+import { confirmSeats, sendPaymentRequests, verifyGuardians } from "@/app/admin/actions";
+import { ActionForm, SelectAll, Submit } from "@/components/admin/action-form";
 import { NoAccess, PageTitle, StatusBadge, when } from "@/components/admin/format";
 import { listRegistrations, PAGE_SIZE, paymentEmailCounts } from "@/lib/admin-data";
 import { getConference } from "@/lib/site-content";
@@ -27,6 +27,23 @@ export default async function RegistrationsPage({ searchParams }: PageProps<"/ad
     };
     const filtered = !!(f.q || f.status || f.minor || f.payment);
     const ready = !!conference?.paymentInstructions.trim() && !!conference.fees.length;
+    // Tick-and-act lists: guardians to verify, and payments to check before confirming seats.
+    const bulk = !edit
+        ? null
+        : f.minor === "pending"
+          ? {
+                action: verifyGuardians,
+                button: "Mark ticked as guardian verified",
+                confirm: "Mark the ticked parents or guardians as verified? Only do this once you have checked each one: verified consent is a legal requirement for under-18s.",
+            }
+          : f.payment === "proof"
+            ? {
+                  action: confirmSeats,
+                  button: "Confirm ticked seats and email them",
+                  confirm: "Confirm the ticked seats and email each person “Your place is confirmed”? Only tick payments you have checked against the bank statement.",
+              }
+            : null;
+    const bulkVerify = !!bulk;
 
     return (
         <>
@@ -136,11 +153,22 @@ export default async function RegistrationsPage({ searchParams }: PageProps<"/ad
                 {total === 0 ? (filtered ? "No registrations match." : "No registrations yet.") : `${total} registration${total === 1 ? "" : "s"}${filtered ? " match" : ""}`}
             </p>
 
-            {rows.length > 0 && (
+            {rows.length > 0 &&
+                (bulkVerify ? (
+                    <ActionForm action={bulk!.action} confirm={bulk!.confirm}>
+                        <div className="mt-3 flex flex-wrap items-center justify-between gap-4 border border-line bg-white px-4 py-3">
+                            <SelectAll name="ids" label="Select all on this page" />
+                            <Submit>{bulk!.button}</Submit>
+                        </div>
                 <div className="mt-3 overflow-x-auto border-t border-ink">
                     <table className="w-full min-w-[56rem] text-left text-sm">
                         <thead>
                             <tr className="border-b border-ink text-muted-ink">
+                                {bulkVerify && (
+                                    <th scope="col" className="w-10 py-2 pr-2">
+                                        <span className="sr-only">Select</span>
+                                    </th>
+                                )}
                                 <th scope="col" className="py-2 pr-4 font-semibold">Number</th>
                                 <th scope="col" className="py-2 pr-4 font-semibold">Name</th>
                                 <th scope="col" className="py-2 pr-4 font-semibold">Contact</th>
@@ -152,6 +180,11 @@ export default async function RegistrationsPage({ searchParams }: PageProps<"/ad
                         <tbody>
                             {rows.map((r) => (
                                 <tr key={r.id} className="border-b border-line align-top hover:bg-white">
+                                    {bulkVerify && (
+                                        <td className="py-3 pr-2">
+                                            <input type="checkbox" name="ids" value={r.id} aria-label={`Select ${r.full_name}`} className="size-5 accent-ink" />
+                                        </td>
+                                    )}
                                     <td className="py-3 pr-4 font-mono text-faint">{r.reference}</td>
                                     <td className="py-3 pr-4">
                                         <Link href={`/admin/registrations/${r.id}`} className="font-semibold text-ink underline-offset-4 hover:text-signal hover:underline">
@@ -175,7 +208,15 @@ export default async function RegistrationsPage({ searchParams }: PageProps<"/ad
                                     <td className="py-3">
                                         <StatusBadge status={r.status} />
                                         {r.payment_submitted_at ? (
-                                            <span className="mt-1 block text-xs text-signal">Proof received</span>
+                                            <span className="mt-1 block text-xs text-signal">
+                                                Proof received{r.payment_amount !== null && `: ₹${r.payment_amount.toLocaleString("en-IN")}`}
+                                                {r.payment_reference && <span className="block font-mono text-muted-ink">{r.payment_reference}</span>}
+                                                {r.payment_proof_path && (
+                                                    <a href={`/admin/payment-proof/${r.id}`} target="_blank" rel="noopener" className="text-ink underline underline-offset-2">
+                                                        {r.payment_proof_type === "application/pdf" ? "Download receipt" : "View screenshot"}
+                                                    </a>
+                                                )}
+                                            </span>
                                         ) : (
                                             r.payment_email_sent_at && <span className="mt-1 block text-xs text-muted-ink">Payment email sent</span>
                                         )}
@@ -185,7 +226,75 @@ export default async function RegistrationsPage({ searchParams }: PageProps<"/ad
                         </tbody>
                     </table>
                 </div>
-            )}
+                    </ActionForm>
+                ) : (
+                <div className="mt-3 overflow-x-auto border-t border-ink">
+                    <table className="w-full min-w-[56rem] text-left text-sm">
+                        <thead>
+                            <tr className="border-b border-ink text-muted-ink">
+                                {bulkVerify && (
+                                    <th scope="col" className="w-10 py-2 pr-2">
+                                        <span className="sr-only">Select</span>
+                                    </th>
+                                )}
+                                <th scope="col" className="py-2 pr-4 font-semibold">Number</th>
+                                <th scope="col" className="py-2 pr-4 font-semibold">Name</th>
+                                <th scope="col" className="py-2 pr-4 font-semibold">Contact</th>
+                                <th scope="col" className="py-2 pr-4 font-semibold">From</th>
+                                <th scope="col" className="py-2 pr-4 font-semibold">Registered</th>
+                                <th scope="col" className="py-2 font-semibold">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {rows.map((r) => (
+                                <tr key={r.id} className="border-b border-line align-top hover:bg-white">
+                                    {bulkVerify && (
+                                        <td className="py-3 pr-2">
+                                            <input type="checkbox" name="ids" value={r.id} aria-label={`Select ${r.full_name}`} className="size-5 accent-ink" />
+                                        </td>
+                                    )}
+                                    <td className="py-3 pr-4 font-mono text-faint">{r.reference}</td>
+                                    <td className="py-3 pr-4">
+                                        <Link href={`/admin/registrations/${r.id}`} className="font-semibold text-ink underline-offset-4 hover:text-signal hover:underline">
+                                            {r.full_name}
+                                        </Link>
+                                        <span className="block text-muted-ink">
+                                            {r.participant_type}
+                                            {r.institution && `, ${r.institution}`}
+                                        </span>
+                                        {r.minor && <span className="block text-xs text-signal">Under 18{r.guardian_verified_at ? ", guardian verified" : ", verify guardian"}</span>}
+                                    </td>
+                                    <td className="py-3 pr-4 break-all">
+                                        {r.email}
+                                        <span className="block text-muted-ink">{r.phone}</span>
+                                    </td>
+                                    <td className="py-3 pr-4">
+                                        {r.city}
+                                        <span className="block text-muted-ink">{[r.state, r.country].filter(Boolean).join(", ")}</span>
+                                    </td>
+                                    <td className="py-3 pr-4 whitespace-nowrap text-muted-ink">{when(r.created_at)}</td>
+                                    <td className="py-3">
+                                        <StatusBadge status={r.status} />
+                                        {r.payment_submitted_at ? (
+                                            <span className="mt-1 block text-xs text-signal">
+                                                Proof received{r.payment_amount !== null && `: ₹${r.payment_amount.toLocaleString("en-IN")}`}
+                                                {r.payment_reference && <span className="block font-mono text-muted-ink">{r.payment_reference}</span>}
+                                                {r.payment_proof_path && (
+                                                    <a href={`/admin/payment-proof/${r.id}`} target="_blank" rel="noopener" className="text-ink underline underline-offset-2">
+                                                        {r.payment_proof_type === "application/pdf" ? "Download receipt" : "View screenshot"}
+                                                    </a>
+                                                )}
+                                            </span>
+                                        ) : (
+                                            r.payment_email_sent_at && <span className="mt-1 block text-xs text-muted-ink">Payment email sent</span>
+                                        )}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+                ))}
 
             {pages > 1 && (
                 <nav aria-label="Pages" className="mt-6 flex items-center gap-4 text-sm">

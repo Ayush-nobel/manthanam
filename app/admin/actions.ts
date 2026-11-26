@@ -12,7 +12,7 @@ import { clientIpFrom, rateLimiter } from "@/lib/request-guard";
 import { awaitingPaymentEmail, paymentEmailCounts } from "@/lib/admin-data";
 import { getConference, type ConferenceContent } from "@/lib/site-content";
 import { site } from "@/lib/site";
-import { mailConfigured, mailFrom, sendApplicationReply, sendMessageReply, sendPaymentEmail, sendRegistrationEmail } from "@/lib/zoho-mail";
+import { mailConfigured, mailFrom, sendApplicationReply, sendMessageReply, sendPaymentEmail, sendRegistrationEmail, sendSeatConfirmedEmail } from "@/lib/zoho-mail";
 
 /**
  * Every change the admin dashboard can make. Each action checks the session and the role itself:
@@ -144,6 +144,28 @@ export async function updateRegistration(_: FormState, form: FormData): Promise<
     return { ok: "Saved." };
 }
 
+/** "Mark verified" for the parents or guardians ticked on /admin/registrations?minor=pending. */
+export async function verifyGuardians(_: FormState, form: FormData): Promise<FormState> {
+    const auth = await authorise("registrations.edit");
+    if (auth.error !== undefined) return { error: auth.error };
+    const admin = auth.admin;
+    const ids = [...new Set(form.getAll("ids").map(String))].filter((id) => /^[0-9a-f-]{36}$/i.test(id)).slice(0, 200);
+    if (!ids.length) return { error: "Tick at least one registration first." };
+    const { data, error } = await db()
+        .from("registrations")
+        .update({ guardian_verified_at: new Date().toISOString(), guardian_verified_by: admin.id })
+        .in("id", ids)
+        .eq("minor", true)
+        .is("guardian_verified_at", null)
+        .select("id, reference");
+    if (error) return failed("Verifying", error);
+    const done = (data ?? []) as { id: string; reference: string }[];
+    await Promise.all(done.map((r) => audit(admin, "registration.update", "registration", r.id, { reference: r.reference, guardianVerified: true })));
+    refresh();
+    const skipped = ids.length - done.length;
+    return { ok: `Marked ${done.length} parent${done.length === 1 ? "" : "s"} or guardian${done.length === 1 ? "" : "s"} as verified.${skipped ? ` ${skipped} were already verified or aren’t under 18.` : ""}` };
+}
+
 export async function resendRegistrationEmail(_: FormState, form: FormData): Promise<FormState> {
     const auth = await authorise("registrations.edit");
     if (auth.error !== undefined) return { error: auth.error };
@@ -273,6 +295,89 @@ export async function sendPaymentRequests(): Promise<FormState> {
     if (failedRefs.length) parts.push(`Couldn’t send to ${failedRefs.join(", ")}; they’ll be tried again next time.`);
     if (stopped) parts.push(stopped.trim());
     else if (waiting) parts.push(`${waiting} still to send: press the button again.`);
+    return failedRefs.length && !sent ? { error: parts.join(" ") } : { ok: parts.join(" ") };
+}
+
+// Seat confirmation -------------------------------------------------------------------------------
+
+type SeatTarget = Pick<RegistrationRow, "id" | "reference" | "full_name" | "email" | "minor" | "guardian_email" | "guardian_verified_at" | "status" | "payment_amount" | "payment_reference">;
+const SEAT_COLUMNS = "id, reference, full_name, email, minor, guardian_email, guardian_verified_at, status, payment_amount, payment_reference";
+
+/** Why this registration can't be confirmed yet, or null. */
+function seatBlocked(r: SeatTarget): string | null {
+    if (r.status === "cancelled" || r.status === "refunded") return "it is cancelled or refunded";
+    if (r.minor && !r.guardian_verified_at) return "the parent or guardian isn’t verified yet";
+    return null;
+}
+
+/** Sets the status to Confirmed (if it isn't already) and emails "Your place is confirmed". */
+async function confirmSeat(admin: { id: string; email: string }, r: SeatTarget, venue: string | null) {
+    await sendSeatConfirmedEmail({
+        name: r.full_name,
+        email: r.email,
+        guardianEmail: r.minor ? r.guardian_email || undefined : undefined,
+        reference: r.reference,
+        minor: r.minor,
+        venue,
+        amount: r.payment_amount,
+        transactionId: r.payment_reference,
+    });
+    if (r.status !== "confirmed") await db().from("registrations").update({ status: "confirmed" }).eq("id", r.id);
+    await audit(admin, "registration.seat_confirmed", "registration", r.id, { reference: r.reference, ...(r.status !== "confirmed" ? { status: [r.status, "confirmed"] } : { resent: true }) });
+}
+
+/** "Confirm seat and email" on one registration (also resends the confirmation). */
+export async function confirmSeatAction(_: FormState, form: FormData): Promise<FormState> {
+    const auth = await authorise("registrations.edit");
+    if (auth.error !== undefined) return { error: auth.error };
+    if (!mailConfigured()) return { error: "Email sending isn’t set up." };
+    const { data: r } = await db().from("registrations").select(SEAT_COLUMNS).eq("id", str(form, "id", 64)).maybeSingle<SeatTarget>();
+    if (!r) return { error: "That registration no longer exists." };
+    const blocked = seatBlocked(r);
+    if (blocked) return { error: `Can’t confirm: ${blocked}.` };
+    try {
+        await confirmSeat(auth.admin, r, (await getConference()).venue);
+    } catch (err) {
+        console.error("Seat confirmation failed for", r.reference, err);
+        return { error: /limit/i.test(String(err)) ? "The sending limit has been reached for now. Try again later." : "The email couldn’t be sent, so the seat wasn’t confirmed. Try again in a minute." };
+    }
+    refresh();
+    return { ok: `Seat confirmed and email sent to ${r.email}${r.minor && r.guardian_email ? ` (copy to ${r.guardian_email})` : ""}.` };
+}
+
+/** "Confirm ticked seats" on /admin/registrations?payment=proof. At most 25 per click, to finish in time. */
+export async function confirmSeats(_: FormState, form: FormData): Promise<FormState> {
+    const auth = await authorise("registrations.edit");
+    if (auth.error !== undefined) return { error: auth.error };
+    if (!mailConfigured()) return { error: "Email sending isn’t set up." };
+    const ids = [...new Set(form.getAll("ids").map(String))].filter((id) => /^[0-9a-f-]{36}$/i.test(id));
+    if (!ids.length) return { error: "Tick at least one registration first." };
+    if (ids.length > 25) return { error: `You ticked ${ids.length}. Confirm up to 25 at a time, so every email has time to send.` };
+    const { data, error } = await db().from("registrations").select(SEAT_COLUMNS).in("id", ids);
+    if (error) return failed("Loading registrations", error);
+    const venue = (await getConference()).venue;
+
+    let sent = 0;
+    const skipped: string[] = [];
+    const failedRefs: string[] = [];
+    for (const r of (data ?? []) as SeatTarget[]) {
+        if (r.status === "confirmed" || seatBlocked(r)) {
+            skipped.push(r.reference);
+            continue;
+        }
+        try {
+            await confirmSeat(auth.admin, r, venue);
+            sent++;
+        } catch (err) {
+            console.error("Seat confirmation failed for", r.reference, err);
+            failedRefs.push(r.reference);
+            if (/hourly email limit/i.test(String(err))) break;
+        }
+    }
+    refresh();
+    const parts = [`Confirmed ${sent} seat${sent === 1 ? "" : "s"} and emailed ${sent === 1 ? "them" : "each one"}.`];
+    if (skipped.length) parts.push(`Skipped ${skipped.join(", ")} (already confirmed, cancelled, or guardian not verified).`);
+    if (failedRefs.length) parts.push(`Couldn’t email ${failedRefs.join(", ")}, so they weren’t confirmed; try them again.`);
     return failedRefs.length && !sent ? { error: parts.join(" ") } : { ok: parts.join(" ") };
 }
 

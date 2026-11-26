@@ -1,7 +1,7 @@
 import "server-only";
 import { applicationEmailHtml, applicationEmailSubject } from "@/lib/application-email";
 import { roleName } from "@/lib/application";
-import { paymentEmailHtml, paymentEmailSubject, paymentReceivedEmailHtml, paymentReceivedEmailSubject, registrationEmailHtml, registrationEmailSubject, type PaymentEmail, type PaymentReceivedEmail } from "@/lib/registration-email";
+import { paymentEmailHtml, paymentEmailSubject, paymentReceivedEmailHtml, paymentReceivedEmailSubject, registrationEmailHtml, registrationEmailSubject, seatConfirmedEmailHtml, seatConfirmedEmailSubject, type PaymentEmail, type PaymentReceivedEmail, type SeatConfirmedEmail } from "@/lib/registration-email";
 import { longDate, replyEmailHtml } from "@/lib/reply-email";
 import { rateLimiter } from "@/lib/request-guard";
 import { getConference } from "@/lib/site-content";
@@ -143,6 +143,11 @@ export async function sendPaymentEmail(r: PaymentEmail & { email: string; guardi
 /** "We've received your payment details", sent automatically when the proof-of-payment form is submitted. */
 export async function sendPaymentReceivedEmail(r: PaymentReceivedEmail & { email: string; guardianEmail?: string }) {
     await send(r.email, r.guardianEmail, paymentReceivedEmailSubject(r), paymentReceivedEmailHtml(r));
+}
+
+/** "Your place is confirmed", sent when an admin confirms the seat after checking the payment. */
+export async function sendSeatConfirmedEmail(r: SeatConfirmedEmail & { email: string; guardianEmail?: string }) {
+    await send(r.email, r.guardianEmail, seatConfirmedEmailSubject(r), seatConfirmedEmailHtml(r));
 }
 
 /** "We've received your application" email to an internship applicant. */

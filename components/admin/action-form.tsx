@@ -79,3 +79,40 @@ export function Submit({ children, tone = "primary" }: { children: ReactNode; to
         </button>
     );
 }
+
+/**
+ * A "select all" box for a list of checkboxes named `name` in the same form. Unticking any row clears it;
+ * ticking every row ticks it, so it always tells the truth about the rows.
+ */
+export function SelectAll({ name, label }: { name: string; label: string }) {
+    const [checked, setChecked] = useState(false);
+    const boxes = (el: HTMLElement) => Array.from(el.closest("form")?.querySelectorAll<HTMLInputElement>(`input[type=checkbox][name="${name}"]`) ?? []);
+    return (
+        <label className="inline-flex items-center gap-2 font-semibold text-ink">
+            <input
+                type="checkbox"
+                checked={checked}
+                className="size-5 accent-ink"
+                ref={(el) => {
+                    if (!el) return;
+                    const form = el.closest("form");
+                    const sync = () => {
+                        const all = boxes(el);
+                        const on = all.filter((b) => b.checked).length;
+                        el.indeterminate = on > 0 && on < all.length;
+                        setChecked(all.length > 0 && on === all.length);
+                    };
+                    form?.addEventListener("change", sync);
+                    return () => form?.removeEventListener("change", sync);
+                }}
+                onChange={(e) => {
+                    const on = e.currentTarget.checked;
+                    for (const b of boxes(e.currentTarget)) b.checked = on;
+                    e.currentTarget.indeterminate = false;
+                    setChecked(on);
+                }}
+            />
+            {label}
+        </label>
+    );
+}

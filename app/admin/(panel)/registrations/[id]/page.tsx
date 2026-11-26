@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { resendRegistrationEmail, sendPaymentRequest, updateRegistration } from "@/app/admin/actions";
+import { confirmSeatAction, resendRegistrationEmail, sendPaymentRequest, updateRegistration } from "@/app/admin/actions";
 import { ActionForm, Submit } from "@/components/admin/action-form";
 import { Select, TextArea } from "@/components/admin/fields";
 import { day, describe, NoAccess, StatusBadge, when } from "@/components/admin/format";
@@ -156,10 +156,25 @@ export default async function RegistrationPage({ params }: PageProps<"/admin/reg
                                     <Submit>Save</Submit>
                                 </div>
                             </ActionForm>
-                            {r.payment_submitted_at && r.status === "payment_pending" && (
-                                <p className="mt-6 border-l-[3px] border-signal bg-paper px-4 py-3 text-sm">
-                                    Proof of payment received. Check the screenshot against the bank or UPI statement, then set the status to Paid or Confirmed and save.
-                                </p>
+                            {(r.payment_submitted_at || r.status === "paid" || r.status === "confirmed") && r.status !== "cancelled" && r.status !== "refunded" && (
+                                <ActionForm
+                                    action={confirmSeatAction}
+                                    className="mt-6 border-t border-line pt-5"
+                                    confirm={
+                                        r.status === "confirmed"
+                                            ? `Send the “Your place is confirmed” email to ${r.email} again?`
+                                            : `Confirm ${r.full_name}’s seat and email them “Your place is confirmed”? Only do this once the payment is in the bank statement.`
+                                    }
+                                >
+                                    <input type="hidden" name="id" value={r.id} />
+                                    {r.status !== "confirmed" && (
+                                        <p className="mb-3 border-l-[3px] border-signal bg-paper px-4 py-3 text-sm">
+                                            Check the screenshot and transaction ID against the bank statement, then confirm the seat. This sets the status to Confirmed and emails them.
+                                        </p>
+                                    )}
+                                    <Submit tone={r.status === "confirmed" ? "quiet" : "primary"}>{r.status === "confirmed" ? "Resend seat confirmation email" : "Confirm seat and send email"}</Submit>
+                                    {r.minor && !r.guardian_verified_at && <p className="mt-2 text-sm text-faint">Verify the parent or guardian first.</p>}
+                                </ActionForm>
                             )}
                             {r.status !== "cancelled" && r.status !== "refunded" && (
                                 <ActionForm

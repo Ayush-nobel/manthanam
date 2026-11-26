@@ -411,3 +411,98 @@ export function paymentReceivedEmailHtml(r: PaymentReceivedEmail): string {
 
 `);
 }
+
+export interface SeatConfirmedEmail {
+    name: string;
+    reference: string;
+    minor: boolean;
+    venue: string | null;
+    /** What they paid, from their proof of payment, if they sent one. */
+    amount: number | null;
+    transactionId: string;
+}
+
+export function seatConfirmedEmailSubject(r: { reference: string }) {
+    return `Your place is confirmed: ${conference.title} (${r.reference})`;
+}
+
+/** Sent when an admin has checked the payment and confirms the seat. */
+export function seatConfirmedEmailHtml(r: SeatConfirmedEmail): string {
+    const ref = esc(r.reference);
+    const date = longDate(conference.date);
+    const preheader = `Your place at the ${esc(conference.title)} on ${date} is confirmed. Registration number ${ref}.`;
+    const row = (label: string, value: string) => `
+                      <tr>
+                        <td style="padding:12px 0;border-bottom:1px solid ${C.shoal};font-family:${SERIF};font-size:15px;color:${C.faint};width:42%;vertical-align:top;">${label}</td>
+                        <td style="padding:12px 0;border-bottom:1px solid ${C.shoal};font-family:${SANS};font-size:16px;font-weight:bold;color:${C.ink};vertical-align:top;">${value}</td>
+                      </tr>`;
+    const paid = r.amount !== null ? `&#8377;${r.amount.toLocaleString("en-IN")}${r.transactionId ? `<br><span style="font-weight:normal;font-size:14px;color:${C.muted};">Transaction ${esc(r.transactionId)}</span>` : ""}` : "Received";
+    return frame(seatConfirmedEmailSubject(r), preheader, `
+          <!-- Card -->
+          <tr>
+            <td style="background-color:${C.white};border:1px solid ${C.shoal};border-top:0;padding:40px 32px 36px 32px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="center" style="padding-bottom:28px;">
+                    <img src="${site.url}/email/biyc-2026-logo.png" width="150" height="175" alt="${esc(conference.title)}" style="display:block;width:150px;height:auto;border:0;outline:none;text-decoration:none;font-family:${SANS};font-size:16px;font-weight:bold;color:${C.ink};">
+                  </td>
+                </tr>
+                <tr>
+                  <td style="font-family:${SANS};font-size:28px;line-height:1.2;font-weight:bold;color:${C.ink};text-align:center;">
+                    Your place is confirmed.
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top:16px;font-family:${SERIF};font-size:17px;line-height:1.65;color:${C.muted};text-align:center;">
+                    Dear ${esc(r.name)}, we&rsquo;ve received your payment. You&rsquo;re a delegate at the ${esc(conference.title)}, and we look forward to seeing you there.
+                  </td>
+                </tr>
+
+                <!-- Registration number, in the site's double-rule frame -->
+                <tr>
+                  <td align="center" style="padding:32px 0 8px 0;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border:4px double ${C.ink};">
+                      <tr>
+                        <td align="center" style="padding:18px 20px;">
+                          <div style="font-family:${SERIF};font-size:14px;font-style:italic;color:${C.faint};">Confirmed delegate</div>
+                          <div style="padding-top:6px;font-family:${SANS};font-size:26px;font-weight:bold;letter-spacing:0.06em;white-space:nowrap;color:${C.signal};">${ref}</div>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-bottom:28px;font-family:${SERIF};font-size:14px;color:${C.faint};text-align:center;">
+                    Keep this email. Your registration number is your proof of registration.
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-top:2px solid ${C.ink};">
+                      ${row("Date", date)}
+                      ${row("Place", `${esc(conference.place)}${r.venue ? `<br><span style="font-weight:normal;color:${C.muted};">${esc(r.venue)}</span>` : `<br><span style="font-weight:normal;font-size:14px;color:${C.muted};">Venue to be announced by email</span>`}`)}
+                      ${row("Payment", paid)}
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top:24px;font-family:${SERIF};font-size:16px;line-height:1.65;color:${C.ink};">
+                    We&rsquo;ll email you the venue, timings and anything else you need before the day.${
+                        r.minor ? " As you are under 18, we have copied your parent or guardian." : ""
+                    }
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top:28px;font-family:${SERIF};font-size:16px;line-height:1.65;color:${C.ink};">
+                    Any questions? Just reply to this email.<br><br>
+                    Warm regards,<br>
+                    <strong style="font-family:${SANS};">Manthanam Research Foundation</strong>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+`);
+}

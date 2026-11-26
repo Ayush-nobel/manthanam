@@ -78,6 +78,8 @@ export function describe(action: string, detail: Record<string, unknown>) {
             return `Payment email sent (${d.reference})${d.status ? `, status ${REGISTRATION_STATUS_LABELS[d.status[0] as RegistrationStatus] ?? d.status[0]} → ${REGISTRATION_STATUS_LABELS[d.status[1] as RegistrationStatus] ?? d.status[1]}` : ""}`;
         case "registration.payment_emails":
             return `Sent ${(detail as { sent?: number }).sent ?? 0} payment emails`;
+        case "registration.seat_confirmed":
+            return (detail as { resent?: boolean }).resent ? `Seat confirmation email resent (${d.reference})` : `Seat confirmed and confirmation email sent (${d.reference})`;
         case "registration.payment_proof":
             return (detail as { replaced?: boolean }).replaced ? "Uploaded a new payment screenshot (replaces the earlier one)" : "Uploaded proof of payment";
         case "registration.email_resent":

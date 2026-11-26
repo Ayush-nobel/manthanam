@@ -188,6 +188,21 @@ export async function resendRegistrationEmail(_: FormState, form: FormData): Pro
 
 // Payment emails --------------------------------------------------------------------------------
 
+/**
+ * Zoho decides how many emails an hour this mailbox may send (roughly 50 to 500, rising with sender
+ * reputation). Once it starts refusing, every further try fails too and looks like spam to Zoho, so a bulk
+ * send stops at the first sign of it. Returns the reason to show the admin, or null to keep going.
+ */
+function sendingStopped(err: unknown, consecutiveFailures: number): string | null {
+    const text = String(err instanceof Error ? err.message : err);
+    if (/hourly email limit/i.test(text)) return "This website’s own hourly limit was reached. Press again in an hour.";
+    if (/limit|exceed|too many|blocked|suspend|unusual|quota|spam|429|550|553|554/i.test(text) || consecutiveFailures >= 2) {
+        const zoho = text.replace(/^Zoho Mail send failed:\s*/, "").slice(0, 200);
+        return `Zoho Mail stopped accepting emails (it said: “${zoho}”). This is usually Zoho’s hourly sending limit for a new sender: wait an hour and press again. If it keeps happening, sign in to mail.zoho.in as the sending address and check for a “sending blocked” notice.`;
+    }
+    return null;
+}
+
 type PaymentTarget = Pick<RegistrationRow, "id" | "reference" | "full_name" | "email" | "minor" | "guardian_email" | "guardian_verified_at" | "status" | "payment_token">;
 const PAYMENT_COLUMNS = "id, reference, full_name, email, minor, guardian_email, guardian_verified_at, status, payment_token";
 
@@ -250,7 +265,7 @@ export async function sendPaymentRequest(_: FormState, form: FormData): Promise<
         await deliverPaymentEmail(auth.admin, r, c);
     } catch (err) {
         console.error("Payment email failed for", r.reference, err);
-        return { error: /limit/i.test(String(err)) ? "The sending limit has been reached for now. Try again in an hour." : "The email couldn’t be sent. Try again in a minute." };
+        return { error: sendingStopped(err, 2) ?? "The email couldn’t be sent. Try again in a minute." };
     }
     refresh();
     return { ok: `Payment email sent to ${r.email}${r.minor && r.guardian_email ? ` (copy to ${r.guardian_email})` : ""}.` };
@@ -275,14 +290,18 @@ export async function sendPaymentRequests(): Promise<FormState> {
     let sent = 0;
     const failedRefs: string[] = [];
     let stopped = "";
+    let streak = 0;
     for (const r of rows) {
         try {
             await deliverPaymentEmail(auth.admin, r, c);
             sent++;
+            streak = 0;
         } catch (err) {
             console.error("Payment email failed for", r.reference, err);
-            if (/hourly email limit/i.test(String(err))) {
-                stopped = " The hourly sending limit was reached, so sending stopped. Press again in an hour.";
+            streak++;
+            const reason = sendingStopped(err, streak);
+            if (reason) {
+                stopped = ` Sending stopped. ${reason}`;
                 break;
             }
             failedRefs.push(r.reference);
@@ -339,7 +358,7 @@ export async function confirmSeatAction(_: FormState, form: FormData): Promise<F
         await confirmSeat(auth.admin, r, (await getConference()).venue);
     } catch (err) {
         console.error("Seat confirmation failed for", r.reference, err);
-        return { error: /limit/i.test(String(err)) ? "The sending limit has been reached for now. Try again later." : "The email couldn’t be sent, so the seat wasn’t confirmed. Try again in a minute." };
+        return { error: `The seat wasn’t confirmed. ${sendingStopped(err, 2)}` };
     }
     refresh();
     return { ok: `Seat confirmed and email sent to ${r.email}${r.minor && r.guardian_email ? ` (copy to ${r.guardian_email})` : ""}.` };
@@ -360,6 +379,8 @@ export async function confirmSeats(_: FormState, form: FormData): Promise<FormSt
     let sent = 0;
     const skipped: string[] = [];
     const failedRefs: string[] = [];
+    let stopped = "";
+    let streak = 0;
     for (const r of (data ?? []) as SeatTarget[]) {
         if (r.status === "confirmed" || seatBlocked(r)) {
             skipped.push(r.reference);
@@ -368,16 +389,23 @@ export async function confirmSeats(_: FormState, form: FormData): Promise<FormSt
         try {
             await confirmSeat(auth.admin, r, venue);
             sent++;
+            streak = 0;
         } catch (err) {
             console.error("Seat confirmation failed for", r.reference, err);
             failedRefs.push(r.reference);
-            if (/hourly email limit/i.test(String(err))) break;
+            streak++;
+            const reason = sendingStopped(err, streak);
+            if (reason) {
+                stopped = `Sending stopped, so the rest weren’t tried. ${reason}`;
+                break;
+            }
         }
     }
     refresh();
     const parts = [`Confirmed ${sent} seat${sent === 1 ? "" : "s"} and emailed ${sent === 1 ? "them" : "each one"}.`];
     if (skipped.length) parts.push(`Skipped ${skipped.join(", ")} (already confirmed, cancelled, or guardian not verified).`);
     if (failedRefs.length) parts.push(`Couldn’t email ${failedRefs.join(", ")}, so they weren’t confirmed; try them again.`);
+    if (stopped) parts.push(stopped);
     return failedRefs.length && !sent ? { error: parts.join(" ") } : { ok: parts.join(" ") };
 }
 

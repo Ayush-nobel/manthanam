@@ -77,6 +77,16 @@ export interface RegistrationRow {
     notes: string;
     email_sent_at: string | null;
     sheet_synced_at: string | null;
+    // Payment (supabase/migrations/0008_payments.sql)
+    payment_token: string | null;
+    payment_email_sent_at: string | null;
+    payment_submitted_at: string | null;
+    payment_reference: string;
+    payment_amount: number | null;
+    payment_paid_on: string | null;
+    payment_payer_name: string;
+    payment_proof_path: string | null;
+    payment_proof_type: string | null;
 }
 
 export interface ContactMessageRow {

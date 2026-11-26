@@ -41,6 +41,7 @@ export interface RegistrationFilters {
     q?: string;
     status?: string;
     minor?: string; // "yes" | "pending"
+    payment?: string; // "unsent" | "proof"
     page?: number;
 }
 
@@ -51,6 +52,8 @@ export async function listRegistrations(f: RegistrationFilters, opts: { all?: bo
     if (f.status && (REGISTRATION_STATUSES as readonly string[]).includes(f.status)) q = q.eq("status", f.status);
     if (f.minor === "yes") q = q.eq("minor", true);
     if (f.minor === "pending") q = q.eq("minor", true).is("guardian_verified_at", null);
+    if (f.payment === "unsent") q = q.is("payment_email_sent_at", null).in("status", ["new", "payment_pending"]);
+    if (f.payment === "proof") q = q.eq("status", "payment_pending").not("payment_submitted_at", "is", null);
     if (opts.all) {
         // Exports: every matching row, fetched in pages of 1000 (the API's maximum per request).
         const rows: RegistrationRow[] = [];
@@ -66,6 +69,26 @@ export async function listRegistrations(f: RegistrationFilters, opts: { all?: bo
     const { data, count: total, error } = await q.range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
     if (error) throw new Error(error.message);
     return { rows: (data ?? []) as RegistrationRow[], total: total ?? 0 };
+}
+
+/** Who the bulk payment send is for: not yet emailed, not cancelled, paid or confirmed, and any under-18 already verified. */
+export function awaitingPaymentEmail(columns: string, opts?: { count: "exact"; head: true }) {
+    return db()
+        .from("registrations")
+        .select(columns, opts)
+        .is("payment_email_sent_at", null)
+        .in("status", ["new", "payment_pending"])
+        .or("minor.eq.false,guardian_verified_at.not.is.null");
+}
+
+/** Numbers for the payment-email panel on /admin/registrations. */
+export async function paymentEmailCounts() {
+    const [waiting, minors, proofs] = await Promise.all([
+        awaitingPaymentEmail("id", { count: "exact", head: true }),
+        db().from("registrations").select("id", { count: "exact", head: true }).is("payment_email_sent_at", null).in("status", ["new", "payment_pending"]).eq("minor", true).is("guardian_verified_at", null),
+        db().from("registrations").select("id", { count: "exact", head: true }).eq("status", "payment_pending").not("payment_submitted_at", "is", null),
+    ]);
+    return { waiting: waiting.count ?? 0, unverifiedMinors: minors.count ?? 0, proofsToCheck: proofs.count ?? 0 };
 }
 
 export async function getRegistration(id: string) {

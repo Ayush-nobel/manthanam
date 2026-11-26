@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { resendRegistrationEmail, updateRegistration } from "@/app/admin/actions";
+import { resendRegistrationEmail, sendPaymentRequest, updateRegistration } from "@/app/admin/actions";
 import { ActionForm, Submit } from "@/components/admin/action-form";
 import { Select, TextArea } from "@/components/admin/fields";
 import { day, describe, NoAccess, StatusBadge, when } from "@/components/admin/format";
@@ -57,6 +57,35 @@ export default async function RegistrationPage({ params }: PageProps<"/admin/reg
                   ],
               ] as [string, [string, React.ReactNode][]][])
             : []),
+        [
+            "Payment",
+            [
+                ["Payment email", r.payment_email_sent_at ? `Sent ${when(r.payment_email_sent_at)}` : "Not sent"],
+                ...(r.payment_submitted_at
+                    ? ([
+                          ["Proof received", when(r.payment_submitted_at)],
+                          ["Transaction ID", <span key="t" className="font-mono select-all">{r.payment_reference}</span>],
+                          ["Amount", r.payment_amount !== null ? `₹${r.payment_amount.toLocaleString("en-IN")}` : "—"],
+                          ["Paid on", r.payment_paid_on ? day(r.payment_paid_on) : "—"],
+                          ...(r.payment_payer_name ? [["Paid by", r.payment_payer_name] as [string, React.ReactNode]] : []),
+                          [
+                              "Screenshot",
+                              r.payment_proof_type === "application/pdf" ? (
+                                  <a key="s" href={`/admin/payment-proof/${r.id}`} className="underline underline-offset-4">
+                                      Download the PDF receipt
+                                  </a>
+                              ) : (
+                                  <a key="s" href={`/admin/payment-proof/${r.id}`} target="_blank" rel="noopener" className="block w-fit">
+                                      {/* eslint-disable-next-line @next/next/no-img-element -- private file served by an admin-only route */}
+                                      <img src={`/admin/payment-proof/${r.id}`} alt={`Payment screenshot from ${r.full_name}`} className="max-h-[28rem] w-auto border border-line" />
+                                      <span className="mt-1 block text-sm underline underline-offset-4">Open full size</span>
+                                  </a>
+                              ),
+                          ],
+                      ] as [string, React.ReactNode][])
+                    : [["Proof received", "Not yet"] as [string, React.ReactNode]]),
+            ],
+        ],
         [
             "Record",
             [
@@ -127,6 +156,22 @@ export default async function RegistrationPage({ params }: PageProps<"/admin/reg
                                     <Submit>Save</Submit>
                                 </div>
                             </ActionForm>
+                            {r.payment_submitted_at && r.status === "payment_pending" && (
+                                <p className="mt-6 border-l-[3px] border-signal bg-paper px-4 py-3 text-sm">
+                                    Proof of payment received. Check the screenshot against the bank or UPI statement, then set the status to Paid or Confirmed and save.
+                                </p>
+                            )}
+                            {r.status !== "cancelled" && r.status !== "refunded" && (
+                                <ActionForm
+                                    action={sendPaymentRequest}
+                                    className="mt-6 border-t border-line pt-5"
+                                    confirm={`${r.payment_email_sent_at ? "Send the payment email again" : "Send the payment email"} to ${r.email}${r.minor && r.guardian_email ? ` (copy to ${r.guardian_email})` : ""}?`}
+                                >
+                                    <input type="hidden" name="id" value={r.id} />
+                                    <Submit tone={r.payment_email_sent_at ? "quiet" : "primary"}>{r.payment_email_sent_at ? "Resend payment email" : "Send payment email"}</Submit>
+                                    {r.minor && !r.guardian_verified_at && <p className="mt-2 text-sm text-faint">Verify the parent or guardian first.</p>}
+                                </ActionForm>
+                            )}
                             <ActionForm action={resendRegistrationEmail} className="mt-6 border-t border-line pt-5" confirm={`Send the confirmation email to ${r.email} again?`}>
                                 <input type="hidden" name="id" value={r.id} />
                                 <Submit tone="quiet">Resend confirmation email</Submit>

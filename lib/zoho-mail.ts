@@ -1,7 +1,7 @@
 import "server-only";
 import { applicationEmailHtml, applicationEmailSubject } from "@/lib/application-email";
 import { roleName } from "@/lib/application";
-import { registrationEmailHtml, registrationEmailSubject } from "@/lib/registration-email";
+import { paymentEmailHtml, paymentEmailSubject, paymentReceivedEmailHtml, paymentReceivedEmailSubject, registrationEmailHtml, registrationEmailSubject, type PaymentEmail, type PaymentReceivedEmail } from "@/lib/registration-email";
 import { longDate, replyEmailHtml } from "@/lib/reply-email";
 import { rateLimiter } from "@/lib/request-guard";
 import { getConference } from "@/lib/site-content";
@@ -77,10 +77,11 @@ async function account(): Promise<string> {
 }
 
 // Ceiling on emails this server sends, so a flood of fake form posts can't turn Manthanam's mailbox into a
-// spam cannon: 150 an hour per server instance in all, and 3 a day to any one address. Over the limit the
+// spam cannon: 150 an hour per server instance in all, and 5 a day to any one address (registration, payment
+// email, receipt, and a resend or two). Over the limit the
 // email is skipped (the form entry is still saved) and the reason logged.
 const allMail = rateLimiter(150, 60 * 60_000);
-const perRecipient = rateLimiter(3, 24 * 60 * 60_000);
+const perRecipient = rateLimiter(5, 24 * 60 * 60_000);
 
 interface Attachment {
     storeName: string;
@@ -132,6 +133,16 @@ export async function sendRegistrationEmail(r: { name: string; email: string; re
     const c = await getConference();
     const html = registrationEmailHtml({ name: r.name, reference: r.reference, minor: !!r.guardianEmail, venue: c.venue, paymentDetailsBy: c.paymentDetailsBy });
     await send(r.email, r.guardianEmail, registrationEmailSubject(r), html);
+}
+
+/** The payment request with the personal proof-of-payment link (lib/registration-email.ts). A parent or guardian, if given, is copied in. */
+export async function sendPaymentEmail(r: PaymentEmail & { email: string; guardianEmail?: string }) {
+    await send(r.email, r.guardianEmail, paymentEmailSubject(r), paymentEmailHtml(r));
+}
+
+/** "We've received your payment details", sent automatically when the proof-of-payment form is submitted. */
+export async function sendPaymentReceivedEmail(r: PaymentReceivedEmail & { email: string; guardianEmail?: string }) {
+    await send(r.email, r.guardianEmail, paymentReceivedEmailSubject(r), paymentReceivedEmailHtml(r));
 }
 
 /** "We've received your application" email to an internship applicant. */

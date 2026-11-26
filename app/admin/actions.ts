@@ -1,7 +1,7 @@
 "use server";
 
 import { EMAIL_ADDRESS } from "@/lib/email-address";
-import { randomInt } from "node:crypto";
+import { randomBytes, randomInt } from "node:crypto";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { refresh } from "next/cache";
@@ -9,7 +9,10 @@ import { authClient, authorise, getAdmin } from "@/lib/auth";
 import { audit, db, dbConfigured, type RegistrationRow } from "@/lib/db";
 import { APPLICATION_STATUSES, isRole, MESSAGE_STATUSES, REGISTRATION_STATUSES, ROLE_LABELS } from "@/lib/permissions";
 import { clientIpFrom, rateLimiter } from "@/lib/request-guard";
-import { mailConfigured, mailFrom, sendApplicationReply, sendMessageReply, sendRegistrationEmail } from "@/lib/zoho-mail";
+import { awaitingPaymentEmail, paymentEmailCounts } from "@/lib/admin-data";
+import { getConference, type ConferenceContent } from "@/lib/site-content";
+import { site } from "@/lib/site";
+import { mailConfigured, mailFrom, sendApplicationReply, sendMessageReply, sendPaymentEmail, sendRegistrationEmail } from "@/lib/zoho-mail";
 
 /**
  * Every change the admin dashboard can make. Each action checks the session and the role itself:
@@ -159,6 +162,118 @@ export async function resendRegistrationEmail(_: FormState, form: FormData): Pro
     await audit(admin, "registration.email_resent", "registration", id, { reference: r.reference });
     refresh();
     return { ok: `Confirmation sent to ${r.email}${r.minor && r.guardian_email ? ` (copy to ${r.guardian_email})` : ""}.` };
+}
+
+// Payment emails --------------------------------------------------------------------------------
+
+type PaymentTarget = Pick<RegistrationRow, "id" | "reference" | "full_name" | "email" | "minor" | "guardian_email" | "guardian_verified_at" | "status" | "payment_token">;
+const PAYMENT_COLUMNS = "id, reference, full_name, email, minor, guardian_email, guardian_verified_at, status, payment_token";
+
+/** Why payment emails can't go out at all right now, or null if they can. */
+function paymentBlocked(c: ConferenceContent): string | null {
+    if (!mailConfigured()) return "Email sending isn’t set up.";
+    if (!c.paymentInstructions.trim()) return "Add the payment instructions (UPI ID or bank details) in Content → Conference first. The email shows them.";
+    if (!c.fees.length) return "Add the fee in Content → Conference first. The email shows it.";
+    return null;
+}
+
+/**
+ * Emails one registrant the payment details and their personal proof-of-payment link. The link's token is
+ * made once and kept, so a resent email carries the same link as the first. New registrations move to
+ * "Payment pending"; any other status is left alone.
+ */
+async function deliverPaymentEmail(admin: { id: string; email: string }, r: PaymentTarget, c: ConferenceContent) {
+    let token = r.payment_token;
+    if (!token) {
+        token = randomBytes(24).toString("base64url");
+        const { data, error } = await db().from("registrations").update({ payment_token: token }).eq("id", r.id).is("payment_token", null).select("id");
+        if (error) throw new Error(`token not saved: ${error.message}`);
+        if (!data?.length) {
+            // Another admin's send got there first: use the token it saved, so both emails carry the same link.
+            const { data: saved } = await db().from("registrations").select("payment_token").eq("id", r.id).maybeSingle<{ payment_token: string | null }>();
+            if (!saved?.payment_token) throw new Error("token not saved");
+            token = saved.payment_token;
+        }
+    }
+    await sendPaymentEmail({
+        name: r.full_name,
+        email: r.email,
+        guardianEmail: r.minor ? r.guardian_email || undefined : undefined,
+        reference: r.reference,
+        minor: r.minor,
+        fees: c.fees,
+        instructions: c.paymentInstructions,
+        dueBy: c.paymentDueBy,
+        link: `${site.url}/pay/${token}`,
+    });
+    const patch: Partial<RegistrationRow> = { payment_email_sent_at: new Date().toISOString() };
+    if (r.status === "new") patch.status = "payment_pending";
+    await db().from("registrations").update(patch).eq("id", r.id);
+    await audit(admin, "registration.payment_email", "registration", r.id, { reference: r.reference, ...(patch.status ? { status: [r.status, patch.status] } : {}) });
+}
+
+/** "Send payment email" on one registration (also resends). */
+export async function sendPaymentRequest(_: FormState, form: FormData): Promise<FormState> {
+    const auth = await authorise("registrations.edit");
+    if (auth.error !== undefined) return { error: auth.error };
+    const c = await getConference();
+    const blocked = paymentBlocked(c);
+    if (blocked) return { error: blocked };
+    const id = str(form, "id", 64);
+    const { data: r } = await db().from("registrations").select(PAYMENT_COLUMNS).eq("id", id).maybeSingle<PaymentTarget>();
+    if (!r) return { error: "That registration no longer exists." };
+    if (r.status === "cancelled" || r.status === "refunded") return { error: "This registration is cancelled or refunded. Change its status first if they should pay." };
+    if (r.minor && !r.guardian_verified_at) return { error: "Verify the parent or guardian first: tick “Parent or guardian verified” and save, then send." };
+    try {
+        await deliverPaymentEmail(auth.admin, r, c);
+    } catch (err) {
+        console.error("Payment email failed for", r.reference, err);
+        return { error: /limit/i.test(String(err)) ? "The sending limit has been reached for now. Try again in an hour." : "The email couldn’t be sent. Try again in a minute." };
+    }
+    refresh();
+    return { ok: `Payment email sent to ${r.email}${r.minor && r.guardian_email ? ` (copy to ${r.guardian_email})` : ""}.` };
+}
+
+/** How many registrations go per click: small enough to finish well inside a server request's time limit. */
+const PAYMENT_BATCH = 20;
+
+
+/** "Send payment emails": the next batch of registrants who haven't had one. Press again for the rest. */
+export async function sendPaymentRequests(): Promise<FormState> {
+    const auth = await authorise("registrations.edit");
+    if (auth.error !== undefined) return { error: auth.error };
+    const c = await getConference();
+    const blocked = paymentBlocked(c);
+    if (blocked) return { error: blocked };
+    const { data, error } = await awaitingPaymentEmail(PAYMENT_COLUMNS).order("created_at", { ascending: true }).limit(PAYMENT_BATCH);
+    if (error) return failed("Loading registrations", error);
+    const rows = (data ?? []) as unknown as PaymentTarget[];
+    if (!rows.length) return { ok: "Everyone who can be emailed has had their payment email." };
+
+    let sent = 0;
+    const failedRefs: string[] = [];
+    let stopped = "";
+    for (const r of rows) {
+        try {
+            await deliverPaymentEmail(auth.admin, r, c);
+            sent++;
+        } catch (err) {
+            console.error("Payment email failed for", r.reference, err);
+            if (/hourly email limit/i.test(String(err))) {
+                stopped = " The hourly sending limit was reached, so sending stopped. Press again in an hour.";
+                break;
+            }
+            failedRefs.push(r.reference);
+        }
+    }
+    await audit(auth.admin, "registration.payment_emails", "registration", "bulk", { sent, failed: failedRefs.length });
+    const { waiting } = await paymentEmailCounts();
+    refresh();
+    const parts = [`Sent ${sent} payment email${sent === 1 ? "" : "s"}.`];
+    if (failedRefs.length) parts.push(`Couldn’t send to ${failedRefs.join(", ")}; they’ll be tried again next time.`);
+    if (stopped) parts.push(stopped.trim());
+    else if (waiting) parts.push(`${waiting} still to send: press the button again.`);
+    return failedRefs.length && !sent ? { error: parts.join(" ") } : { ok: parts.join(" ") };
 }
 
 // Internship applications ---------------------------------------------------------------------

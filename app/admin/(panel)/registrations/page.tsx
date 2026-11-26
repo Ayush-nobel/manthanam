@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { sendPaymentRequests } from "@/app/admin/actions";
+import { ActionForm, Submit } from "@/components/admin/action-form";
 import { NoAccess, PageTitle, StatusBadge, when } from "@/components/admin/format";
-import { listRegistrations, PAGE_SIZE } from "@/lib/admin-data";
+import { listRegistrations, PAGE_SIZE, paymentEmailCounts } from "@/lib/admin-data";
+import { getConference } from "@/lib/site-content";
 import { requireAdmin } from "@/lib/auth";
 import { can, REGISTRATION_STATUSES, REGISTRATION_STATUS_LABELS } from "@/lib/permissions";
 
@@ -13,15 +16,17 @@ export default async function RegistrationsPage({ searchParams }: PageProps<"/ad
     const admin = await requireAdmin();
     if (!can(admin.role, "registrations.view")) return <NoAccess />;
     const sp = await searchParams;
-    const f = { q: one(sp.q), status: one(sp.status), minor: one(sp.minor), page: Math.max(1, Number(one(sp.page)) || 1) };
-    const { rows, total } = await listRegistrations(f);
+    const f = { q: one(sp.q), status: one(sp.status), minor: one(sp.minor), payment: one(sp.payment), page: Math.max(1, Number(one(sp.page)) || 1) };
+    const edit = can(admin.role, "registrations.edit");
+    const [{ rows, total }, counts, conference] = await Promise.all([listRegistrations(f), paymentEmailCounts(), edit ? getConference() : null]);
     const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
     const qs = (over: Record<string, string | number>) => {
         const p = new URLSearchParams(Object.entries({ ...f, ...over }).filter(([, v]) => v !== "" && v !== 1 && v !== "1").map(([k, v]) => [k, String(v)]));
         const s = p.toString();
         return s ? `?${s}` : "";
     };
-    const filtered = !!(f.q || f.status || f.minor);
+    const filtered = !!(f.q || f.status || f.minor || f.payment);
+    const ready = !!conference?.paymentInstructions.trim() && !!conference.fees.length;
 
     return (
         <>
@@ -36,6 +41,54 @@ export default async function RegistrationsPage({ searchParams }: PageProps<"/ad
             >
                 Registrations
             </PageTitle>
+
+            <section aria-labelledby="payments" className="mb-8 border-[5px] border-double border-ink bg-white px-6 py-5">
+                <div className="flex flex-wrap items-start justify-between gap-x-8 gap-y-4">
+                    <div className="max-w-[40rem]">
+                        <h2 id="payments" className="font-display text-lg font-[650]">
+                            Payment emails
+                        </h2>
+                        <p className="mt-1 text-base text-muted-ink">
+                            Each email has the fee, how to pay, and a personal link to a form where the registrant uploads a screenshot of their payment.
+                        </p>
+                        <ul className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-base">
+                            <li>
+                                <Link href="/admin/registrations?payment=unsent" className="underline underline-offset-4">
+                                    {counts.waiting} waiting for a payment email
+                                </Link>
+                            </li>
+                            {counts.unverifiedMinors > 0 && (
+                                <li>
+                                    <Link href="/admin/registrations?minor=pending" className="underline underline-offset-4">
+                                        {counts.unverifiedMinors} under 18, guardian to verify first
+                                    </Link>
+                                </li>
+                            )}
+                            <li>
+                                <Link href="/admin/registrations?payment=proof" className={`underline underline-offset-4 ${counts.proofsToCheck ? "font-semibold text-signal" : ""}`}>
+                                    {counts.proofsToCheck} payment{counts.proofsToCheck === 1 ? "" : "s"} to check
+                                </Link>
+                            </li>
+                        </ul>
+                    </div>
+                    {edit &&
+                        (ready ? (
+                            counts.waiting > 0 && (
+                                <ActionForm action={sendPaymentRequests} className="max-w-[22rem]" confirm={`Email payment details to the next ${Math.min(counts.waiting, 20)} registrant${counts.waiting === 1 ? "" : "s"} who haven’t had them?`}>
+                                    <Submit>Send payment emails ({Math.min(counts.waiting, 20)} at a time)</Submit>
+                                </ActionForm>
+                            )
+                        ) : (
+                            <p className="max-w-[22rem] text-sm text-signal">
+                                Before sending, add the payment instructions and fee in{" "}
+                                <Link href="/admin/content/conference" className="underline underline-offset-4">
+                                    Content → Conference
+                                </Link>
+                                .
+                            </p>
+                        ))}
+                </div>
+            </section>
 
             <form className="flex flex-wrap items-end gap-3 border-y border-line py-4" role="search">
                 <label className="block min-w-[16rem] flex-1">
@@ -59,6 +112,14 @@ export default async function RegistrationsPage({ searchParams }: PageProps<"/ad
                         <option value="">Anyone</option>
                         <option value="yes">Under 18</option>
                         <option value="pending">Under 18, guardian not verified</option>
+                    </select>
+                </label>
+                <label className="block">
+                    <span className="text-sm font-semibold">Payment</span>
+                    <select name="payment" defaultValue={f.payment} className="mt-1 block min-h-11 border border-line-strong bg-white px-3 text-base">
+                        <option value="">Any</option>
+                        <option value="unsent">Payment email not sent</option>
+                        <option value="proof">Proof received, to check</option>
                     </select>
                 </label>
                 <button type="submit" className="min-h-11 bg-ink px-5 text-sm font-semibold text-paper hover:bg-signal-deep">
@@ -113,6 +174,11 @@ export default async function RegistrationsPage({ searchParams }: PageProps<"/ad
                                     <td className="py-3 pr-4 whitespace-nowrap text-muted-ink">{when(r.created_at)}</td>
                                     <td className="py-3">
                                         <StatusBadge status={r.status} />
+                                        {r.payment_submitted_at ? (
+                                            <span className="mt-1 block text-xs text-signal">Proof received</span>
+                                        ) : (
+                                            r.payment_email_sent_at && <span className="mt-1 block text-xs text-muted-ink">Payment email sent</span>
+                                        )}
                                     </td>
                                 </tr>
                             ))}

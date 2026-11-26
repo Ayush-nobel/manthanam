@@ -112,6 +112,17 @@ export default async function ConferenceContentPage() {
                         <input type="date" name="paymentDetailsBy" defaultValue={c.paymentDetailsBy ?? ""} className={`${control} mt-1 min-h-11 [color-scheme:light]`} />
                     </label>
                     <label className="block">
+                        <span className={small}>Pay by</span>
+                        <input type="date" name="paymentDueBy" defaultValue={c.paymentDueBy ?? ""} className={`${control} mt-1 min-h-11 [color-scheme:light]`} />
+                    </label>
+                    <label className="block sm:col-span-2">
+                        <span className={small}>How to pay</span>
+                        <span className="block text-sm text-faint">
+                            Shown in the payment email and on each registrant’s payment page, line breaks kept. For example the UPI ID, the account name, number, IFSC and bank. Payment emails can’t be sent while this is empty.
+                        </span>
+                        <textarea name="paymentInstructions" defaultValue={c.paymentInstructions} maxLength={1500} rows={6} placeholder={"UPI ID: …\nAccount name: Manthanam Research Foundation\nAccount number: …\nIFSC: …"} className={`${control} mt-1`} />
+                    </label>
+                    <label className="block">
                         <span className={small}>Register by</span>
                         <input type="date" name="deadline" defaultValue={c.deadline ?? ""} className={`${control} mt-1 min-h-11 [color-scheme:light]`} />
                     </label>

@@ -32,6 +32,9 @@ export interface ConferenceContent {
     deadline: string | null;
     cancellationDeadline: string | null;
     paymentDetailsBy: string | null;
+    paymentDueBy: string | null;
+    /** How to pay: plain text, line breaks kept. */
+    paymentInstructions: string;
     theme: string;
     expected: string;
     fees: FeeRow[];
@@ -47,6 +50,8 @@ export const CONFERENCE_DEFAULTS: ConferenceContent = {
     deadline: conference.deadline,
     cancellationDeadline: conference.cancellationDeadline,
     paymentDetailsBy: conference.paymentDetailsBy,
+    paymentDueBy: conference.paymentDueBy,
+    paymentInstructions: conference.paymentInstructions,
     theme: conference.theme,
     expected: conference.expected,
     fees: [...conference.fees],
@@ -81,6 +86,8 @@ export function parseConference(raw: unknown): ConferenceContent {
         deadline: "deadline" in r ? date(r.deadline) : d.deadline,
         cancellationDeadline: "cancellationDeadline" in r ? date(r.cancellationDeadline) : d.cancellationDeadline,
         paymentDetailsBy: "paymentDetailsBy" in r ? date(r.paymentDetailsBy) : d.paymentDetailsBy,
+        paymentDueBy: "paymentDueBy" in r ? date(r.paymentDueBy) : d.paymentDueBy,
+        paymentInstructions: "paymentInstructions" in r ? str(r.paymentInstructions, 1500).replace(/\r\n?/g, "\n") : d.paymentInstructions,
         theme: "theme" in r ? str(r.theme, 200) : d.theme,
         expected: "expected" in r ? str(r.expected, 80) : d.expected,
         fees:

@@ -1,6 +1,6 @@
 ---
 title: "Privacy Policy"
-updated: 2026-11-14
+updated: 2026-11-26
 summary: "What personal data this website collects, why, who handles it, how long we keep it, and how you can access, correct or delete it."
 ---
 
@@ -21,6 +21,7 @@ This policy explains how **Manthanam Research Foundation** ("Manthanam", "we", "
 | --- | --- | --- |
 | You use the contact form | Your name, your email address, the topic you choose, your message, whether you are writing as an adult (18+) or as a parent/guardian of someone under 18, and a record of your consent (the wording you agreed to, this policy's version and the time) | To read and reply to your enquiry, and to be able to show that you consented |
 | You register for the BRICS India Youth Conference 2026 | Your name, email address, phone number, date of birth, city, state and country, your school, college or organisation, what best describes you, and anything you choose to add (why you want to attend, how you heard about it, access needs). If you are under 18: your parent or guardian's name, relation to you, email address and phone number. A record of the consents given (the wording, this policy's version and the time), and a reference number we assign | To process your registration, confirm your place, contact you about the conference, verify a parent or guardian's consent for anyone under 18, and arrange any access needs you tell us about. Your date of birth tells us whether parental consent is needed |
+| You send us proof of payment for the BRICS India Youth Conference 2026 (through the personal link in your payment email) | The transaction ID, UTR or UPI reference, the amount and date of the payment, the payer's name if someone else paid, and the screenshot or receipt you upload, which may show the name and UPI ID or bank of the account that paid | To check that your fee has been paid and confirm your place. Crop out anything else, such as your balance, before you upload |
 | You apply for an internship | Your name, email address, phone number, city, college, university or workplace, the role you apply for, what you tell us about why you want it, and a link to your work if you give one. Your confirmation that you are 18 or older, and a record of the consent given (the wording, this policy's version and the time) | To consider your application, contact you about it and, if you are selected, arrange the internship |
 | You email us directly | Your email address, name (as shown by your email provider) and whatever you include in your email | To reply to you |
 | You visit any page | Technical data our hosting provider's servers receive with every web request: your IP address, browser type, the page requested and the time | To deliver the page to you and keep the site secure. We do not use this data to identify or profile you |
@@ -37,10 +38,10 @@ We use a small number of service providers ("Data Processors") who handle data o
 
 | Provider | What they do for us | Where |
 | --- | --- | --- |
-| **Supabase** | Hosts our private database, which stores contact-form messages, event registrations and internship applications; only Manthanam's signed-in team can see them | India (Mumbai) |
+| **Supabase** | Hosts our private database, which stores contact-form messages, event registrations (including proof of payment) and internship applications; only Manthanam's signed-in team can see them | India (Mumbai) |
 | **Formspree** | Receives contact-form submissions only if our own system is temporarily unavailable, and forwards them to us | United States |
 | **Zoho Sheet** | Keeps a copy of event registrations in a private spreadsheet that only Manthanam can open | Zoho's data centres for our account |
-| **Zoho Mail** (sending) | Sends the email confirming your registration, with your registration number, and the email confirming an internship application, from a manthanam.in address, and forwards contact-form messages to our team | Zoho's data centres for our account |
+| **Zoho Mail** (sending) | Sends the email confirming your registration, with your registration number, the email with payment details, and the email confirming an internship application, from a manthanam.in address, and forwards contact-form messages to our team | Zoho's data centres for our account |
 | **Zoho Mail** | Hosts our email inbox, where enquiries and replies are kept | Zoho's data centres for our account |
 | **Amazon Web Services** (Amazon CloudFront) | Hosts and delivers this website | Global network of servers |
 

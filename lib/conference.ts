@@ -28,6 +28,16 @@ export const conference = {
     deadline: null as string | null,
     /** ISO date by which payment details are emailed to everyone registered. */
     paymentDetailsBy: "2026-11-25" as string | null,
+    /** How to pay (UPI ID, bank account…), shown in the payment email and on the payment page. Empty: payment emails can't be sent. */
+    paymentInstructions: [
+        "Bank transfer (NEFT, IMPS or RTGS)",
+        "Bank: State Bank of India",
+        "Branch: P.B. No. 1, Chowrasia Complex, Simaria Chowk, Satna",
+        "Account number: 00000042960170002",
+        "IFSC: SBIN0000474",
+    ].join("\n") as string,
+    /** ISO date payment is due by, or null for no stated date. */
+    paymentDueBy: null as string | null,
     /** ISO date after which cancellations are not refunded — not yet announced. */
     cancellationDeadline: null as string | null,
     /** Fees by category; empty shows "to be announced". */

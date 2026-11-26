@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     if (!admin) return new Response("Sign in as an admin whose role allows downloads.", { status: 403 });
 
     const sp = new URL(request.url).searchParams;
-    const { rows } = await listRegistrations({ q: sp.get("q") ?? "", status: sp.get("status") ?? "", minor: sp.get("minor") ?? "" }, { all: true });
+    const { rows } = await listRegistrations({ q: sp.get("q") ?? "", status: sp.get("status") ?? "", minor: sp.get("minor") ?? "", payment: sp.get("payment") ?? "" }, { all: true });
 
     const ist = (iso: string | null) => (iso ? new Date(iso).toLocaleString("en-GB", { timeZone: "Asia/Kolkata", hour12: false }).replace(",", "") : "");
     const columns: [string, (r: (typeof rows)[number]) => string][] = [
@@ -39,6 +39,12 @@ export async function GET(request: Request) {
         ["Guardian email", (r) => r.guardian_email],
         ["Guardian phone", (r) => r.guardian_phone],
         ["Confirmation emailed (IST)", (r) => ist(r.email_sent_at)],
+        ["Payment email sent (IST)", (r) => ist(r.payment_email_sent_at)],
+        ["Payment proof received (IST)", (r) => ist(r.payment_submitted_at)],
+        ["Transaction ID", (r) => r.payment_reference ?? ""],
+        ["Amount paid (Rs)", (r) => (r.payment_amount ?? "").toString()],
+        ["Paid on", (r) => r.payment_paid_on ?? ""],
+        ["Paid by", (r) => r.payment_payer_name ?? ""],
         ["Notes", (r) => r.notes],
         ["Privacy policy version", (r) => r.privacy_policy_version],
     ];

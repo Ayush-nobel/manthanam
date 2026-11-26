@@ -154,6 +154,8 @@ export async function saveConference(_: FormState, form: FormData): Promise<Form
         deadline: date("deadline"),
         cancellationDeadline: date("cancellationDeadline"),
         paymentDetailsBy: date("paymentDetailsBy"),
+        paymentDueBy: date("paymentDueBy"),
+        paymentInstructions: String(form.get("paymentInstructions") ?? ""),
         theme: String(form.get("theme") ?? ""),
         expected: String(form.get("expected") ?? ""),
         fees: rows(form, "fee", ["category", "amount", "note"]).map((r) => ({ category: r.category, note: r.note, amount: Number(r.amount.replace(/[^\d.]/g, "")) })),

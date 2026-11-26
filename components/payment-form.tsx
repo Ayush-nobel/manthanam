@@ -104,6 +104,14 @@ export default function PaymentForm({ token, suggestedAmount, resubmit, today }:
             setErrors((e) => ({ ...e, proof: `This file is ${MB(picked.size)}; the limit is 4 MB. A screenshot instead of the PDF will be smaller.` }));
             return;
         }
+        // Copy the file into memory now. Some Android browsers (in-app and WebView-based ones such as
+        // DuckDuckGo) lose permission to read a gallery photo after it's picked, and the upload then fails.
+        try {
+            ready = new File([await ready.arrayBuffer()], ready.name, { type: ready.type });
+        } catch {
+            setErrors((e) => ({ ...e, proof: "This file couldn’t be read. Choose it again, or take a new screenshot and choose that." }));
+            return;
+        }
         setFile(ready);
         if (ready.type.startsWith("image/")) setPreview(URL.createObjectURL(ready));
     }
@@ -135,8 +143,18 @@ export default function PaymentForm({ token, suggestedAmount, resubmit, today }:
         body.set("token", token);
         for (const [k, v] of Object.entries(values)) body.set(k, v);
         body.set("proof", file!, file!.name);
+        // One automatic retry if the connection drops (common on mobile data). Safe to repeat: a second upload
+        // replaces the first.
+        const post = async () => {
+            try {
+                return await fetch("/api/payment", { method: "POST", body });
+            } catch {
+                await new Promise((ok) => setTimeout(ok, 2000));
+                return fetch("/api/payment", { method: "POST", body });
+            }
+        };
         try {
-            const res = await fetch("/api/payment", { method: "POST", body });
+            const res = await post();
             const out = (await res.json().catch(() => null)) as { ok?: boolean; email?: string; errors?: PaymentErrors; error?: string } | null;
             if (res.ok && out?.ok) {
                 setEmailedTo(out.email ?? "");
@@ -148,7 +166,7 @@ export default function PaymentForm({ token, suggestedAmount, resubmit, today }:
             if (out?.errors && Object.keys(out.errors).length) return show(out.errors);
             setFailure(out?.error ?? "We couldn’t save your payment details right now.");
         } catch {
-            setFailure("We couldn’t send this. Check your connection and try again; nothing you typed has been lost.");
+            setFailure("We couldn’t send this. Check your connection and try again; nothing you typed has been lost. If it fails again, open the link from your email in Chrome or Safari and try there.");
         }
         setSending(false);
     }

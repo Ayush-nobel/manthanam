@@ -88,6 +88,7 @@ export const AGENDA: { time: string; title: string; detail?: string }[] = [
 export const SPEAKERS = [
     { name: "Shri Shivraj Singh Chouhan", role: "Minister of Agriculture and Farmers Welfare, Government of India" },
     { name: "Shri Chirag Paswan", role: "Minister of Food Processing Industries, Government of India" },
+    { name: "Dr. Raghuram G. Rajan", role: "Former Governor, Reserve Bank of India" },
     { name: "Shri Amitabh Kant", role: "Former G20 Sherpa (India); former CEO, NITI Aayog" },
     { name: "Shri Sanjeev Sanyal", role: "Member, Economic Advisory Council to the Prime Minister" },
     { name: "Ambassador Sujan R. Chinoy", role: "Director General, Manohar Parrikar Institute for Defence Studies and Analyses" },

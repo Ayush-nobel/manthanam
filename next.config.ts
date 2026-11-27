@@ -51,6 +51,8 @@ const SERVER_KEYS = [
     "ZOHO_DC", "ZOHO_CLIENT_ID", "ZOHO_CLIENT_SECRET", "ZOHO_REFRESH_TOKEN", "ZOHO_SHEET_RESOURCE_ID", "ZOHO_SHEET_WORKSHEET",
     // Emails (optional overrides; default to the sheet credentials and ayush.shukla@manthanam.in).
     "ZOHO_MAIL_FROM", "ZOHO_MAIL_ACCOUNT_ID", "CONTACT_NOTIFY_TO", "ZOHO_MAIL_CLIENT_ID", "ZOHO_MAIL_CLIENT_SECRET", "ZOHO_MAIL_REFRESH_TOKEN",
+    // Bulk sending through ZeptoMail (Zoho CPaaS). When ZEPTOMAIL_TOKEN is set, every email goes through it.
+    "ZEPTOMAIL_TOKEN", "ZEPTOMAIL_URL", "ZEPTOMAIL_FROM_NAME",
 ];
 const buildEnv = Object.fromEntries(SERVER_KEYS.flatMap((k) => (process.env[k] ? [[k, process.env[k]!]] : [])));
 

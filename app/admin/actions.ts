@@ -12,7 +12,7 @@ import { clientIpFrom, rateLimiter } from "@/lib/request-guard";
 import { awaitingPaymentEmail, paymentEmailCounts } from "@/lib/admin-data";
 import { getConference, type ConferenceContent } from "@/lib/site-content";
 import { site } from "@/lib/site";
-import { mailConfigured, mailFrom, sendApplicationReply, sendMessageReply, sendPaymentEmail, sendRegistrationEmail, sendSeatConfirmedEmail } from "@/lib/zoho-mail";
+import { mailConfigured, mailFrom, zeptoConfigured, sendApplicationReply, sendMessageReply, sendPaymentEmail, sendRegistrationEmail, sendSeatConfirmedEmail } from "@/lib/zoho-mail";
 
 /**
  * Every change the admin dashboard can make. Each action checks the session and the role itself:
@@ -197,8 +197,10 @@ function sendingStopped(err: unknown, consecutiveFailures: number): string | nul
     const text = String(err instanceof Error ? err.message : err);
     if (/hourly email limit/i.test(text)) return "This website’s own hourly limit was reached. Press again in an hour.";
     if (/limit|exceed|too many|blocked|suspend|unusual|quota|spam|429|550|553|554/i.test(text) || consecutiveFailures >= 2) {
-        const zoho = text.replace(/^Zoho Mail send failed:\s*/, "").slice(0, 200);
-        return `Zoho Mail stopped accepting emails (it said: “${zoho}”). This is usually Zoho’s hourly sending limit for a new sender: wait an hour and press again. If it keeps happening, sign in to mail.zoho.in as the sending address and check for a “sending blocked” notice.`;
+        const said = text.replace(/^(Zoho Mail|ZeptoMail) send failed:\s*/, "").slice(0, 200);
+        if (zeptoConfigured())
+            return `ZeptoMail refused the email (it said: “${said}”). Check the ZeptoMail dashboard: the sending domain must be verified, the account needs email credits, and the API key must be current.`;
+        return `Zoho Mail stopped accepting emails (it said: “${said}”). This is usually Zoho’s hourly sending limit for a new sender: wait an hour and press again. If it keeps happening, sign in to mail.zoho.in as the sending address and check for a “sending blocked” notice.`;
     }
     return null;
 }
@@ -272,7 +274,7 @@ export async function sendPaymentRequest(_: FormState, form: FormData): Promise<
 }
 
 /** How many registrations go per click: small enough to finish well inside a server request's time limit. */
-const PAYMENT_BATCH = 20;
+const PAYMENT_BATCH = zeptoConfigured() ? 40 : 20;
 
 
 /** "Send payment emails": the next batch of registrants who haven't had one. Press again for the rest. */
@@ -371,7 +373,8 @@ export async function confirmSeats(_: FormState, form: FormData): Promise<FormSt
     if (!mailConfigured()) return { error: "Email sending isn’t set up." };
     const ids = [...new Set(form.getAll("ids").map(String))].filter((id) => /^[0-9a-f-]{36}$/i.test(id));
     if (!ids.length) return { error: "Tick at least one registration first." };
-    if (ids.length > 25) return { error: `You ticked ${ids.length}. Confirm up to 25 at a time, so every email has time to send.` };
+    const maxSeats = zeptoConfigured() ? 40 : 25;
+    if (ids.length > maxSeats) return { error: `You ticked ${ids.length}. Confirm up to ${maxSeats} at a time, so every email has time to send.` };
     const { data, error } = await db().from("registrations").select(SEAT_COLUMNS).in("id", ids);
     if (error) return failed("Loading registrations", error);
     const venue = (await getConference()).venue;

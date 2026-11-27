@@ -41,7 +41,7 @@ We use a small number of service providers ("Data Processors") who handle data o
 | **Supabase** | Hosts our private database, which stores contact-form messages, event registrations (including proof of payment) and internship applications; only Manthanam's signed-in team can see them | India (Mumbai) |
 | **Formspree** | Receives contact-form submissions only if our own system is temporarily unavailable, and forwards them to us | United States |
 | **Zoho Sheet** | Keeps a copy of event registrations in a private spreadsheet that only Manthanam can open | Zoho's data centres for our account |
-| **Zoho Mail** (sending) | Sends the email confirming your registration, with your registration number, the email with payment details, and the email confirming an internship application, from a manthanam.in address, and forwards contact-form messages to our team | Zoho's data centres for our account |
+| **Zoho Mail and ZeptoMail** (sending, both Zoho services) | Sends the email confirming your registration, with your registration number, the email with payment details, and the email confirming an internship application, from a manthanam.in address, and forwards contact-form messages to our team | Zoho's data centres for our account |
 | **Zoho Mail** | Hosts our email inbox, where enquiries and replies are kept | Zoho's data centres for our account |
 | **Amazon Web Services** (Amazon CloudFront) | Hosts and delivers this website | Global network of servers |
 

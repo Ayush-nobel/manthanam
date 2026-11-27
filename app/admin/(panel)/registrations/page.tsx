@@ -5,6 +5,7 @@ import { ActionForm, SelectAll, Submit } from "@/components/admin/action-form";
 import { NoAccess, PageTitle, StatusBadge, when } from "@/components/admin/format";
 import { listRegistrations, PAGE_SIZE, paymentEmailCounts } from "@/lib/admin-data";
 import { getConference } from "@/lib/site-content";
+import { zeptoConfigured } from "@/lib/zoho-mail";
 import { requireAdmin } from "@/lib/auth";
 import { can, REGISTRATION_STATUSES, REGISTRATION_STATUS_LABELS } from "@/lib/permissions";
 
@@ -27,6 +28,7 @@ export default async function RegistrationsPage({ searchParams }: PageProps<"/ad
     };
     const filtered = !!(f.q || f.status || f.minor || f.payment);
     const ready = !!conference?.paymentInstructions.trim() && !!conference.fees.length;
+    const batch = zeptoConfigured() ? 40 : 20;
     // Tick-and-act lists: guardians to verify, and payments to check before confirming seats.
     const bulk = !edit
         ? null
@@ -91,8 +93,8 @@ export default async function RegistrationsPage({ searchParams }: PageProps<"/ad
                     {edit &&
                         (ready ? (
                             counts.waiting > 0 && (
-                                <ActionForm action={sendPaymentRequests} className="max-w-[22rem]" confirm={`Email payment details to the next ${Math.min(counts.waiting, 20)} registrant${counts.waiting === 1 ? "" : "s"} who haven’t had them?`}>
-                                    <Submit>Send payment emails ({Math.min(counts.waiting, 20)} at a time)</Submit>
+                                <ActionForm action={sendPaymentRequests} className="max-w-[22rem]" confirm={`Email payment details to the next ${Math.min(counts.waiting, batch)} registrant${counts.waiting === 1 ? "" : "s"} who haven’t had them?`}>
+                                    <Submit>Send payment emails ({Math.min(counts.waiting, batch)} at a time)</Submit>
                                 </ActionForm>
                             )
                         ) : (

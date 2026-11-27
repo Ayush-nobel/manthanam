@@ -28,9 +28,21 @@ const CREDS: Partial<ZohoCredentials> = {
     refreshToken: v(process.env.ZOHO_MAIL_REFRESH_TOKEN) ?? v(process.env.ZOHO_REFRESH_TOKEN),
 };
 const creds = () => CREDS as ZohoCredentials;
+
+/**
+ * ZeptoMail (Zoho CPaaS), Zoho's service for transactional and bulk email: no mailbox hourly cap, so payment and
+ * confirmation emails to every registrant go out without stalling. Set ZEPTOMAIL_TOKEN (the Mail Agent's API key,
+ * "Zoho-enczapikey …" or just the key) and every email is sent through it; FROM must be on a domain verified in that
+ * Mail Agent. Replies still go to FROM, the Zoho Mail inbox. ZEPTOMAIL_URL overrides the API address shown on the
+ * agent's "API Setup" page (default: the Zoho CPaaS address for ZOHO_DC).
+ */
+const ZEPTO_TOKEN = v(process.env.ZEPTOMAIL_TOKEN)?.replace(/^Zoho-enczapikey\s+/i, "");
+const ZEPTO_NAME = v(process.env.ZEPTOMAIL_FROM_NAME) ?? "Manthanam";
+const zeptoUrl = () => v(process.env.ZEPTOMAIL_URL) ?? `https://cpaas.zoho.${zohoDataCentre()}/v1.1/email`;
+export const zeptoConfigured = () => !!ZEPTO_TOKEN;
 const base = () => `https://mail.zoho.${zohoDataCentre()}/api`;
 
-export const mailConfigured = () => !!(CREDS.clientId && CREDS.clientSecret && CREDS.refreshToken);
+export const mailConfigured = () => zeptoConfigured() || !!(CREDS.clientId && CREDS.clientSecret && CREDS.refreshToken);
 export const mailFrom = () => FROM;
 
 let accountId: string | undefined = ACCOUNT_ID;
@@ -80,13 +92,48 @@ async function account(): Promise<string> {
 // spam cannon: 150 an hour per server instance in all, and 5 a day to any one address (registration, payment
 // email, receipt, and a resend or two). Over the limit the
 // email is skipped (the form entry is still saved) and the reason logged.
-const allMail = rateLimiter(150, 60 * 60_000);
+const allMail = rateLimiter(ZEPTO_TOKEN ? 1500 : 150, 60 * 60_000);
 const perRecipient = rateLimiter(5, 24 * 60 * 60_000);
 
 interface Attachment {
     storeName: string;
     attachmentPath: string;
     attachmentName: string;
+}
+/** A file to attach: sent inline (base64) through ZeptoMail, or uploaded first through Zoho Mail. */
+interface FileToAttach {
+    name: string;
+    mimeType: string;
+    bytes: Uint8Array;
+}
+
+interface ZeptoError {
+    data?: { error_code?: string; message?: string; details?: { message?: string; target?: string }[] };
+    message?: string;
+}
+async function sendViaZepto(to: string, cc: string | undefined, subject: string, content: string, mailFormat: "html" | "plaintext", files: FileToAttach[]) {
+    const addr = (a: string) => ({ email_address: { address: a } });
+    const body = {
+        from: { address: FROM, name: ZEPTO_NAME },
+        to: [addr(to)],
+        ...(cc ? { cc: [addr(cc)] } : {}),
+        reply_to: [{ address: FROM, name: ZEPTO_NAME }],
+        subject,
+        ...(mailFormat === "html" ? { htmlbody: content } : { textbody: content }),
+        ...(files.length ? { attachments: files.map((f) => ({ name: f.name, mime_type: f.mimeType, content: Buffer.from(f.bytes).toString("base64") })) } : {}),
+    };
+    const res = await fetch(zeptoUrl(), {
+        method: "POST",
+        headers: { Authorization: `Zoho-enczapikey ${ZEPTO_TOKEN}`, Accept: "application/json", "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(20_000),
+        cache: "no-store",
+    });
+    if (!res.ok) {
+        const e = (await res.json().catch(() => null)) as ZeptoError | null;
+        const detail = e?.data?.details?.map((d) => d.message).filter(Boolean).join("; ") || e?.data?.message || e?.message || "";
+        throw new Error(`ZeptoMail send failed: ${res.status} ${e?.data?.error_code ?? ""} ${detail}`.trim());
+    }
 }
 
 /** Uploads a file to Zoho Mail so the next email can carry it (Upload Attachment API, raw body). */
@@ -107,11 +154,14 @@ async function uploadAttachment(fileName: string, bytes: Uint8Array): Promise<At
     return { storeName: data.storeName, attachmentPath: data.attachmentPath, attachmentName: data.attachmentName || fileName };
 }
 
-async function send(to: string, cc: string | undefined, subject: string, content: string, mailFormat: "html" | "plaintext" = "html", attachments: Attachment[] = []) {
+async function send(to: string, cc: string | undefined, subject: string, content: string, mailFormat: "html" | "plaintext" = "html", files: FileToAttach[] = []) {
     if (to !== CONTACT_TO) {
         if (allMail("all")) throw new Error("Hourly email limit reached; email skipped.");
         for (const addr of [to, cc].filter((x): x is string => !!x)) if (perRecipient(addr.toLowerCase())) throw new Error("Daily limit for this recipient reached; email skipped.");
     }
+    if (ZEPTO_TOKEN) return sendViaZepto(to, cc, subject, content, mailFormat, files);
+    const attachments: Attachment[] = [];
+    for (const f of files) attachments.push(await uploadAttachment(f.name, f.bytes));
     const id = await account();
     const token = await accessToken(creds());
     const res = await fetch(`${base()}/accounts/${encodeURIComponent(id)}/messages`, {
@@ -207,12 +257,12 @@ export async function sendApplicationReply(r: { to: string; role: string; body: 
 
 /** An offer letter: the designed email (lib/letters/email.ts) with the PDF attached. */
 export async function sendOfferLetterEmail(r: { to: string; subject: string; html: string; fileName: string; pdf: Uint8Array }) {
-    const file = await uploadAttachment(r.fileName, r.pdf);
-    await send(r.to, undefined, oneLine(r.subject), r.html, "html", [file]);
+    await send(r.to, undefined, oneLine(r.subject), r.html, "html", [{ name: r.fileName, mimeType: "application/pdf", bytes: r.pdf }]);
 }
 
 /** Setup check: can these credentials find a mailbox that sends as FROM? (Sends nothing.) */
 export async function diagnoseMail(): Promise<string> {
+    if (ZEPTO_TOKEN) return `ZeptoMail (sends as ${FROM} via ${zeptoUrl()}; a test send is the only full check)`;
     if (!mailConfigured()) return "not configured";
     try {
         await account();

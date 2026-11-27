@@ -107,10 +107,25 @@ interface FileToAttach {
     bytes: Uint8Array;
 }
 
+type ZeptoErrorBody = { error_code?: string; code?: string; message?: string; details?: { code?: string; message?: string; target?: string }[] };
 interface ZeptoError {
-    data?: { error_code?: string; message?: string; details?: { message?: string; target?: string }[] };
+    // The docs show errors under "data"; the live API answers with "error". Read both.
+    data?: ZeptoErrorBody;
+    error?: ZeptoErrorBody;
     message?: string;
 }
+/** ZeptoMail's own explanation of a refusal, as readable as possible, never longer than 300 characters. */
+function zeptoReason(status: number, raw: string): string {
+    let e: ZeptoError | null = null;
+    try {
+        e = JSON.parse(raw) as ZeptoError;
+    } catch {}
+    const b = e?.error ?? e?.data;
+    const details = b?.details?.map((d) => [d.code, d.message, d.target && `(${d.target})`].filter(Boolean).join(" ")).join("; ");
+    const text = [b?.error_code ?? b?.code, b?.message ?? e?.message, details].filter(Boolean).join(" ");
+    return `${status} ${text || raw.replace(/\s+/g, " ").slice(0, 200) || "no details"}`.slice(0, 300);
+}
+
 async function sendViaZepto(to: string, cc: string | undefined, subject: string, content: string, mailFormat: "html" | "plaintext", files: FileToAttach[]) {
     const addr = (a: string) => ({ email_address: { address: a } });
     const body = {
@@ -130,9 +145,9 @@ async function sendViaZepto(to: string, cc: string | undefined, subject: string,
         cache: "no-store",
     });
     if (!res.ok) {
-        const e = (await res.json().catch(() => null)) as ZeptoError | null;
-        const detail = e?.data?.details?.map((d) => d.message).filter(Boolean).join("; ") || e?.data?.message || e?.message || "";
-        throw new Error(`ZeptoMail send failed: ${res.status} ${e?.data?.error_code ?? ""} ${detail}`.trim());
+        const reason = zeptoReason(res.status, await res.text().catch(() => ""));
+        console.error("ZeptoMail refused an email:", reason);
+        throw new Error(`ZeptoMail send failed: ${reason}`);
     }
 }
 

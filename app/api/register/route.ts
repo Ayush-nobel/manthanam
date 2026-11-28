@@ -19,7 +19,7 @@ import { diagnoseMail, mailConfigured, sendRegistrationEmail } from "@/lib/zoho-
 import { addRow, diagnose, hasValue, zohoConfigured, zohoDataCentre, zohoMissing } from "@/lib/zoho-sheet";
 
 /**
- * Registration gateway for the BRICS India Youth Conference 2026.
+ * Registration gateway for the International Youth Summit 2026.
  *
  * The browser posts here (same origin, so no third party sees the form); this route validates
  * everything again, then saves it in the website's database (docs/backend.md), where the admin
@@ -30,7 +30,7 @@ import { addRow, diagnose, hasValue, zohoConfigured, zohoDataCentre, zohoMissing
 // Best-effort limit per IP: 5 registrations per 10 minutes on each server instance.
 const limited = rateLimiter(5, 10 * 60 * 1000);
 
-/** Unambiguous characters only (no 0/O, 1/I/L), e.g. BIYC26-7KQ3XM. */
+/** Unambiguous characters only (no 0/O, 1/I/L), e.g. IYS26-7KQ3XM. */
 function reference() {
     const alphabet = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
     let s = "";

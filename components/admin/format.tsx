@@ -80,6 +80,8 @@ export function describe(action: string, detail: Record<string, unknown>) {
             return `Sent ${(detail as { sent?: number }).sent ?? 0} payment emails`;
         case "registration.seat_confirmed":
             return (detail as { resent?: boolean }).resent ? `Seat confirmation email resent (${d.reference})` : `Seat confirmed and confirmation email sent (${d.reference})`;
+        case "application.referral_code":
+            return `Referral code ${(detail as { code?: string }).code ?? ""} issued and emailed`;
         case "registration.payment_proof":
             return (detail as { replaced?: boolean }).replaced ? "Uploaded a new payment screenshot (replaces the earlier one)" : "Uploaded proof of payment";
         case "registration.email_resent":

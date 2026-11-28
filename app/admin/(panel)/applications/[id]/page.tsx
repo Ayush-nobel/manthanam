@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { replyToApplication, updateApplication } from "@/app/admin/actions";
+import { issueReferralCode, replyToApplication, updateApplication } from "@/app/admin/actions";
 import { ActionForm, Submit } from "@/components/admin/action-form";
 import { Select, TextArea } from "@/components/admin/fields";
 import { ReplyForm } from "@/components/admin/reply-form";
 import { describe, NoAccess, StatusBadge, when } from "@/components/admin/format";
-import { getApplication } from "@/lib/admin-data";
-import { roleName, roleTitle } from "@/lib/application";
+import { getApplication, referralStats } from "@/lib/admin-data";
+import { ambassadorReward, isAmbassador, roleName, roleTitle } from "@/lib/application";
 import { requireAdmin } from "@/lib/auth";
 import { APPLICATION_STATUSES, APPLICATION_STATUS_LABELS, can } from "@/lib/permissions";
 import { mailConfigured, mailFrom } from "@/lib/zoho-mail";
@@ -22,6 +22,8 @@ export default async function ApplicationPage({ params }: PageProps<"/admin/appl
     const { application: a, history, replies } = found;
     const canReply = can(admin.role, "applications.edit") && mailConfigured();
     const safeLink = /^https?:\/\//i.test(a.portfolio) ? a.portfolio : "";
+    const amb = isAmbassador(a.role);
+    const stats = amb && a.referral_code ? await referralStats(a.referral_code) : null;
 
     const rows: [string, React.ReactNode][] = [
         ["Role", roleName(a.role)],
@@ -32,7 +34,14 @@ export default async function ApplicationPage({ params }: PageProps<"/admin/appl
         ["Their work", safeLink ? <a key="w" href={safeLink} target="_blank" rel="noopener noreferrer nofollow" className="break-all underline underline-offset-4">{safeLink}</a> : "Not given"],
         ["Applied", when(a.created_at)],
         ["Confirmation email", a.email_sent_at ? `Sent ${when(a.email_sent_at)}` : "Not sent"],
-        ["Consent", <span key="c" className="text-muted-ink">“{a.consent_text}” Confirmed 18 or older. (Privacy Policy version {a.privacy_policy_version})</span>],
+        ...(a.adult_confirmed
+            ? []
+            : ([
+                  ["Under 18", <span key="u" className="font-semibold text-signal">Yes: parent or guardian involved</span>],
+                  ["Parent or guardian", <span key="g">{a.guardian_name} (<a href={`mailto:${a.guardian_email}`} className="underline underline-offset-4">{a.guardian_email}</a>)</span>],
+                  ["Guardian consent", <span key="gc" className="text-muted-ink">“{a.guardian_consent_text}”</span>],
+              ] as [string, React.ReactNode][])),
+        ["Consent", <span key="c" className="text-muted-ink">“{a.consent_text}”{a.adult_confirmed ? " Confirmed 18 or older." : ""} (Privacy Policy version {a.privacy_policy_version})</span>],
     ];
 
     return (
@@ -89,6 +98,34 @@ export default async function ApplicationPage({ params }: PageProps<"/admin/appl
                     </section>
                 </div>
                 <div className="lg:col-span-5">
+                    {amb && (
+                        <section aria-labelledby="referral" className="mb-8 border border-ink bg-white px-6 py-6">
+                            <h2 id="referral" className="font-display text-lg font-[650]">Referral code</h2>
+                            {a.referral_code ? (
+                                <>
+                                    <p className="mt-2 font-mono text-2xl tracking-[0.08em] text-signal select-all">{a.referral_code}</p>
+                                    <dl className="mt-4 grid gap-1 text-base">
+                                        <div className="flex justify-between border-b border-line py-1.5"><dt className="text-muted-ink">Delegates who used it</dt><dd>{stats?.used ?? 0}</dd></div>
+                                        <div className="flex justify-between border-b border-line py-1.5"><dt className="text-muted-ink">Of those, paid or confirmed</dt><dd className="font-semibold">{stats?.paid ?? 0}</dd></div>
+                                        <div className="flex justify-between py-1.5"><dt className="text-muted-ink">Reward reached</dt><dd className="text-right">{ambassadorReward(stats?.paid ?? 0)}</dd></div>
+                                    </dl>
+                                    {a.referral_code_issued_at && <p className="mt-3 text-sm text-faint">Issued {when(a.referral_code_issued_at)}</p>}
+                                </>
+                            ) : (
+                                <p className="mt-2 text-base text-muted-ink">No code yet. Issue one when you select this ambassador; it’s emailed to them straight away.</p>
+                            )}
+                            {can(admin.role, "applications.edit") && (
+                                <ActionForm
+                                    action={issueReferralCode}
+                                    className="mt-4"
+                                    confirm={a.referral_code ? `Email the code ${a.referral_code} to ${a.email} again?` : `Make a referral code for ${a.full_name} and email it to ${a.email}?`}
+                                >
+                                    <input type="hidden" name="id" value={a.id} />
+                                    <Submit tone={a.referral_code ? "quiet" : "primary"}>{a.referral_code ? "Email the code again" : "Issue referral code"}</Submit>
+                                </ActionForm>
+                            )}
+                        </section>
+                    )}
                     {can(admin.role, "applications.edit") ? (
                         <section aria-labelledby="update" className="border-[5px] border-double border-ink bg-white px-6 py-6">
                             <h2 id="update" className="font-display text-lg font-[650]">Update</h2>

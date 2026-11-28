@@ -6,10 +6,11 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { refresh } from "next/cache";
 import { authClient, authorise, getAdmin } from "@/lib/auth";
-import { audit, db, dbConfigured, type RegistrationRow } from "@/lib/db";
+import { audit, db, dbConfigured, type ApplicationRow, type RegistrationRow } from "@/lib/db";
 import { APPLICATION_STATUSES, isRole, MESSAGE_STATUSES, REGISTRATION_STATUSES, ROLE_LABELS } from "@/lib/permissions";
 import { clientIpFrom, rateLimiter } from "@/lib/request-guard";
 import { awaitingPaymentEmail, paymentEmailCounts } from "@/lib/admin-data";
+import { AMBASSADOR_CONDITION, AMBASSADOR_REWARDS } from "@/lib/application";
 import { getConference, type ConferenceContent } from "@/lib/site-content";
 import { site } from "@/lib/site";
 import { mailConfigured, mailFrom, zeptoConfigured, sendApplicationReply, sendMessageReply, sendPaymentEmail, sendRegistrationEmail, sendSeatConfirmedEmail } from "@/lib/zoho-mail";
@@ -410,6 +411,56 @@ export async function confirmSeats(_: FormState, form: FormData): Promise<FormSt
     if (failedRefs.length) parts.push(`Couldn’t email ${failedRefs.join(", ")}, so they weren’t confirmed; try them again.`);
     if (stopped) parts.push(stopped);
     return failedRefs.length && !sent ? { error: parts.join(" ") } : { ok: parts.join(" ") };
+}
+
+// Campus ambassador referral codes ----------------------------------------------------------------
+
+/** "Issue referral code" on a campus ambassador's application: makes a unique code (once) and emails it. */
+export async function issueReferralCode(_: FormState, form: FormData): Promise<FormState> {
+    const auth = await authorise("applications.edit");
+    if (auth.error !== undefined) return { error: auth.error };
+    const admin = auth.admin;
+    if (!mailConfigured()) return { error: "Email sending isn’t set up." };
+    const id = str(form, "id", 64);
+    const { data: a } = await db().from("applications").select("id, role, full_name, email, created_at, referral_code").eq("id", id).maybeSingle<Pick<ApplicationRow, "id" | "role" | "full_name" | "email" | "created_at" | "referral_code">>();
+    if (!a) return { error: "That application no longer exists." };
+    if (a.role !== "ambassador") return { error: "Referral codes are only for campus ambassadors." };
+
+    let code = a.referral_code;
+    if (!code) {
+        const alphabet = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
+        for (let attempt = 0; attempt < 5 && !code; attempt++) {
+            const candidate = "IYS-" + Array.from({ length: 6 }, () => alphabet[randomInt(alphabet.length)]).join("");
+            const { error } = await db().from("applications").update({ referral_code: candidate, referral_code_issued_at: new Date().toISOString() }).eq("id", id).is("referral_code", null);
+            if (!error) {
+                const { data: saved } = await db().from("applications").select("referral_code").eq("id", id).maybeSingle<{ referral_code: string | null }>();
+                code = saved?.referral_code ?? null;
+            } else if (error.code !== "23505") return failed("Issuing the code", error);
+        }
+        if (!code) return { error: "A unique code couldn’t be made. Try again." };
+    }
+
+    const body = [
+        `Congratulations, you’re a campus ambassador for the International Youth Summit 2026.`,
+        ``,
+        `Your referral code: ${code}`,
+        ``,
+        `Share it with students at your college. Anyone who registers and enters your code in their payment form gets 10% off their delegate fee.`,
+        ``,
+        `Your rewards, by delegates who register with your code and complete payment:`,
+        ...AMBASSADOR_REWARDS.slice(1).map((r) => `- ${r}`),
+        ``,
+        AMBASSADOR_CONDITION,
+    ].join("\n");
+    try {
+        await sendApplicationReply({ to: a.email, role: a.role, body, signedBy: admin.name || admin.email, appliedAt: a.created_at });
+    } catch (err) {
+        console.error("Referral code email failed for", id, err);
+        return { error: `The code ${code} is saved, but the email couldn’t be sent. Try again in a minute.` };
+    }
+    await audit(admin, "application.referral_code", "application", id, { code });
+    refresh();
+    return { ok: `Code ${code} emailed to ${a.email}.` };
 }
 
 // Internship applications ---------------------------------------------------------------------

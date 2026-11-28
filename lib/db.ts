@@ -87,6 +87,8 @@ export interface RegistrationRow {
     payment_payer_name: string;
     payment_proof_path: string | null;
     payment_proof_type: string | null;
+    /** Campus ambassador code entered on the payment form (supabase/migrations/0010_referral_codes.sql). */
+    referral_code: string | null;
 }
 
 export interface ContactMessageRow {
@@ -138,6 +140,13 @@ export interface ApplicationRow {
     status: string;
     notes: string;
     email_sent_at: string | null;
+    /** Campus ambassadors only: their referral code, once issued. */
+    referral_code: string | null;
+    referral_code_issued_at: string | null;
+    /** Under-18 campus ambassadors only. */
+    guardian_name: string;
+    guardian_email: string;
+    guardian_consent_text: string;
 }
 
 export interface AdminRow {

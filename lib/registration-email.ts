@@ -1,4 +1,5 @@
 import { conference } from "@/lib/conference";
+import { discountedFee } from "@/lib/payment";
 import { site } from "@/lib/site";
 
 /**
@@ -277,7 +278,14 @@ export function paymentEmailHtml(r: PaymentEmail): string {
                     </table>
                     <div style="padding-top:10px;font-family:${SERIF};font-size:14px;line-height:1.6;color:${C.faint};">
                       Add your registration number, ${ref}, in the payment note or remarks if your app allows it.
-                    </div>
+                    </div>${
+                        r.fees.length === 1
+                            ? `
+                    <div style="margin-top:14px;border-left:3px solid ${C.signal};background-color:${C.paper};padding:12px 16px;font-family:${SERIF};font-size:15px;line-height:1.6;color:${C.ink};">
+                      <strong style="font-family:${SANS};">Referred by a campus ambassador?</strong> You get 10% off: pay ${rupees(discountedFee(r.fees[0].amount))} instead of ${rupees(r.fees[0].amount)}, and enter their unique code (for example <span style="white-space:nowrap;">IYS-7KQ3XM</span>) in the payment form.
+                    </div>`
+                            : ""
+                    }
                   </td>
                 </tr>
 

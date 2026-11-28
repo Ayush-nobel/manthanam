@@ -28,16 +28,25 @@ export const AMBASSADOR_REWARDS = [
     "80 delegates: your seat is free",
 ] as const;
 export const AMBASSADOR_CONDITION = "Only delegates who have completed payment count towards your total.";
+/** The reward an ambassador has reached with this many paid delegates (thresholds as announced). */
+export function ambassadorReward(paid: number): string {
+    if (paid >= 80) return "Free seat";
+    if (paid >= 40) return "50% off their fee";
+    if (paid >= 10) return "20% off their fee";
+    return `No reward yet (${10 - paid} more paid delegate${10 - paid === 1 ? "" : "s"} for 20% off)`;
+}
 
-export const PERKS = ["A certificate of internship", "A letter of recommendation", "A place at the BRICS India Youth Conference 2026"] as const;
+export const PERKS = ["A certificate of internship", "A letter of recommendation", "A place at the International Youth Summit 2026"] as const;
 
 // Consent wording, stored with every application (DPDP Act s.6). If you change it, bump the version
 // to the Privacy Policy's "updated" date.
-export const APPLICATION_PRIVACY_VERSION = "2026-11-14";
+export const APPLICATION_PRIVACY_VERSION = "2026-11-28";
 export const APPLICATION_CONSENT_TEXT = `I agree that ${site.legal.name} may use the details in this form to consider my application and to contact me about it, as described in the Privacy Policy. I can withdraw my consent at any time.`;
 export const ADULT_TEXT = "I am 18 or older.";
+export const AMBASSADOR_GUARDIAN_CONSENT_TEXT =
+    "I am the parent or legal guardian of the applicant, who is under 18. I consent to Manthanam using their details to consider this application and to run the campus ambassador programme with them, and to contacting me about it.";
 
-export const APPLICATION_FIELDS = ["role", "fullName", "email", "phone", "organisation", "city", "motivation", "portfolio", "adult", "consent"] as const;
+export const APPLICATION_FIELDS = ["role", "fullName", "email", "phone", "organisation", "city", "motivation", "portfolio", "adult", "guardianName", "guardianEmail", "guardianConsent", "consent"] as const;
 export type ApplicationField = (typeof APPLICATION_FIELDS)[number];
 export type ApplicationValues = Record<ApplicationField, string>;
 export type ApplicationErrors = Partial<Record<ApplicationField, string>>;
@@ -50,12 +59,15 @@ export const APPLICATION_LIMITS: Partial<Record<ApplicationField, number>> = {
     organisation: 150,
     motivation: 1500,
     portfolio: 300,
+    guardianName: 100,
+    guardianEmail: 254,
 };
 
 const s = (v: unknown) => (typeof v === "string" ? v.trim() : "");
 export function cleanApplication(raw: Record<string, unknown>): ApplicationValues {
     const out = Object.fromEntries(APPLICATION_FIELDS.map((f) => [f, s(raw[f])])) as ApplicationValues;
     out.email = out.email.toLowerCase();
+    out.guardianEmail = out.guardianEmail.toLowerCase();
     return out;
 }
 
@@ -74,7 +86,16 @@ export function validateApplication(v: ApplicationValues): ApplicationErrors {
     if (v.portfolio && !/^https?:\/\/[^\s]+\.[^\s]+$/i.test(v.portfolio)) e.portfolio = "Enter a full link starting with https://, or leave it empty.";
     for (const [f, max] of Object.entries(APPLICATION_LIMITS) as [ApplicationField, number][])
         if (v[f].length > max) e[f] = `Please keep this under ${max.toLocaleString("en-IN")} characters.`;
-    if (v.adult !== "yes") e.adult = isAmbassador(v.role) ? "Campus ambassadors must be 18 or over." : "These internships are for people aged 18 or over.";
+    if (isAmbassador(v.role)) {
+        // Under-18 ambassadors are welcome with a parent or guardian's consent (DPDP Act s.9).
+        if (v.adult !== "yes") {
+            if (!v.guardianName) e.guardianName = "Enter your parent or guardian’s full name.";
+            if (!v.guardianEmail) e.guardianEmail = "Enter your parent or guardian’s email address.";
+            else if (!EMAIL_ADDRESS.test(v.guardianEmail)) e.guardianEmail = "Enter an email address like name@example.com.";
+            else if (v.guardianEmail.toLowerCase() === v.email.toLowerCase()) e.guardianEmail = "Use your parent or guardian’s own email address, not yours.";
+            if (v.guardianConsent !== "yes") e.guardianConsent = "Your parent or guardian must tick this box to give consent.";
+        }
+    } else if (v.adult !== "yes") e.adult = "These internships are for people aged 18 or over.";
     if (v.consent !== "yes") e.consent = "Please tick this box so we can consider your application.";
     return e;
 }

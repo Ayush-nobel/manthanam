@@ -51,7 +51,7 @@ export interface PastEvent {
 // (including phone GPS locations) was stripped when they were exported for the web.
 export const upcoming: UpcomingEvent[] = [
     {
-        title: "BRICS India Youth Conference 2026",
+        title: "International Youth Summit 2026",
         date: "2026-12-19",
         previousDate: "2026-11-03",
         place: "New Delhi",
@@ -68,7 +68,7 @@ export const past: PastEvent[] = [
         date: "2026-10-23",
         place: "New Delhi",
         theme: "Youth-led Impact and Innovation, powered by AI",
-        body: "Hosted by HELPSTiR as the official pre-event of the BRICS India Youth Conference 2026, which Manthanam is organising. The day opened with the lighting of the lamp and ran through a panel discussion, a publication release, and a courtyard of stalls, crafts and conversation.",
+        body: "Hosted by HELPSTiR as the official pre-event of the International Youth Summit 2026, which Manthanam is organising. The day opened with the lighting of the lamp and ran through a panel discussion, a publication release, and a courtyard of stalls, crafts and conversation.",
         credit: "Photographs: HELPSTiR",
         photos: [
             { src: p01, alt: "Panellists in conversation on stage", span: "lead" },

@@ -63,8 +63,8 @@ export default async function RegisterPage() {
                             src={conferenceLogo}
                             alt="International Youth Summit 2026 logo"
                             priority
-                            sizes="(min-width: 1024px) 15rem, 8rem"
-                            className="order-1 h-auto w-32 shrink-0 sm:w-40 lg:order-2 lg:w-60"
+                            sizes="(min-width: 1024px) 26rem, 18rem"
+                            className="order-1 h-auto w-56 shrink-0 sm:w-72 lg:order-2 lg:w-[26rem]"
                         />
                     </div>
                 </div>
@@ -214,7 +214,7 @@ export default async function RegisterPage() {
                                 The day.
                             </h2>
                             <p className="mt-6 max-w-[24rem] text-lg text-muted-ink">
-                                Saturday, 19 December. Five panels, then the Youth Roundtable, where delegates draft the BIYC 2026 Youth Declaration. Timings are
+                                Saturday, 19 December. Five panels, then the Youth Roundtable, where delegates draft the IYS 2026 Youth Declaration. Timings are
                                 indicative.
                             </p>
                         </div>

@@ -9,7 +9,7 @@ const SERIF = "Georgia, 'Times New Roman', serif";
 
 export const applicationEmailSubject = (role: string) => `We’ve received your application: ${roleTitle(role)} at Manthanam`;
 
-export function applicationEmailHtml(a: { name: string; role: string }): string {
+export function applicationEmailHtml(a: { name: string; role: string; code?: string | null }): string {
     const role = esc(roleTitle(a.role));
     const amb = isAmbassador(a.role);
     return `<!DOCTYPE html>
@@ -24,6 +24,8 @@ export function applicationEmailHtml(a: { name: string; role: string }): string 
           <tr><td style="padding-bottom:24px;"><img src="${site.url}/email/manthanam-wordmark.png" width="140" height="35" alt="Manthanam" style="display:block;width:140px;height:auto;border:0;font-family:${SANS};font-weight:bold;letter-spacing:0.2em;color:#10264a;"></td></tr>
           <tr><td style="font-family:${SANS};font-size:26px;line-height:1.25;font-weight:bold;color:#10264a;">Thank you for applying.</td></tr>
           <tr><td style="padding-top:14px;font-family:${SERIF};font-size:17px;line-height:1.65;color:#46566c;">Dear ${esc(a.name)}, we’ve received your application for the <strong style="color:#10264a;">${role}</strong> role.</td></tr>
+          ${amb && a.code ? `<tr><td align="center" style="padding-top:24px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border:4px double #10264a;"><tr><td align="center" style="padding:16px 22px;"><div style="font-family:${SERIF};font-size:14px;font-style:italic;color:#53627a;">Your referral code</div><div style="padding-top:6px;font-family:${SANS};font-size:26px;font-weight:bold;letter-spacing:0.08em;white-space:nowrap;color:#a0145c;">${esc(a.code)}</div></td></tr></table></td></tr>
+          <tr><td style="padding-top:12px;font-family:${SERIF};font-size:15px;line-height:1.6;color:#46566c;text-align:center;">Share it with students at your college: anyone who enters it in their payment form gets 10% off.</td></tr>` : ""}
           <tr><td style="padding-top:24px;">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:4px double #10264a;"><tr><td style="padding:18px 20px;font-family:${SERIF};font-size:16px;line-height:1.65;color:#10264a;">
               <strong style="font-family:${SANS};">What happens next</strong><br>
@@ -31,7 +33,7 @@ export function applicationEmailHtml(a: { name: string; role: string }): string 
             </td></tr></table>
           </td></tr>
           <tr><td style="padding-top:24px;font-family:${SERIF};font-size:16px;line-height:1.65;color:#10264a;">
-            ${amb ? `Campus ambassador rewards:<br>${AMBASSADOR_REWARDS.map((p) => `&bull; ${esc(p)}`).join("<br>")}<br><em>${esc(AMBASSADOR_CONDITION)}</em><br>If you are selected, we will email you your referral code.` : `Interns receive:<br>${PERKS.map((p) => `&bull; ${esc(p)}`).join("<br>")}`}
+            ${amb ? `Campus ambassador rewards:<br>${AMBASSADOR_REWARDS.map((p) => `&bull; ${esc(p)}`).join("<br>")}<br><em>${esc(AMBASSADOR_CONDITION)}</em>` : `Interns receive:<br>${PERKS.map((p) => `&bull; ${esc(p)}`).join("<br>")}`}
           </td></tr>
           <tr><td style="padding-top:24px;font-family:${SERIF};font-size:16px;line-height:1.65;color:#10264a;">Any questions? Just reply to this email.<br><br>Warm regards,<br><strong style="font-family:${SANS};">Manthanam Research Foundation</strong></td></tr>
         </table>

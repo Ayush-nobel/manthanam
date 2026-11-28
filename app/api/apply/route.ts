@@ -1,4 +1,5 @@
-import { APPLICATION_CONSENT_TEXT, APPLICATION_PRIVACY_VERSION, cleanApplication, validateApplication } from "@/lib/application";
+import { randomInt } from "node:crypto";
+import { AMBASSADOR_GUARDIAN_CONSENT_TEXT, APPLICATION_CONSENT_TEXT, APPLICATION_PRIVACY_VERSION, cleanApplication, isAmbassador, validateApplication } from "@/lib/application";
 import { audit, db, dbConfigured } from "@/lib/db";
 import { clientIp, fromThisSite, rateLimiter, readJson } from "@/lib/request-guard";
 import { mailConfigured, sendApplicationEmail } from "@/lib/zoho-mail";
@@ -26,7 +27,12 @@ export async function POST(request: Request) {
     if (Object.keys(errors).length) return json({ errors }, 422);
     if (!dbConfigured()) return json({ error: "Applications aren’t open on the website yet." }, 503);
 
-    const { data, error } = await db()
+    // Campus ambassadors get their referral code the moment they apply.
+    const amb = isAmbassador(v.role);
+    const minor = amb && v.adult !== "yes";
+    const newCode = () => "IYS-" + Array.from({ length: 6 }, () => "23456789ABCDEFGHJKMNPQRSTUVWXYZ"[randomInt(31)]).join("");
+    let code = amb ? newCode() : null;
+    const insert = () => db()
         .from("applications")
         .insert({
             full_name: v.fullName,
@@ -37,29 +43,39 @@ export async function POST(request: Request) {
             role: v.role,
             motivation: v.motivation,
             portfolio: v.portfolio,
-            adult_confirmed: true,
+            adult_confirmed: !minor,
+            guardian_name: minor ? v.guardianName : "",
+            guardian_email: minor ? v.guardianEmail : "",
+            guardian_consent_text: minor ? AMBASSADOR_GUARDIAN_CONSENT_TEXT : "",
             consent_text: APPLICATION_CONSENT_TEXT,
             privacy_policy_version: APPLICATION_PRIVACY_VERSION,
+            ...(code ? { referral_code: code, referral_code_issued_at: new Date().toISOString() } : {}),
         })
         .select("id")
         .single();
+    let { data, error } = await insert();
+    // A clash on the referral code (1 in ~900 million) just gets a new code.
+    for (let attempt = 0; code && error?.code === "23505" && /referral/.test(error.message + (error.details ?? "")) && attempt < 3; attempt++) {
+        code = newCode();
+        ({ data, error } = await insert());
+    }
     if (error?.code === "23505") return json({ errors: { role: "You’ve already applied for this role with this email address. To update your application, email us." } }, 409);
     if (error) {
         console.error("Application not saved:", error.message);
         return json({ error: "We couldn’t save your application right now." }, 502);
     }
-    const id = data.id as string;
+    const id = data!.id as string;
     await audit(null, "application.create", "application", id, { role: v.role });
 
     let emailed = false;
     if (mailConfigured()) {
         try {
-            await sendApplicationEmail({ name: v.fullName, email: v.email, role: v.role });
+            await sendApplicationEmail({ name: v.fullName, email: v.email, role: v.role, code, guardianEmail: minor ? v.guardianEmail : undefined });
             emailed = true;
             await db().from("applications").update({ email_sent_at: new Date().toISOString() }).eq("id", id);
         } catch (err) {
             console.error("Application email not sent:", err);
         }
     }
-    return json({ ok: true, emailed });
+    return json({ ok: true, emailed, code });
 }

@@ -29,7 +29,7 @@ export default function JoinPage() {
                         Join Manthanam’s marketing team.
                     </h1>
                     <p className="mt-6 max-w-[40rem] text-lg text-muted-ink">
-                        On 19 December we host the BRICS India Youth Conference 2026 in New Delhi. We need people who can get the country talking about it, and about
+                        On 19 December we host the International Youth Summit 2026 in New Delhi. We need people who can get the country talking about it, and about
                         everything Manthanam does after it.
                     </p>
                 </div>

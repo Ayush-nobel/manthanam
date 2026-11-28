@@ -65,6 +65,7 @@ export default async function RegistrationPage({ params }: PageProps<"/admin/reg
                     ? ([
                           ["Proof received", when(r.payment_submitted_at)],
                           ["Transaction ID", <span key="t" className="font-mono select-all">{r.payment_reference}</span>],
+                          ["Campus ambassador code", r.referral_code ? <span key="rc" className="font-mono">{r.referral_code} (pays 10% less)</span> : "None"],
                           ["Amount", r.payment_amount !== null ? `₹${r.payment_amount.toLocaleString("en-IN")}` : "—"],
                           ["Paid on", r.payment_paid_on ? day(r.payment_paid_on) : "—"],
                           ...(r.payment_payer_name ? [["Paid by", r.payment_payer_name] as [string, React.ReactNode]] : []),

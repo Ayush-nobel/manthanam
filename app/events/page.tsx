@@ -12,7 +12,7 @@ import { site } from "@/lib/site";
 export const metadata: Metadata = {
     title: "Events — Manthanam",
     description:
-        "Manthanam's events: the BRICS India Youth Conference 2026 in New Delhi on 19 December, and photographs from Impact Stir 26, its official pre-event.",
+        "Manthanam's events: the International Youth Summit 2026 in New Delhi on 19 December, and photographs from Impact Stir 26, its official pre-event.",
     alternates: { canonical: "/events" },
 };
 

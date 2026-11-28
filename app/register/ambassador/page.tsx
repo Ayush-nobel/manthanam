@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 // What happens after applying: a real sequence, so it is numbered.
 const STEPS = [
     { title: "Apply", body: "Fill in the form below. It takes about three minutes." },
-    { title: "Get your code", body: "If you’re selected, we email you your personal referral code." },
+    { title: "Get your code", body: "Your personal referral code appears as soon as you apply, and we email it to you too." },
     { title: "Share it", body: "Anyone who registers with your code gets 10% off their delegate fee." },
     { title: "Earn your reward", body: "Your reward grows with the delegates who register with your code and complete payment." },
 ];
@@ -73,7 +73,7 @@ export default function AmbassadorPage() {
                         <h2 id="apply-title" className="sr-only">
                             Campus ambassador application
                         </h2>
-                        <p className="mb-12 max-w-[36rem] text-lg text-muted-ink">Everything is required unless it says optional. You must be 18 or older.</p>
+                        <p className="mb-12 max-w-[36rem] text-lg text-muted-ink">Everything is required unless it says optional. Under 18? You can apply with a parent or guardian’s consent.</p>
                         <ApplicationForm fixedRole={AMBASSADOR_ROLE.id} />
                     </div>
                 </section>

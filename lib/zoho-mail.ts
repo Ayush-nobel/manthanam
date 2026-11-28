@@ -216,8 +216,8 @@ export async function sendSeatConfirmedEmail(r: SeatConfirmedEmail & { email: st
 }
 
 /** "We've received your application" email to an internship applicant. */
-export async function sendApplicationEmail(a: { name: string; email: string; role: string }) {
-    await send(a.email, undefined, applicationEmailSubject(a.role), applicationEmailHtml(a));
+export async function sendApplicationEmail(a: { name: string; email: string; role: string; code?: string | null; guardianEmail?: string }) {
+    await send(a.email, a.guardianEmail, applicationEmailSubject(a.role), applicationEmailHtml(a));
 }
 
 const esc = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");

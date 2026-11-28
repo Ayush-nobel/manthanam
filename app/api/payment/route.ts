@@ -1,5 +1,5 @@
 import { audit, db, dbConfigured } from "@/lib/db";
-import { cleanReference, MAX_PROOF_BYTES, parseAmount, PAYMENT_TOKEN, PROOF_BUCKET, PROOF_TYPES, sniffProof, validatePayment, type PaymentErrors, type PaymentValues } from "@/lib/payment";
+import { cleanReference, MAX_PROOF_BYTES, normaliseReferral, parseAmount, PAYMENT_TOKEN, PROOF_BUCKET, PROOF_TYPES, sniffProof, validatePayment, type PaymentErrors, type PaymentValues } from "@/lib/payment";
 import { clientIp, fromThisSite, rateLimiter } from "@/lib/request-guard";
 import { site } from "@/lib/site";
 import { mailConfigured, sendPaymentReceivedEmail } from "@/lib/zoho-mail";
@@ -56,8 +56,18 @@ export async function POST(request: Request) {
     if (r.status === "cancelled" || r.status === "refunded") return json({ error: "This registration has been cancelled, so no payment is needed. Reply to the payment email if that’s a mistake." }, 409);
     if (r.status === "paid" || r.status === "confirmed") return json({ error: "We’ve already received and checked your payment. Nothing more is needed." }, 409);
 
-    const values: PaymentValues = { reference: field("reference", 60), amount: field("amount", 20), paidOn: field("paidOn", 10), payerName: field("payerName", 120) };
+    const values: PaymentValues = { reference: field("reference", 60), amount: field("amount", 20), paidOn: field("paidOn", 10), payerName: field("payerName", 120), referralCode: field("referralCode", 20) };
     const errors: PaymentErrors = validatePayment(values);
+    // A referral code must belong to a campus ambassador who has been issued one.
+    const referral = normaliseReferral(values.referralCode);
+    if (referral && !errors.referralCode) {
+        const { data: amb, error: ambError } = await db().from("applications").select("id").eq("role", "ambassador").eq("referral_code", referral).maybeSingle();
+        if (ambError) {
+            console.error("Referral lookup failed:", ambError.message);
+            return json({ error: "We couldn’t check the referral code right now. Please try again in a minute." }, 502);
+        }
+        if (!amb) errors.referralCode = "We don’t recognise this code. Check it with your campus ambassador, or leave it empty.";
+    }
 
     const file = form.get("proof");
     let bytes: Uint8Array | null = null;
@@ -87,6 +97,7 @@ export async function POST(request: Request) {
             payment_amount: parseAmount(values.amount),
             payment_paid_on: values.paidOn,
             payment_payer_name: values.payerName,
+            referral_code: referral || null,
             payment_proof_path: path,
             payment_proof_type: type,
             ...(r.status === "new" ? { status: "payment_pending" } : {}),

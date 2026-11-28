@@ -1,5 +1,5 @@
 /**
- * BRICS India Youth Conference 2026: the facts the registration page shows.
+ * International Youth Summit 2026: the facts the registration page shows.
  * Only facts confirmed by Manthanam. Anything still undecided is `null` and the page says
  * "to be announced" in its place — fill these in and the page updates itself.
  */
@@ -14,10 +14,10 @@ export interface FeeRow {
 }
 
 export const conference = {
-    title: "BRICS India Youth Conference 2026",
-    shortTitle: "BRICS India Youth Conference",
-    /** Registration reference prefix, e.g. BIYC26-7KQ3XM. */
-    refPrefix: "BIYC26",
+    title: "International Youth Summit 2026",
+    shortTitle: "International Youth Summit",
+    /** Registration reference prefix, e.g. IYS26-7KQ3XM. */
+    refPrefix: "IYS26",
     date: "2026-12-19",
     previousDate: "2026-11-03",
     place: "New Delhi",
@@ -48,13 +48,13 @@ export const conference = {
     /** What the delegate fee covers, as confirmed by Manthanam. */
     included: [
         "Full-day access to all five panels and the Youth Roundtable",
-        "A place in a working group, and credit in the BIYC 2026 Youth Declaration",
+        "A place in a working group, and credit in the IYS 2026 Youth Declaration",
         "Lunch, high tea and a delegate kit",
         "A certificate of participation",
         "The BRICS cultural evening",
     ],
     independence:
-        "BRICS India Youth Conference 2026 is an independent, youth-led conference organised by Manthanam Research Foundation. It is not part of the official BRICS 2026 calendar of the Government of India.",
+        "International Youth Summit 2026 is an independent, youth-led conference organised by Manthanam Research Foundation. It is not part of the official BRICS 2026 calendar of the Government of India.",
 } as const;
 
 /** Thematic pillars (sponsorship brochure, November 2026). */
@@ -79,7 +79,7 @@ export const AGENDA: { time: string; title: string; detail?: string }[] = [
     { time: "3:15 pm", title: "BRICS high tea and networking" },
     { time: "3:45 pm", title: "Panel V: Sustainability and human development", detail: "Building Resilient Societies for the Next Generation" },
     { time: "4:45 pm", title: "Youth Roundtable", detail: "Youth 2040: What Should BRICS Look Like? Five working groups draft recommendations." },
-    { time: "5:30 pm", title: "BIYC 2026 Youth Declaration", detail: "Youth representatives present the consolidated recommendations." },
+    { time: "5:30 pm", title: "IYS 2026 Youth Declaration", detail: "Youth representatives present the consolidated recommendations." },
     { time: "6:00 pm", title: "Valedictory ceremony and group photograph" },
     { time: "7:00 pm", title: "BRICS cultural evening" },
 ];
@@ -135,7 +135,7 @@ export const FAQS: { q: string; a: string }[] = [
     },
     {
         q: "How much does it cost, and what does that include?",
-        a: "₹2,000 for every delegate. It covers the full day (all five panels and the Youth Roundtable), a place in a working group with credit in the BIYC 2026 Youth Declaration, lunch, high tea, a delegate kit, a certificate of participation, and the BRICS cultural evening.",
+        a: "₹2,000 for every delegate. It covers the full day (all five panels and the Youth Roundtable), a place in a working group with credit in the IYS 2026 Youth Declaration, lunch, high tea, a delegate kit, a certificate of participation, and the BRICS cultural evening.",
     },
     {
         q: "How do I pay?",

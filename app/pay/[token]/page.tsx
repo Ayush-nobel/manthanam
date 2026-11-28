@@ -6,7 +6,7 @@ import SiteFooter from "@/components/site-footer";
 import SiteHeader from "@/components/site-header";
 import { conference } from "@/lib/conference";
 import { db, dbConfigured } from "@/lib/db";
-import { PAYMENT_TOKEN, todayIST } from "@/lib/payment";
+import { discountedFee, PAYMENT_TOKEN, todayIST } from "@/lib/payment";
 import { getConference } from "@/lib/site-content";
 import { site } from "@/lib/site";
 
@@ -130,11 +130,17 @@ async function Payment({ params }: { params: PageProps<"/pay/[token]">["params"]
                     <p className="mt-3 text-base text-muted-ink">
                         Add {r.reference} in the payment note if your app allows it. Manthanam will never ask for your UPI PIN, OTP or card details.
                     </p>
+                    {single && (
+                        <p className="mt-4 border-l-[3px] border-signal bg-white px-4 py-3 text-base text-ink">
+                            Referred by a campus ambassador? Pay <strong>₹{discountedFee(single.amount).toLocaleString("en-IN")}</strong> instead of ₹
+                            {single.amount.toLocaleString("en-IN")}, and enter their code in the form below.
+                        </p>
+                    )}
                 </section>
             )}
 
             <div className="mt-16">
-                <PaymentForm token={token} suggestedAmount={single?.amount ?? null} resubmit={!!r.payment_submitted_at} today={todayIST()} />
+                <PaymentForm token={token} suggestedAmount={single?.amount ?? null} discountedAmount={single ? discountedFee(single.amount) : null} resubmit={!!r.payment_submitted_at} today={todayIST()} />
             </div>
         </>
     );

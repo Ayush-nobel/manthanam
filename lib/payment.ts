@@ -20,7 +20,20 @@ export interface PaymentValues {
     amount: string;
     paidOn: string;
     payerName: string;
+    /** A campus ambassador's referral code, if they came through one (optional). */
+    referralCode: string;
 }
+
+/** Campus ambassador referral codes, e.g. IYS-7KQ3XM (issued in /admin/applications). */
+export const REFERRAL_CODE = /^IYS-[A-Z0-9]{6}$/;
+/** "iys 7kq3xm", "7KQ3XM" and "IYS-7KQ3XM" all become IYS-7KQ3XM; empty stays empty. */
+export function normaliseReferral(s: string): string {
+    const t = s.toUpperCase().replace(/[^A-Z0-9]/g, "");
+    if (!t) return "";
+    return `IYS-${t.startsWith("IYS") ? t.slice(3) : t}`;
+}
+/** Delegates who register through a campus ambassador pay 10% less. */
+export const discountedFee = (fee: number) => Math.round(fee * 0.9);
 export type PaymentErrors = Partial<Record<keyof PaymentValues | "proof", string>>;
 
 const ISO = /^\d{4}-\d{2}-\d{2}$/;
@@ -49,6 +62,7 @@ export function validatePayment(v: PaymentValues): PaymentErrors {
     else if (v.paidOn < "2026-10-01") e.paidOn = "Check the date: it’s before registration opened.";
 
     if (v.payerName.length > 100) e.payerName = "Keep this under 100 characters.";
+    if (v.referralCode && !REFERRAL_CODE.test(normaliseReferral(v.referralCode))) e.referralCode = "Enter the code exactly as your campus ambassador gave it, like IYS-7KQ3XM, or leave it empty.";
     return e;
 }
 

@@ -6,8 +6,9 @@ import { isProofType, MAX_PROOF_BYTES, validatePayment, type PaymentErrors, type
 import { site } from "@/lib/site";
 
 type Field = keyof PaymentErrors;
-const ORDER: Field[] = ["reference", "amount", "paidOn", "payerName", "proof"];
+const ORDER: Field[] = ["referralCode", "reference", "amount", "paidOn", "payerName", "proof"];
 const NAMES: Record<Field, string> = {
+    referralCode: "Campus ambassador code",
     reference: "Transaction ID",
     amount: "Amount paid",
     paidOn: "Date paid",
@@ -47,7 +48,20 @@ async function shrink(file: File): Promise<File | null> {
 }
 
 /** `today` (YYYY-MM-DD, India) comes from the server, which renders this page per request. */
-export default function PaymentForm({ token, suggestedAmount, resubmit, today }: { token: string; suggestedAmount: number | null; resubmit: boolean; today: string }) {
+export default function PaymentForm({
+    token,
+    suggestedAmount,
+    discountedAmount,
+    resubmit,
+    today,
+}: {
+    token: string;
+    suggestedAmount: number | null;
+    /** The fee with the campus ambassador discount, when there is a single fee. */
+    discountedAmount: number | null;
+    resubmit: boolean;
+    today: string;
+}) {
     const uid = useId();
     const id = (f: string) => `${uid}-${f}`;
     const [errors, setErrors] = useState<PaymentErrors>({});
@@ -131,6 +145,7 @@ export default function PaymentForm({ token, suggestedAmount, resubmit, today }:
             amount: String(data.get("amount") ?? "").trim(),
             paidOn: String(data.get("paidOn") ?? "").trim(),
             payerName: String(data.get("payerName") ?? "").trim(),
+            referralCode: String(data.get("referralCode") ?? "").trim(),
         };
         const found = validatePayment(values);
         if (!file) found.proof = errors.proof ?? "Choose the screenshot of your payment.";
@@ -223,6 +238,31 @@ export default function PaymentForm({ token, suggestedAmount, resubmit, today }:
                     {resubmit ? "Upload a new screenshot" : "Your payment"}
                 </legend>
                 <div className="mt-8 grid gap-x-10 gap-y-9 sm:grid-cols-2">
+                    <div className="sm:col-span-2">
+                        <label htmlFor={id("referralCode")} className="text-sm font-medium text-ink">
+                            Campus ambassador code <span className="font-normal text-faint">(only if a campus ambassador referred you)</span>
+                        </label>
+                        <input
+                            id={id("referralCode")}
+                            name="referralCode"
+                            autoComplete="off"
+                            autoCapitalize="characters"
+                            spellCheck={false}
+                            maxLength={20}
+                            placeholder="IYS-"
+                            disabled={busy}
+                            aria-invalid={!!errors.referralCode}
+                            aria-describedby={described("referralCode", true)}
+                            onChange={() => clear("referralCode")}
+                            className={`${inputBase} ${border("referralCode")} font-mono tracking-[0.06em] uppercase`}
+                        />
+                        <p id={id("referralCode-hint")} className="mt-2 text-sm text-faint">
+                            {discountedAmount
+                                ? `With a valid code you pay 10% less: ₹${discountedAmount.toLocaleString("en-IN")} instead of ₹${suggestedAmount?.toLocaleString("en-IN")}.`
+                                : "With a valid code you pay 10% less."}
+                        </p>
+                        {errText("referralCode")}
+                    </div>
                     <div className="sm:col-span-2">
                         <label htmlFor={id("reference")} className="text-sm font-medium text-ink">
                             Transaction ID, UTR or UPI reference

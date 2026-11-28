@@ -131,6 +131,15 @@ export async function listApplications(f: ApplicationFilters, opts: { all?: bool
     return { rows: (data ?? []) as ApplicationRow[], total: total ?? 0 };
 }
 
+/** How a campus ambassador's referral code is doing: delegates who used it, and how many have paid. */
+export async function referralStats(code: string) {
+    const [used, paid] = await Promise.all([
+        db().from("registrations").select("id", { count: "exact", head: true }).eq("referral_code", code),
+        db().from("registrations").select("id", { count: "exact", head: true }).eq("referral_code", code).in("status", ["paid", "confirmed"]),
+    ]);
+    return { used: used.count ?? 0, paid: paid.count ?? 0 };
+}
+
 export async function getApplication(id: string) {
     if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
     const { data } = await db().from("applications").select("*").eq("id", id).maybeSingle<ApplicationRow>();

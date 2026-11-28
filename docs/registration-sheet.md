@@ -16,7 +16,7 @@ and set `ZOHO_DC` to match (`com`, `eu`…).
 ### 1. Create the sheet
 
 1. In Zoho Sheet (sheet.zoho.in), create a spreadsheet called
-   *BRICS India Youth Conference 2026: Registrations*. Share it only with the people who process registrations.
+   *International Youth Summit 2026: Registrations*. Share it only with the people who process registrations.
 2. Rename the first tab (worksheet) to **Registrations**.
 3. Put these column names in **row 1**, one per cell from A1 to X1, spelt exactly like this. The
    website writes into columns by these names, so a typo means that column stays empty.

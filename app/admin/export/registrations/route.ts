@@ -45,6 +45,7 @@ export async function GET(request: Request) {
         ["Amount paid (Rs)", (r) => (r.payment_amount ?? "").toString()],
         ["Paid on", (r) => r.payment_paid_on ?? ""],
         ["Paid by", (r) => r.payment_payer_name ?? ""],
+        ["Campus ambassador code", (r) => r.referral_code ?? ""],
         ["Notes", (r) => r.notes],
         ["Privacy policy version", (r) => r.privacy_policy_version],
     ];
@@ -59,7 +60,7 @@ export async function GET(request: Request) {
     return new Response(csv, {
         headers: {
             "Content-Type": "text/csv; charset=utf-8",
-            "Content-Disposition": `attachment; filename="biyc-2026-registrations-${stamp}.csv"`,
+            "Content-Disposition": `attachment; filename="iys-2026-registrations-${stamp}.csv"`,
             "Cache-Control": "private, no-store",
         },
     });

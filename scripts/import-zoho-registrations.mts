@@ -100,7 +100,7 @@ function submittedAt(v: string): string | null {
 
 function newReference() {
     const alphabet = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
-    return "BIYC26-" + Array.from({ length: 6 }, () => alphabet[randomInt(alphabet.length)]).join("");
+    return "IYS26-" + Array.from({ length: 6 }, () => alphabet[randomInt(alphabet.length)]).join("");
 }
 function ageOn(dob: string, day: string) {
     const [y, m, d] = dob.split("-").map(Number);

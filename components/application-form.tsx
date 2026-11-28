@@ -5,6 +5,7 @@ import Link from "next/link";
 import { LoaderCircle } from "lucide-react";
 import {
     ADULT_TEXT,
+    AMBASSADOR_GUARDIAN_CONSENT_TEXT,
     APPLICATION_FIELDS,
     APPLICATION_LIMITS,
     APPLICATION_ROLES,
@@ -29,6 +30,9 @@ const NAMES: Record<Field, string> = {
     motivation: "Why you",
     portfolio: "Link to your work",
     adult: "Age",
+    guardianName: "Parent or guardian’s name",
+    guardianEmail: "Parent or guardian’s email",
+    guardianConsent: "Parent or guardian’s consent",
     consent: "Consent",
 };
 
@@ -43,7 +47,8 @@ export default function ApplicationForm({ initialRole, fixedRole }: { initialRol
     const [errors, setErrors] = useState<Errors>({});
     const [status, setStatus] = useState<Status>("idle");
     const [failure, setFailure] = useState("");
-    const [done, setDone] = useState<{ role: string; email: string; emailed: boolean } | null>(null);
+    const [done, setDone] = useState<{ role: string; email: string; emailed: boolean; code?: string | null } | null>(null);
+    const [under18, setUnder18] = useState(false);
     const formRef = useRef<HTMLFormElement>(null);
     const summaryRef = useRef<HTMLDivElement>(null);
     const successRef = useRef<HTMLDivElement>(null);
@@ -81,9 +86,9 @@ export default function ApplicationForm({ initialRole, fixedRole }: { initialRol
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ ...values, x_hp_5: data.x_hp_5 ?? "" }),
             });
-            const body = (await res.json().catch(() => null)) as { ok?: boolean; emailed?: boolean; errors?: Errors; error?: string } | null;
+            const body = (await res.json().catch(() => null)) as { ok?: boolean; emailed?: boolean; code?: string | null; errors?: Errors; error?: string } | null;
             if (res.ok && body?.ok) {
-                setDone({ role: values.role, email: values.email, emailed: !!body.emailed });
+                setDone({ role: values.role, email: values.email, emailed: !!body.emailed, code: body.code });
                 setStatus("success");
                 window.scrollTo({ top: (formRef.current?.closest("section")?.offsetTop ?? 0) - 16 });
                 return;
@@ -106,8 +111,14 @@ export default function ApplicationForm({ initialRole, fixedRole }: { initialRol
                 <p className="mt-5 max-w-[34rem] text-lg text-ink">
                     {isAmbassador(done.role) ? (
                         <>
-                            Thank you for applying to be a <strong>campus ambassador</strong>. We read every application, and if you’re selected we’ll email you your
-                            referral code.
+                            Thank you for applying to be a <strong>campus ambassador</strong>.
+                            {done.code && (
+                                <span className="mt-5 block border-[5px] border-double border-ink bg-white px-5 py-4 text-center">
+                                    <span className="block text-sm italic text-muted-ink">Your referral code</span>
+                                    <span className="mt-1 block select-all font-display text-[clamp(1.5rem,5vw,2.25rem)] font-[650] tracking-[0.08em] text-signal">{done.code}</span>
+                                    <span className="mt-2 block text-sm text-muted-ink">Share it: anyone who enters it in their payment form gets 10% off.</span>
+                                </span>
+                            )}
                         </>
                     ) : (
                         <>
@@ -256,9 +267,35 @@ export default function ApplicationForm({ initialRole, fixedRole }: { initialRol
 
             <Group title="Confirm">
                 <div className="grid gap-5 sm:col-span-2">
-                    <Check id={id("adult")} name="adult" error={errors.adult} disabled={submitting} onChange={() => clearError("adult")}>
-                        {ADULT_TEXT}
-                    </Check>
+                    {amb ? (
+                        <fieldset className="grid gap-3">
+                            <legend className="text-sm font-medium text-ink">Your age</legend>
+                            <label className="flex items-center gap-3 text-base text-ink">
+                                <input type="radio" name="adult" value="yes" defaultChecked disabled={submitting} onChange={() => setUnder18(false)} className="size-5 accent-signal" />
+                                I am 18 or older
+                            </label>
+                            <label className="flex items-center gap-3 text-base text-ink">
+                                <input type="radio" name="adult" value="no" disabled={submitting} onChange={() => setUnder18(true)} className="size-5 accent-signal" />
+                                I am under 18
+                            </label>
+                        </fieldset>
+                    ) : (
+                        <Check id={id("adult")} name="adult" error={errors.adult} disabled={submitting} onChange={() => clearError("adult")}>
+                            {ADULT_TEXT}
+                        </Check>
+                    )}
+                    {amb && under18 && (
+                        <div className="grid gap-6 border-l-4 border-signal bg-paper px-5 py-5 sm:grid-cols-2">
+                            <p className="text-base text-ink sm:col-span-2">As you are under 18, your parent or guardian needs to give their details and consent. We’ll copy them on our emails.</p>
+                            {text("guardianName", "Parent or guardian’s full name", { autoComplete: "off", wide: true })}
+                            {text("guardianEmail", "Parent or guardian’s email", { type: "email", inputMode: "email", autoComplete: "off", wide: true })}
+                            <div className="sm:col-span-2">
+                                <Check id={id("guardianConsent")} name="guardianConsent" error={errors.guardianConsent} disabled={submitting} onChange={() => clearError("guardianConsent")}>
+                                    {AMBASSADOR_GUARDIAN_CONSENT_TEXT}
+                                </Check>
+                            </div>
+                        </div>
+                    )}
                     <Check id={id("consent")} name="consent" error={errors.consent} disabled={submitting} onChange={() => clearError("consent")}>
                         I agree that {site.legal.name} may use the details in this form to consider my application and to contact me about it, as described in the{" "}
                         <Link href="/privacy" className="text-ink underline underline-offset-4 hover:text-signal">

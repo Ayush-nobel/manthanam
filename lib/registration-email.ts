@@ -198,6 +198,8 @@ export interface PaymentEmail {
     dueBy: string | null;
     /** The registrant's personal proof-of-payment form, manthanam.in/pay/<token>. */
     link: string;
+    /** A campus ambassador code given at registration: the fee shown is 10% less. */
+    referralCode?: string | null;
 }
 
 export function paymentEmailSubject(r: { reference: string }) {
@@ -216,7 +218,8 @@ export function paymentEmailHtml(r: PaymentEmail): string {
     const ref = esc(r.reference);
     const due = r.dueBy ? longDate(r.dueBy) : null;
     const link = esc(r.link);
-    const fee = r.fees.length === 1 ? rupees(r.fees[0].amount) : null;
+    const ref10 = !!r.referralCode && r.fees.length === 1;
+    const fee = r.fees.length === 1 ? rupees(ref10 ? discountedFee(r.fees[0].amount) : r.fees[0].amount) : null;
     const preheader = `${fee ? `Your delegate fee is ${fee.replace("&#8377;", "Rs ")}. ` : ""}Pay${due ? ` by ${due}` : ""}, then upload your payment screenshot with the link inside.`;
 
     const row = (label: string, value: string) => `
@@ -239,7 +242,12 @@ export function paymentEmailHtml(r: PaymentEmail): string {
                   </td>
                 </tr>`;
 
-    const feeRows = r.fees.map((f) => row(esc(f.category), `${rupees(f.amount)}${f.note ? `<br><span style="font-weight:normal;font-size:14px;color:${C.muted};">${esc(f.note)}</span>` : ""}`)).join("");
+    const feeRows = ref10
+        ? row(
+              "Your fee",
+              `${rupees(discountedFee(r.fees[0].amount))}<br><span style="font-weight:normal;font-size:14px;color:${C.muted};">10% off with campus ambassador code <span style="white-space:nowrap;">${esc(r.referralCode!)}</span> (usual fee ${rupees(r.fees[0].amount)})</span>`,
+          )
+        : r.fees.map((f) => row(esc(f.category), `${rupees(f.amount)}${f.note ? `<br><span style="font-weight:normal;font-size:14px;color:${C.muted};">${esc(f.note)}</span>` : ""}`)).join("");
     const instructions = esc(r.instructions).replace(/\n/g, "<br>");
 
     return frame(paymentEmailSubject(r), preheader, `
@@ -279,7 +287,7 @@ export function paymentEmailHtml(r: PaymentEmail): string {
                     <div style="padding-top:10px;font-family:${SERIF};font-size:14px;line-height:1.6;color:${C.faint};">
                       Add your registration number, ${ref}, in the payment note or remarks if your app allows it.
                     </div>${
-                        r.fees.length === 1
+                        r.fees.length === 1 && !ref10
                             ? `
                     <div style="margin-top:14px;border-left:3px solid ${C.signal};background-color:${C.paper};padding:12px 16px;font-family:${SERIF};font-size:15px;line-height:1.6;color:${C.ink};">
                       <strong style="font-family:${SANS};">Referred by a campus ambassador?</strong> You get 10% off: pay ${rupees(discountedFee(r.fees[0].amount))} instead of ${rupees(r.fees[0].amount)}, and enter their unique code (for example <span style="white-space:nowrap;">IYS-7KQ3XM</span>) in the payment form.

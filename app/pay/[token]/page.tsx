@@ -44,6 +44,7 @@ interface Registrant {
     reference: string;
     status: string;
     payment_submitted_at: string | null;
+    referral_code: string | null;
 }
 
 async function Payment({ params }: { params: PageProps<"/pay/[token]">["params"] }) {
@@ -52,7 +53,7 @@ async function Payment({ params }: { params: PageProps<"/pay/[token]">["params"]
     let r: Registrant | null = null;
     let broken = false;
     if (PAYMENT_TOKEN.test(token) && dbConfigured()) {
-        const { data, error } = await db().from("registrations").select("full_name, reference, status, payment_submitted_at").eq("payment_token", token).maybeSingle<Registrant>();
+        const { data, error } = await db().from("registrations").select("full_name, reference, status, payment_submitted_at, referral_code").eq("payment_token", token).maybeSingle<Registrant>();
         if (error) {
             console.error("Payment page lookup failed:", error.message);
             broken = true;
@@ -114,7 +115,8 @@ async function Payment({ params }: { params: PageProps<"/pay/[token]">["params"]
                 <Row label="Name">{r.full_name}</Row>
                 {c.fees.map((f) => (
                     <Row key={f.category} label={c.fees.length === 1 ? "Fee" : f.category}>
-                        <span className="font-display font-semibold tabular-nums [font-stretch:112%]">{rupees(f.amount)}</span>
+                        <span className="font-display font-semibold tabular-nums [font-stretch:112%]">{rupees(r.referral_code && c.fees.length === 1 ? discountedFee(f.amount) : f.amount)}</span>
+                        {r.referral_code && c.fees.length === 1 && <span className="block text-base text-muted-ink">10% campus ambassador discount applied</span>}
                         {f.note && <span className="block text-base text-muted-ink">{f.note}</span>}
                     </Row>
                 ))}
@@ -130,7 +132,13 @@ async function Payment({ params }: { params: PageProps<"/pay/[token]">["params"]
                     <p className="mt-3 text-base text-muted-ink">
                         Add {r.reference} in the payment note if your app allows it. Manthanam will never ask for your UPI PIN, OTP or card details.
                     </p>
-                    {single && (
+                    {single && r.referral_code && (
+                        <p className="mt-4 border-l-[3px] border-signal bg-white px-4 py-3 text-base text-ink">
+                            You registered with campus ambassador code <strong className="font-mono">{r.referral_code}</strong>, so your fee is{" "}
+                            <strong>₹{discountedFee(single.amount).toLocaleString("en-IN")}</strong> (10% off ₹{single.amount.toLocaleString("en-IN")}).
+                        </p>
+                    )}
+                    {single && !r.referral_code && (
                         <p className="mt-4 border-l-[3px] border-signal bg-white px-4 py-3 text-base text-ink">
                             Referred by a campus ambassador? Pay <strong>₹{discountedFee(single.amount).toLocaleString("en-IN")}</strong> instead of ₹
                             {single.amount.toLocaleString("en-IN")}, and enter their code in the form below.
@@ -140,7 +148,10 @@ async function Payment({ params }: { params: PageProps<"/pay/[token]">["params"]
             )}
 
             <div className="mt-16">
-                <PaymentForm token={token} suggestedAmount={single?.amount ?? null} discountedAmount={single ? discountedFee(single.amount) : null} resubmit={!!r.payment_submitted_at} today={todayIST()} />
+                <PaymentForm token={token} suggestedAmount={single ? (r.referral_code ? discountedFee(single.amount) : single.amount) : null}
+                    discountedAmount={single ? discountedFee(single.amount) : null}
+                    usualAmount={single?.amount ?? null}
+                    initialReferral={r.referral_code ?? ""} resubmit={!!r.payment_submitted_at} today={todayIST()} />
             </div>
         </>
     );

@@ -52,6 +52,8 @@ export default function PaymentForm({
     token,
     suggestedAmount,
     discountedAmount,
+    usualAmount,
+    initialReferral,
     resubmit,
     today,
 }: {
@@ -59,6 +61,9 @@ export default function PaymentForm({
     suggestedAmount: number | null;
     /** The fee with the campus ambassador discount, when there is a single fee. */
     discountedAmount: number | null;
+    usualAmount: number | null;
+    /** The code they gave when registering, filled in for them. */
+    initialReferral: string;
     resubmit: boolean;
     today: string;
 }) {
@@ -250,6 +255,7 @@ export default function PaymentForm({
                             spellCheck={false}
                             maxLength={20}
                             placeholder="IYS-"
+                            defaultValue={initialReferral}
                             disabled={busy}
                             aria-invalid={!!errors.referralCode}
                             aria-describedby={described("referralCode", true)}
@@ -258,7 +264,7 @@ export default function PaymentForm({
                         />
                         <p id={id("referralCode-hint")} className="mt-2 text-sm text-faint">
                             {discountedAmount
-                                ? `With a valid code you pay 10% less: ₹${discountedAmount.toLocaleString("en-IN")} instead of ₹${suggestedAmount?.toLocaleString("en-IN")}.`
+                                ? `With a valid code you pay 10% less: ₹${discountedAmount.toLocaleString("en-IN")} instead of ₹${usualAmount?.toLocaleString("en-IN")}.`
                                 : "With a valid code you pay 10% less."}
                         </p>
                         {errText("referralCode")}

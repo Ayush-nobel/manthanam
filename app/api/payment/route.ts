@@ -45,9 +45,9 @@ export async function POST(request: Request) {
 
     const { data: r, error: findError } = await db()
         .from("registrations")
-        .select("id, reference, status, payment_proof_path, full_name, email, minor, guardian_email")
+        .select("id, reference, status, payment_proof_path, full_name, email, minor, guardian_email, referral_code")
         .eq("payment_token", token)
-        .maybeSingle<{ id: string; reference: string; status: string; payment_proof_path: string | null; full_name: string; email: string; minor: boolean; guardian_email: string }>();
+        .maybeSingle<{ id: string; reference: string; status: string; payment_proof_path: string | null; full_name: string; email: string; minor: boolean; guardian_email: string; referral_code: string | null }>();
     if (findError) {
         console.error("Payment lookup failed:", findError.message);
         return json({ error: "We couldn’t save your payment details right now." }, 502);
@@ -97,7 +97,7 @@ export async function POST(request: Request) {
             payment_amount: parseAmount(values.amount),
             payment_paid_on: values.paidOn,
             payment_payer_name: values.payerName,
-            referral_code: referral || null,
+            referral_code: referral || r.referral_code || null,
             payment_proof_path: path,
             payment_proof_type: type,
             ...(r.status === "new" ? { status: "payment_pending" } : {}),

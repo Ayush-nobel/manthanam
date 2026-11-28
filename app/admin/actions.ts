@@ -206,8 +206,8 @@ function sendingStopped(err: unknown, consecutiveFailures: number): string | nul
     return null;
 }
 
-type PaymentTarget = Pick<RegistrationRow, "id" | "reference" | "full_name" | "email" | "minor" | "guardian_email" | "guardian_verified_at" | "status" | "payment_token">;
-const PAYMENT_COLUMNS = "id, reference, full_name, email, minor, guardian_email, guardian_verified_at, status, payment_token";
+type PaymentTarget = Pick<RegistrationRow, "id" | "reference" | "full_name" | "email" | "minor" | "guardian_email" | "guardian_verified_at" | "status" | "payment_token" | "referral_code">;
+const PAYMENT_COLUMNS = "id, reference, full_name, email, minor, guardian_email, guardian_verified_at, status, payment_token, referral_code";
 
 /** Why payment emails can't go out at all right now, or null if they can. */
 function paymentBlocked(c: ConferenceContent): string | null {
@@ -245,6 +245,7 @@ async function deliverPaymentEmail(admin: { id: string; email: string }, r: Paym
         instructions: c.paymentInstructions,
         dueBy: c.paymentDueBy,
         link: `${site.url}/pay/${token}`,
+        referralCode: r.referral_code,
     });
     const patch: Partial<RegistrationRow> = { payment_email_sent_at: new Date().toISOString() };
     if (r.status === "new") patch.status = "payment_pending";

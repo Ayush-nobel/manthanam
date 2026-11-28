@@ -11,6 +11,7 @@ import {
     type Values,
 } from "@/lib/registration";
 import { connection } from "next/server";
+import { normaliseReferral } from "@/lib/payment";
 import { clientIp, fromThisSite, rateLimiter } from "@/lib/request-guard";
 import { adminWith } from "@/lib/auth";
 import { getConference } from "@/lib/site-content";
@@ -73,6 +74,16 @@ export async function POST(request: Request) {
     if (Object.keys(errors).length) return json({ errors }, 422);
 
     const useDb = dbConfigured();
+    // A campus ambassador's code must be real; delegates who give one pay 10% less.
+    const referral = normaliseReferral(v.referralCode ?? "");
+    if (referral && useDb) {
+        const { data: amb, error: ambError } = await db().from("applications").select("id").eq("role", "ambassador").eq("referral_code", referral).maybeSingle();
+        if (ambError) {
+            console.error("Referral lookup failed:", ambError.message);
+            return json({ error: "We couldn’t check the campus ambassador code right now. Try again in a minute." }, 502);
+        }
+        if (!amb) return json({ errors: { referralCode: "We don’t recognise this code. Check it with your campus ambassador, or leave it empty." } }, 422);
+    }
     if (!useDb && !zohoConfigured()) {
         console.error("No registration store: database missing", dbMissing().join(", "), "and Zoho missing", zohoMissing().join(", "));
         return json({ error: "Registration isn’t connected yet." }, 503);
@@ -99,6 +110,7 @@ export async function POST(request: Request) {
             motivation: v.motivation ?? "",
             heard_from: v.heardFrom ?? "",
             access_needs: v.accessNeeds ?? "",
+            referral_code: referral || null,
             guardian_name: minor ? (v.guardianName ?? "") : "",
             guardian_relation: minor ? (v.guardianRelation ?? "") : "",
             guardian_email: minor ? (v.guardianEmail?.toLowerCase() ?? "") : "",

@@ -1,5 +1,6 @@
 import { EMAIL_ADDRESS } from "@/lib/email-address";
 import { conference, HEARD_FROM, STATUSES } from "@/lib/conference";
+import { normaliseReferral, REFERRAL_CODE } from "@/lib/payment";
 import { site } from "@/lib/site";
 
 /**
@@ -29,6 +30,7 @@ export const FIELDS = [
     "motivation",
     "heardFrom",
     "accessNeeds",
+    "referralCode",
     "guardianName",
     "guardianRelation",
     "guardianEmail",
@@ -53,6 +55,7 @@ const LIMITS: Partial<Record<Field, number>> = {
     institution: 150,
     motivation: 1000,
     accessNeeds: 500,
+    referralCode: 20,
     guardianName: 100,
     guardianEmail: 254,
     guardianPhone: 20,
@@ -118,6 +121,7 @@ export function validate(v: Values): Errors {
     if (!v.status) e.status = "Choose what best describes you.";
     else if (!(STATUSES as readonly string[]).includes(v.status)) e.status = "Choose one of the options.";
     if (v.heardFrom && !(HEARD_FROM as readonly string[]).includes(v.heardFrom)) e.heardFrom = "Choose one of the options.";
+    if (v.referralCode && !REFERRAL_CODE.test(normaliseReferral(v.referralCode))) e.referralCode = "Enter the code exactly as your campus ambassador gave it, like IYS-7KQ3XM, or leave it empty.";
 
     if (age !== null && age < 18) {
         required("guardianName", "Enter your parent or guardian’s full name.");

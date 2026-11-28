@@ -34,6 +34,7 @@ const NAMES: Record<Field, string> = {
     motivation: "Why you want to attend",
     heardFrom: "How you heard about it",
     accessNeeds: "Access needs",
+    referralCode: "Campus ambassador code",
     guardianName: "Parent or guardian’s name",
     guardianRelation: "Relation",
     guardianEmail: "Parent or guardian’s email",
@@ -348,7 +349,11 @@ export default function RegistrationForm({ paymentDetailsBy }: { paymentDetailsB
             <Group title="About the conference">
                 {area("motivation", "Why do you want to attend?", "A few lines are plenty. Up to 1,000 characters.")}
                 {select("heardFrom", "How did you hear about it?", HEARD_FROM, true)}
-                <div className="hidden sm:block" aria-hidden="true" />
+                {text("referralCode", "Campus ambassador code", {
+                    optional: true,
+                    autoComplete: "off",
+                    hint: "Referred by a campus ambassador? Enter their code, like IYS-7KQ3XM, and you pay 10% less.",
+                })}
                 {area(
                     "accessNeeds",
                     "Anything we should arrange so you can take part fully?",

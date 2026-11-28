@@ -11,8 +11,23 @@ export const APPLICATION_ROLES = [
     { id: "outreach", name: "Outreach and partnerships", summary: "Bring colleges, student societies and partner organisations to the conference. Write to them, follow up, keep track." },
     { id: "pr", name: "PR and media", summary: "Pitch our work to journalists. Draft press notes and look after media coverage of the conference." },
 ] as const;
-export type ApplicationRole = (typeof APPLICATION_ROLES)[number]["id"];
-export const roleName = (id: string) => APPLICATION_ROLES.find((r) => r.id === id)?.name ?? id;
+/** Campus ambassadors apply through the same form and admin list, from manthanam.in/register/ambassador. */
+export const AMBASSADOR_ROLE = { id: "ambassador", name: "Campus ambassador", summary: "Bring delegates from your college to the conference with your own referral code." } as const;
+export const ALL_APPLICATION_ROLES = [...APPLICATION_ROLES, AMBASSADOR_ROLE] as const;
+export type ApplicationRole = (typeof ALL_APPLICATION_ROLES)[number]["id"];
+export const roleName = (id: string) => ALL_APPLICATION_ROLES.find((r) => r.id === id)?.name ?? id;
+export const isAmbassador = (id: string) => id === AMBASSADOR_ROLE.id;
+/** How a role reads in a sentence: "Social media and content internship", or "Campus ambassador". */
+export const roleTitle = (id: string) => (isAmbassador(id) ? AMBASSADOR_ROLE.name : `${roleName(id)} internship`);
+
+/** Campus ambassador rewards, as announced. Shown on the ambassador page and in the confirmation email. */
+export const AMBASSADOR_REWARDS = [
+    "Anyone who registers with your referral code gets 10% off their delegate fee",
+    "10 delegates with your code: 20% off your own fee",
+    "40 or more delegates: 50% off your own fee",
+    "80 delegates: your seat is free",
+] as const;
+export const AMBASSADOR_CONDITION = "Only delegates who have completed payment count towards your total.";
 
 export const PERKS = ["A certificate of internship", "A letter of recommendation", "A place at the BRICS India Youth Conference 2026"] as const;
 
@@ -54,12 +69,12 @@ export function validateApplication(v: ApplicationValues): ApplicationErrors {
     else if (!/^\+?[\d\s()-]+$/.test(v.phone) || digits < 7 || digits > 15) e.phone = "Enter a phone number like +91 98765 43210.";
     if (!v.city) e.city = "Enter your city or town.";
     if (!v.organisation) e.organisation = "Enter your college, university or workplace.";
-    if (!APPLICATION_ROLES.some((r) => r.id === v.role)) e.role = "Choose the role you’re applying for.";
+    if (!ALL_APPLICATION_ROLES.some((r) => r.id === v.role)) e.role = "Choose the role you’re applying for.";
     if (v.motivation.length < 50) e.motivation = "Tell us a little more (at least 50 characters).";
     if (v.portfolio && !/^https?:\/\/[^\s]+\.[^\s]+$/i.test(v.portfolio)) e.portfolio = "Enter a full link starting with https://, or leave it empty.";
     for (const [f, max] of Object.entries(APPLICATION_LIMITS) as [ApplicationField, number][])
         if (v[f].length > max) e[f] = `Please keep this under ${max.toLocaleString("en-IN")} characters.`;
-    if (v.adult !== "yes") e.adult = "These internships are for people aged 18 or over.";
+    if (v.adult !== "yes") e.adult = isAmbassador(v.role) ? "Campus ambassadors must be 18 or over." : "These internships are for people aged 18 or over.";
     if (v.consent !== "yes") e.consent = "Please tick this box so we can consider your application.";
     return e;
 }

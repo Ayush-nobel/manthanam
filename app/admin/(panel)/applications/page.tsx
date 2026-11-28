@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { NoAccess, PageTitle, StatusBadge, when } from "@/components/admin/format";
 import { listApplications, PAGE_SIZE } from "@/lib/admin-data";
-import { APPLICATION_ROLES, roleName } from "@/lib/application";
+import { ALL_APPLICATION_ROLES, roleName } from "@/lib/application";
 import { requireAdmin } from "@/lib/auth";
 import { APPLICATION_STATUSES, APPLICATION_STATUS_LABELS, can } from "@/lib/permissions";
 
@@ -48,7 +48,7 @@ export default async function ApplicationsPage({ searchParams }: PageProps<"/adm
                     <span className="text-sm font-semibold">Role</span>
                     <select name="role" defaultValue={f.role} className={select}>
                         <option value="">Any</option>
-                        {APPLICATION_ROLES.map((r) => (
+                        {ALL_APPLICATION_ROLES.map((r) => (
                             <option key={r.id} value={r.id}>
                                 {r.name}
                             </option>

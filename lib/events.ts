@@ -1,5 +1,5 @@
 import type { StaticImageData } from "next/image";
-import biycLogo from "@/public/events/biyc-2026-logo.png";
+import iysLogo from "@/public/events/iys-2026-logo.png";
 import p01 from "@/public/events/impact-stir-26/01.jpg";
 import p02 from "@/public/events/impact-stir-26/02.jpg";
 import p03 from "@/public/events/impact-stir-26/03.jpg";
@@ -31,6 +31,8 @@ export interface UpcomingEvent {
     place: string;
     /** Event logo with a transparent background; only for light backgrounds. */
     logo?: StaticImageData;
+    /** Alt text for the logo, when it isn't simply the event's title. */
+    logoAlt?: string;
     body: string;
 }
 
@@ -53,7 +55,8 @@ export const upcoming: UpcomingEvent[] = [
         date: "2026-12-19",
         previousDate: "2026-11-03",
         place: "New Delhi",
-        logo: biycLogo,
+        logo: iysLogo,
+        logoAlt: "International Youth Summit 2026 logo",
         body: "Organised by Manthanam. The conference was first planned for 3 November and now takes place on 19 December 2026.",
     },
 ];

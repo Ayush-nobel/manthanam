@@ -10,7 +10,7 @@ import SiteHeader from "@/components/site-header";
 import { conference as fixed } from "@/lib/conference";
 import { getConference } from "@/lib/site-content";
 import { site } from "@/lib/site";
-import conferenceLogo from "@/public/events/biyc-2026-logo.png";
+import conferenceLogo from "@/public/events/iys-2026-logo.png";
 
 export const metadata: Metadata = {
     title: `Register — ${fixed.title}`,
@@ -61,7 +61,7 @@ export default async function RegisterPage() {
                         </div>
                         <Image
                             src={conferenceLogo}
-                            alt={`${conference.title} logo`}
+                            alt="International Youth Summit 2026 logo"
                             priority
                             sizes="(min-width: 1024px) 15rem, 8rem"
                             className="order-1 h-auto w-32 shrink-0 sm:w-40 lg:order-2 lg:w-60"
@@ -69,7 +69,28 @@ export default async function RegisterPage() {
                     </div>
                 </div>
 
-                <section aria-labelledby="register-title" className="mx-auto grid max-w-[84rem] gap-16 px-6 pb-24 pt-14 sm:px-10 sm:pb-32 lg:grid-cols-12 lg:gap-10">
+                {conference.registrationOpen && (
+                    <nav aria-label="How do you want to take part?" className="mx-auto max-w-[84rem] px-6 pt-12 sm:px-10">
+                        <ul className="grid gap-4 sm:grid-cols-2">
+                            <li>
+                                <a href="#registration-form" className="group block h-full border-[5px] border-double border-ink bg-white px-6 py-6 transition-colors hover:bg-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">
+                                    <span className="block font-display text-[1.5rem] font-[650] leading-tight text-ink [font-stretch:115%]">Register as a delegate</span>
+                                    <span className="mt-2 block text-base text-muted-ink">Attend the conference: the panels, the Youth Roundtable and the cultural evening.</span>
+                                    <span className="mt-4 inline-block font-semibold text-signal underline-offset-4 group-hover:underline">Fill in the form below</span>
+                                </a>
+                            </li>
+                            <li>
+                                <Link href="/register/ambassador" className="group block h-full border border-ink bg-ink px-6 py-6 text-paper transition-colors hover:bg-signal-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">
+                                    <span className="block font-display text-[1.5rem] font-[650] leading-tight [font-stretch:115%]">Apply as a campus ambassador</span>
+                                    <span className="mt-2 block text-base text-paper/80">Bring delegates from your college with your own referral code, and earn up to a free seat.</span>
+                                    <span className="mt-4 inline-block font-semibold underline-offset-4 group-hover:underline">Apply to be an ambassador</span>
+                                </Link>
+                            </li>
+                        </ul>
+                    </nav>
+                )}
+
+                <section aria-labelledby="register-title" id="registration-form" className="mx-auto grid scroll-mt-6 max-w-[84rem] gap-16 px-6 pb-24 pt-14 sm:px-10 sm:pb-32 lg:grid-cols-12 lg:gap-10">
                     <aside className="lg:col-span-4" aria-label="Conference details">
                         <div className="lg:sticky lg:top-8">
                             {/* Chart cartouche: the same double rule as the homepage title box. */}

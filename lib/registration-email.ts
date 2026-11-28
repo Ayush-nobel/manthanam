@@ -106,7 +106,7 @@ export function registrationEmailHtml(r: RegistrationEmail): string {
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td align="center" style="padding-bottom:28px;">
-                    <img src="${site.url}/email/biyc-2026-logo.png" width="150" height="175" alt="${esc(conference.title)}" style="display:block;width:150px;height:auto;border:0;outline:none;text-decoration:none;font-family:${SANS};font-size:16px;font-weight:bold;color:${C.ink};">
+                    <img src="${site.url}/email/iys-2026-logo.png" width="220" height="144" alt="International Youth Summit 2026" style="display:block;width:220px;height:auto;border:0;outline:none;text-decoration:none;font-family:${SANS};font-size:16px;font-weight:bold;color:${C.ink};">
                   </td>
                 </tr>
                 <tr>
@@ -444,7 +444,7 @@ export function seatConfirmedEmailHtml(r: SeatConfirmedEmail): string {
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td align="center" style="padding-bottom:28px;">
-                    <img src="${site.url}/email/biyc-2026-logo.png" width="150" height="175" alt="${esc(conference.title)}" style="display:block;width:150px;height:auto;border:0;outline:none;text-decoration:none;font-family:${SANS};font-size:16px;font-weight:bold;color:${C.ink};">
+                    <img src="${site.url}/email/iys-2026-logo.png" width="220" height="144" alt="International Youth Summit 2026" style="display:block;width:220px;height:auto;border:0;outline:none;text-decoration:none;font-family:${SANS};font-size:16px;font-weight:bold;color:${C.ink};">
                   </td>
                 </tr>
                 <tr>

@@ -9,6 +9,7 @@ import {
     APPLICATION_LIMITS,
     APPLICATION_ROLES,
     cleanApplication,
+    isAmbassador,
     roleName,
     validateApplication,
     type ApplicationErrors as Errors,
@@ -34,7 +35,9 @@ const NAMES: Record<Field, string> = {
 const inputBase =
     "mt-1 block w-full border-0 border-b bg-transparent px-0 py-2.5 text-lg text-ink placeholder:text-faint transition-colors focus:outline-none focus-visible:border-b-2 disabled:opacity-60";
 
-export default function ApplicationForm({ initialRole }: { initialRole?: string }) {
+/** `fixedRole` skips the role choice (the campus ambassador page uses it). */
+export default function ApplicationForm({ initialRole, fixedRole }: { initialRole?: string; fixedRole?: string }) {
+    const amb = fixedRole ? isAmbassador(fixedRole) : false;
     const uid = useId();
     const id = (f: string) => `${uid}-${f}`;
     const [errors, setErrors] = useState<Errors>({});
@@ -101,8 +104,17 @@ export default function ApplicationForm({ initialRole }: { initialRole?: string 
             <div ref={successRef} tabIndex={-1} role="status" className="border-[5px] border-double border-ink bg-paper px-6 py-8 outline-none sm:px-10 sm:py-10">
                 <h2 className="font-display text-[clamp(1.75rem,3vw,2.5rem)] font-[650] leading-[1.05] text-ink [font-stretch:118%]">Application received.</h2>
                 <p className="mt-5 max-w-[34rem] text-lg text-ink">
-                    Thank you for applying for the <strong>{roleName(done.role)}</strong> internship. We read every application, and if yours is shortlisted we’ll
-                    email you to arrange a short conversation.
+                    {isAmbassador(done.role) ? (
+                        <>
+                            Thank you for applying to be a <strong>campus ambassador</strong>. We read every application, and if you’re selected we’ll email you your
+                            referral code.
+                        </>
+                    ) : (
+                        <>
+                            Thank you for applying for the <strong>{roleName(done.role)}</strong> internship. We read every application, and if yours is shortlisted
+                            we’ll email you to arrange a short conversation.
+                        </>
+                    )}
                 </p>
                 <p className="mt-4 max-w-[34rem] text-base text-muted-ink">
                     {done.emailed ? (
@@ -179,6 +191,9 @@ export default function ApplicationForm({ initialRole }: { initialRole?: string 
                 </div>
             )}
 
+            {fixedRole ? (
+                <input type="hidden" name="role" value={fixedRole} />
+            ) : (
             <fieldset className="min-w-0" aria-describedby={errors.role ? id("role-err") : undefined}>
                 <legend className="w-full border-b border-ink pb-3 font-display text-[1.375rem] font-[620] text-ink [font-stretch:112%]">The role</legend>
                 <div className="mt-6 grid gap-3" id={id("role")} tabIndex={-1}>
@@ -194,6 +209,7 @@ export default function ApplicationForm({ initialRole }: { initialRole?: string 
                 </div>
                 {errText("role")}
             </fieldset>
+            )}
 
             <Group title="About you">
                 {text("fullName", "Full name", { autoComplete: "name", wide: true })}
@@ -206,7 +222,7 @@ export default function ApplicationForm({ initialRole }: { initialRole?: string 
             <Group title="Why you">
                 <div className="sm:col-span-2">
                     <label htmlFor={id("motivation")} className="text-sm font-medium text-ink">
-                        Why do you want this role, and what would you bring to it?
+                        {amb ? "Why would you make a good campus ambassador? Tell us about your college and the groups you’re part of." : "Why do you want this role, and what would you bring to it?"}
                     </label>
                     <textarea
                         id={id("motivation")}
@@ -220,17 +236,21 @@ export default function ApplicationForm({ initialRole }: { initialRole?: string 
                         className={`${inputBase} ${border("motivation")} resize-y`}
                     />
                     <p id={id("motivation-hint")} className="mt-2 text-sm text-faint">
-                        A short paragraph is plenty. Mention anything you’ve written, organised or run before.
+                        {amb
+                            ? "A short paragraph is plenty: societies, clubs or class groups you can reach, and anything you’ve organised before."
+                            : "A short paragraph is plenty. Mention anything you’ve written, organised or run before."}
                     </p>
                     {errText("motivation")}
                 </div>
-                {text("portfolio", "Link to your work", {
+                {text("portfolio", amb ? "Instagram or LinkedIn profile" : "Link to your work", {
                     type: "url",
                     inputMode: "url",
                     optional: true,
                     wide: true,
                     placeholder: "https://",
-                    hint: "A portfolio, LinkedIn, a social account you ran, or a Google Drive folder that anyone with the link can open.",
+                    hint: amb
+                        ? "Optional. Helps us see how you reach people on your campus."
+                        : "A portfolio, LinkedIn, a social account you ran, or a Google Drive folder that anyone with the link can open.",
                 })}
             </Group>
 

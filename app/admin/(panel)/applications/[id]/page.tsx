@@ -7,7 +7,7 @@ import { Select, TextArea } from "@/components/admin/fields";
 import { ReplyForm } from "@/components/admin/reply-form";
 import { describe, NoAccess, StatusBadge, when } from "@/components/admin/format";
 import { getApplication } from "@/lib/admin-data";
-import { roleName } from "@/lib/application";
+import { roleName, roleTitle } from "@/lib/application";
 import { requireAdmin } from "@/lib/auth";
 import { APPLICATION_STATUSES, APPLICATION_STATUS_LABELS, can } from "@/lib/permissions";
 import { mailConfigured, mailFrom } from "@/lib/zoho-mail";
@@ -25,7 +25,7 @@ export default async function ApplicationPage({ params }: PageProps<"/admin/appl
 
     const rows: [string, React.ReactNode][] = [
         ["Role", roleName(a.role)],
-        ["Email", <a key="e" href={`mailto:${a.email}?subject=${encodeURIComponent(`Your application: ${roleName(a.role)} internship`)}`} className="underline underline-offset-4">{a.email}</a>],
+        ["Email", <a key="e" href={`mailto:${a.email}?subject=${encodeURIComponent(`Your application: ${roleTitle(a.role)}`)}`} className="underline underline-offset-4">{a.email}</a>],
         ["Phone", <a key="p" href={`tel:${a.phone.replace(/[^\d+]/g, "")}`} className="underline underline-offset-4">{a.phone}</a>],
         ["College or work", a.organisation],
         ["City", a.city],
@@ -44,7 +44,7 @@ export default async function ApplicationPage({ params }: PageProps<"/admin/appl
                 <h1 className="font-display text-[1.875rem] font-[650] leading-tight [font-stretch:115%]">{a.full_name}</h1>
                 <StatusBadge status={a.status} kind="application" />
             </div>
-            <p className="mt-1 text-base text-muted-ink">{roleName(a.role)} internship</p>
+            <p className="mt-1 text-base text-muted-ink">{roleTitle(a.role)}</p>
             {can(admin.role, "letters.manage") && (
                 <p className="mt-4">
                     <Link href={`/admin/letters/new?application=${a.id}`} className="inline-flex min-h-10 items-center border border-ink px-4 text-sm font-semibold text-ink hover:bg-white">

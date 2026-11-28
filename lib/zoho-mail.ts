@@ -1,6 +1,6 @@
 import "server-only";
 import { applicationEmailHtml, applicationEmailSubject } from "@/lib/application-email";
-import { roleName } from "@/lib/application";
+import { isAmbassador, roleTitle } from "@/lib/application";
 import { paymentEmailHtml, paymentEmailSubject, paymentReceivedEmailHtml, paymentReceivedEmailSubject, registrationEmailHtml, registrationEmailSubject, seatConfirmedEmailHtml, seatConfirmedEmailSubject, type PaymentEmail, type PaymentReceivedEmail, type SeatConfirmedEmail } from "@/lib/registration-email";
 import { longDate, replyEmailHtml } from "@/lib/reply-email";
 import { rateLimiter } from "@/lib/request-guard";
@@ -258,14 +258,14 @@ export async function sendMessageReply(r: { to: string; topic: string; body: str
 
 /** A reply to an internship applicant, written in the admin dashboard. Same design; their application isn't quoted back. */
 export async function sendApplicationReply(r: { to: string; role: string; body: string; signedBy: string; appliedAt: string }) {
-    const subject = oneLine(`Re: Your application for the ${roleName(r.role)} internship at Manthanam`);
+    const subject = oneLine(`Re: Your application for the ${roleTitle(r.role)} role at Manthanam`);
     const html = replyEmailHtml({
         subject,
-        band: "Manthanam internships, remote",
-        context: `About your application for the ${roleName(r.role)} internship, sent on ${longDate(r.appliedAt)}.`,
+        band: isAmbassador(r.role) ? "Manthanam campus ambassadors" : "Manthanam internships, remote",
+        context: `About your application for the ${roleTitle(r.role)} role, sent on ${longDate(r.appliedAt)}.`,
         body: r.body,
         signedBy: r.signedBy,
-        reason: "You received this email because you applied for an internship on manthanam.in.",
+        reason: `You received this email because you applied ${isAmbassador(r.role) ? "to be a campus ambassador" : "for an internship"} on manthanam.in.`,
     });
     await send(r.to, undefined, subject, html);
 }
